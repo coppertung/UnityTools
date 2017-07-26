@@ -7,14 +7,31 @@ using UnityEngine;
 public class Utils {
 
 	///	<summary>
-	///	Generated number randomly in range [0, max).
+	///	Generated an integer randomly in range [0, max).
 	///	</summary>
 	public static int Random(int max, bool positiveOnly = true) {
 
-		byte[] randomBytes = new byte[10];
+		byte[] randomBytes = new byte[sizeof(int)];
 		RNGCryptoServiceProvider rngCrypto = new RNGCryptoServiceProvider();
 		rngCrypto.GetBytes(randomBytes);
 		int rngNum = BitConverter.ToInt32(randomBytes, 0);	// Generate Random Number
+		rngNum = rngNum % max;
+		if(positiveOnly) {
+			rngNum = Math.Abs(rngNum);
+		}
+		return rngNum;
+
+	}
+
+	///	<summary>
+	///	Generated a float randomly in range [0, max).
+	///	</summary>
+	public static float Random(float max, bool positiveOnly = true) {
+
+		byte[] randomBytes = new byte[sizeof(float)];
+		RNGCryptoServiceProvider rngCrypto = new RNGCryptoServiceProvider();
+		rngCrypto.GetBytes(randomBytes);
+		float rngNum = BitConverter.ToSingle (randomBytes, 0);	// Generate Random Number
 		rngNum = rngNum % max;
 		if(positiveOnly) {
 			rngNum = Math.Abs(rngNum);
