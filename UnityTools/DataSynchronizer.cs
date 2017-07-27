@@ -50,14 +50,13 @@ public class DataSynchronizer<T> {
 
 	/// <summary>
 	/// Do the synchronization and clear the data buffer
-	/// Will return the most suitable data through the comparison method
-	/// Noted that the result of the comparison method must be -1, 0, 1
+	/// Will return the most suitable data through sorting (Using IComparable to define the comparsion method)
 	/// </summary>
-	public T doSynchronization (Func<T, T, int> comparison) {
+	public T doSynchronization () {
 
-		_dataBuffer.Sort (delegate(T x, T y) {
-			return comparison (x, y);
-		});
+		// get the most suitable data by sorting them
+		_dataBuffer.Sort ();
+		// get the first one
 		T result = _dataBuffer [0];
 		clearBuffer ();
 		return result;
