@@ -7,7 +7,7 @@ using UnityEngine;
 public class Utils {
 
 	///	<summary>
-	///	Generated an integer randomly in range [0, max).
+	///	Generated an integer number randomly in range [0, max).
 	///	</summary>
 	public static int Random(int max, bool positiveOnly = true) {
 
@@ -24,7 +24,7 @@ public class Utils {
 	}
 
 	///	<summary>
-	///	Generated a float randomly in range [0, max).
+	///	Generated a float number randomly in range [0, max).
 	///	</summary>
 	public static float Random(float max, bool positiveOnly = true) {
 

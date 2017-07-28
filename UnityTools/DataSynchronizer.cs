@@ -5,61 +5,87 @@ using UnityEngine;
 
 public class DataSynchronizer<T> {
 
-	private List<T> _dataBuffer;
-	private float _lastInput;
+	private List<T> _requestBuffer;
+	private List<T> _respondBuffer;
 
-	public List<T> dataBuffer {
+	/// <summary>
+	/// A Buffer used to store the expected respond of the requests.
+	/// </summary>
+	public List<T> requestBuffer {
 		get {
-			return _dataBuffer;
+			return _requestBuffer;
 		}
 	}
-	public float lastInput {
+	/// <summary>
+	/// A Buffer used to store the actual responds.
+	/// </summary>
+	public List<T> respondBuffer {
 		get {
-			return _lastInput;
+			return _respondBuffer;
 		}
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the synchronizer
+	/// Implemented by the users.
+	/// Usually used to check for invalid data.
 	/// </summary>
-	public DataSynchronizer() {
+	public readonly Func<T> doSynchronization;
 
-		_dataBuffer = new List<T> ();
+	/// <summary>
+	/// Initializes a new instance of the synchronizer.
+	/// Noted that self-defined synchronize method should be included.
+	/// </summary>
+	public DataSynchronizer(Func<T> synchronizeMethod) {
+
+		_requestBuffer = new List<T> ();
+		_respondBuffer = new List<T> ();
+		doSynchronization = synchronizeMethod;
 
 	}
 
 	/// <summary>
-	/// Add a data into data buffer
+	/// Add a data into request buffer.
 	/// </summary>
-	public void addToBuffer(T data) {
+	public void addRequest(T data) {
 
-		_dataBuffer.Add (data);
-		_lastInput = Time.time;
+		_requestBuffer.Add (data);
 
 	}
 
 	/// <summary>
-	/// Clear the data buffer
+	/// Add a data into respond buffer.
 	/// </summary>
-	public void clearBuffer() {
+	public void addRespond(T data) {
 
-		_dataBuffer.Clear ();
-		_lastInput = 0;
+		_respondBuffer.Add (data);
 
 	}
 
 	/// <summary>
-	/// Do the synchronization and clear the data buffer
-	/// Will return the most suitable data through sorting (Using IComparable to define the comparsion method)
+	/// Remove a data from request buffer.
 	/// </summary>
-	public T doSynchronization () {
+	public void removeRequest(T data) {
 
-		// get the most suitable data by sorting them
-		_dataBuffer.Sort ();
-		// get the first one
-		T result = _dataBuffer [0];
-		clearBuffer ();
-		return result;
+		_requestBuffer.Remove (data);
+
+	}
+
+	/// <summary>
+	/// Remove a data into respond buffer.
+	/// </summary>
+	public void removeRespond(T data) {
+
+		_respondBuffer.Remove (data);
+
+	}
+
+	/// <summary>
+	/// Clear the data buffer.
+	/// </summary>
+	public void clearBuffers() {
+
+		_requestBuffer.Clear ();
+		_respondBuffer.Clear ();
 
 	}
 

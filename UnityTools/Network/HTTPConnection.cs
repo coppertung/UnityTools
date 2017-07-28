@@ -8,8 +8,8 @@ using UnityEngine.Networking;
 public class HTTPConnection {
 
 	/// <summary>
-	/// Sending a GET request to the server
-	/// T stands for response object
+	/// Sending a GET request to the server.
+	/// T stands for response object.
 	/// </summary>
 	public static IEnumerator GET<T>(string url, Action<T> responseCallback, Action<Exception> errorHandler) {
 
@@ -27,8 +27,8 @@ public class HTTPConnection {
 	}
 
 	/// <summary>
-	/// Sending a POST request to the server, noted that data sent must be a json string
-	/// T stands for response object
+	/// Sending a POST request to the server, noted that data sent must be a json string.
+	/// T stands for response object.
 	/// </summary>
 	public static IEnumerator POST<T>(string url, string jsonData, Action<T> responseCallback, Action<Exception> errorHandler) {
 
@@ -50,8 +50,8 @@ public class HTTPConnection {
 	}
 
 	/// <summary>
-	/// Sending a POST request to the server and get a cookie string, noted that data sent must be a json string
-	/// T stands for response object
+	/// Sending a POST request to the server and get a cookie string, noted that data sent must be a json string.
+	/// T stands for response object.
 	/// </summary>
 	public static IEnumerator POST<T>(string url, string jsonData, string cookieName, Action<string> cookieHandler, Action<T> responseCallback, Action<Exception> errorHandler) {
 

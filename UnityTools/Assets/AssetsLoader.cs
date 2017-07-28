@@ -9,7 +9,7 @@ using UnityEngine.iOS;
 public class AssetsLoader {
 
 	///	<summary>
-	///	Download and store the asset bundle in the local drive in asyncchronous way
+	///	Download and store the asset bundle in the local drive in asyncchronous way.
 	///	</summary>
 	public static IEnumerator DownloadAssetsAsync(string url, string filepath, string filename, Action completeFunction, Action<Exception> errorHandler) {
 
@@ -41,7 +41,7 @@ public class AssetsLoader {
 	}
 
 	///	<summary>
-	///	Load the asset bundle from the local drive in asyncchronous way
+	///	Load the asset bundle from the local drive in asyncchronous way.
 	///	</summary>
 	public static IEnumerator LoadAssetsFromFolderAsync(string file, Action<float> progressFunction, Action<AssetBundle> completeFunction, Action<Exception> errorHandler) {
 
