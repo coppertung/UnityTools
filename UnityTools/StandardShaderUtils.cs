@@ -50,7 +50,7 @@ public class StandardShaderUtils {
 				standardShaderMaterial.SetFloat ("_Mode", 2);
 				standardShaderMaterial.SetInt ("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
 				standardShaderMaterial.SetInt ("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-				standardShaderMaterial.SetInt ("_ZWrite", 0);
+				standardShaderMaterial.SetInt ("_ZWrite", 1);	// prevent from disappear on screen
 				standardShaderMaterial.DisableKeyword ("_ALPHATEST_ON");
 				standardShaderMaterial.EnableKeyword ("_ALPHABLEND_ON");
 				standardShaderMaterial.DisableKeyword ("_ALPHAPREMULTIPLY_ON");

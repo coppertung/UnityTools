@@ -7,6 +7,7 @@ public class DataSynchronizer<T> {
 
 	private List<T> _requestBuffer;
 	private List<T> _respondBuffer;
+	private int _errorCount;
 
 	/// <summary>
 	/// A Buffer used to store the expected respond of the requests.
@@ -24,7 +25,14 @@ public class DataSynchronizer<T> {
 			return _respondBuffer;
 		}
 	}
-
+	/// <summary>
+	/// Count for errors.
+	/// </summary>
+	public int errorCount {
+		get {
+			return _errorCount;
+		}
+	}
 	/// <summary>
 	/// Implemented by the users.
 	/// Usually used to check for invalid data.
@@ -86,6 +94,25 @@ public class DataSynchronizer<T> {
 
 		_requestBuffer.Clear ();
 		_respondBuffer.Clear ();
+
+	}
+
+	/// <summary>
+	/// Add 1 to the error count.
+	/// This mean an error occurred.
+	/// </summary>
+	public void addErrorCount() {
+
+		_errorCount += 1;
+
+	}
+
+	/// <summary>
+	/// Resets the error count.
+	/// </summary>
+	public void resetErrorCount() {
+
+		_errorCount = 0;
 
 	}
 
