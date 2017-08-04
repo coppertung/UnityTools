@@ -98,6 +98,24 @@ public class DataSynchronizer<T> {
 	}
 
 	/// <summary>
+	/// Clear the request buffer.
+	/// </summary>
+	public void clearRequest() {
+
+		_requestBuffer.Clear ();
+
+	}
+
+	/// <summary>
+	/// Clear the respond buffer.
+	/// </summary>
+	public void clearRespond() {
+
+		_respondBuffer.Clear ();
+
+	}
+
+	/// <summary>
 	/// Add 1 to the error count.
 	/// This mean an error occurred.
 	/// </summary>

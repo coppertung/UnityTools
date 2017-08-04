@@ -11,10 +11,14 @@ public class AssetsLoader {
 	///	<summary>
 	///	Download and store the asset bundle in the local drive in asyncchronous way.
 	///	</summary>
-	public static IEnumerator DownloadAssetsAsync(string url, string filepath, string filename, Action completeFunction, Action<Exception> errorHandler) {
+	public static IEnumerator DownloadAssetsAsync(string url, string filepath, string filename, Action<float> progressFunction, Action completeFunction, Action<Exception> errorHandler) {
 
 		UnityWebRequest download = UnityWebRequest.Get (url);
-		yield return download.Send ();
+		download.Send ();
+		while (!download.isDone) {
+			progressFunction (download.downloadProgress);
+			yield return null;
+		}
 		if (download.isNetworkError) {
 			errorHandler (new Exception ("Network Error"));
 		} else if (download.isHttpError) {
