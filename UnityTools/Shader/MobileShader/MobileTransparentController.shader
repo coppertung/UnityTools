@@ -24,4 +24,5 @@
 			}
 		}
 	}
+	Fallback "Mobile/VertexLit"
 }
