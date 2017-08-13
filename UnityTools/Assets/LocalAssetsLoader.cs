@@ -5,35 +5,35 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class LocalAssetsLoader : IEnumerator {
+namespace UnityTools.Assets {
 
-	public UnityEngine.Object obj;
+	public class LocalAssetsLoader : UnityEngine.AsyncOperation {
 
-	public LocalAssetsLoader(UnityEngine.Object obj) {
-		this.obj = obj;
-	}
+		public UnityEngine.Object asset;
 
-	public bool isDone {
-		get {
-			return obj != null;
+		public bool isDone {
+			get {
+				return asset != null;
+			}
 		}
-	}
-
-	public object Current
-	{
-		get
-		{
-			return null;
+		public float progress {
+			get {
+				return asset == null ? 0 : 1;
+			}
 		}
-	}
 
-	public bool MoveNext()
-	{
-		return !isDone;
-	}
+		public LocalAssetsLoader(string assetPath, System.Type type) {
 
-	public void Reset()
-	{
+			asset =  AssetDatabase.LoadAssetAtPath (assetPath, type);
+
+		}
+
+		public T GetAsset<T>() where T : UnityEngine.Object {
+
+			return asset as T;
+
+		}
+
 	}
 
 }

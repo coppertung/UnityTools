@@ -3,134 +3,138 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DataSynchronizer<T> {
+namespace UnityTools {
 
-	private List<T> _requestBuffer;
-	private List<T> _respondBuffer;
-	private int _errorCount;
+	public class DataSynchronizer<T> {
 
-	/// <summary>
-	/// A Buffer used to store the expected respond of the requests.
-	/// </summary>
-	public List<T> requestBuffer {
-		get {
-			return _requestBuffer;
+		private List<T> _requestBuffer;
+		private List<T> _respondBuffer;
+		private int _errorCount;
+
+		/// <summary>
+		/// A Buffer used to store the expected respond of the requests.
+		/// </summary>
+		public List<T> requestBuffer {
+			get {
+				return _requestBuffer;
+			}
 		}
-	}
-	/// <summary>
-	/// A Buffer used to store the actual responds.
-	/// </summary>
-	public List<T> respondBuffer {
-		get {
-			return _respondBuffer;
+		/// <summary>
+		/// A Buffer used to store the actual responds.
+		/// </summary>
+		public List<T> respondBuffer {
+			get {
+				return _respondBuffer;
+			}
+		}	
+		/// <summary>
+		/// Count for errors.
+		/// </summary>
+		public int errorCount {
+			get {
+				return _errorCount;
+			}
 		}
-	}
-	/// <summary>
-	/// Count for errors.
-	/// </summary>
-	public int errorCount {
-		get {
-			return _errorCount;
+		/// <summary>
+		/// Implemented by the users.
+		/// Usually used to check for invalid data.
+		/// </summary>
+		public readonly Func<T> doSynchronization;
+
+		/// <summary>
+		/// Initializes a new instance of the synchronizer.
+		/// Noted that self-defined synchronize method should be included.
+		/// </summary>
+		public DataSynchronizer(Func<T> synchronizeMethod) {
+
+			_requestBuffer = new List<T> ();
+			_respondBuffer = new List<T> ();
+			doSynchronization = synchronizeMethod;
+
 		}
-	}
-	/// <summary>
-	/// Implemented by the users.
-	/// Usually used to check for invalid data.
-	/// </summary>
-	public readonly Func<T> doSynchronization;
 
-	/// <summary>
-	/// Initializes a new instance of the synchronizer.
-	/// Noted that self-defined synchronize method should be included.
-	/// </summary>
-	public DataSynchronizer(Func<T> synchronizeMethod) {
+		/// <summary>
+		/// Add a data into request buffer.
+		/// </summary>
+		public void addRequest(T data) {
 
-		_requestBuffer = new List<T> ();
-		_respondBuffer = new List<T> ();
-		doSynchronization = synchronizeMethod;
+			_requestBuffer.Add (data);
 
-	}
+		}
 
-	/// <summary>
-	/// Add a data into request buffer.
-	/// </summary>
-	public void addRequest(T data) {
+		/// <summary>
+		/// Add a data into respond buffer.
+		/// </summary>
+		public void addRespond(T data) {
 
-		_requestBuffer.Add (data);
+			_respondBuffer.Add (data);
 
-	}
+		}
 
-	/// <summary>
-	/// Add a data into respond buffer.
-	/// </summary>
-	public void addRespond(T data) {
+		/// <summary>
+		/// Remove a data from request buffer.
+		/// </summary>
+		public void removeRequest(T data) {
+	
+			_requestBuffer.Remove (data);
+	
+		}
 
-		_respondBuffer.Add (data);
+		/// <summary>
+		/// Remove a data into respond buffer.
+		/// </summary>
+		public void removeRespond(T data) {
+	
+			_respondBuffer.Remove (data);
 
-	}
+		}
 
-	/// <summary>
-	/// Remove a data from request buffer.
-	/// </summary>
-	public void removeRequest(T data) {
+		/// <summary>
+		/// Clear the data buffer.
+		/// </summary>
+		public void clearBuffers() {
 
-		_requestBuffer.Remove (data);
+			_requestBuffer.Clear ();
+			_respondBuffer.Clear ();
 
-	}
+		}
 
-	/// <summary>
-	/// Remove a data into respond buffer.
-	/// </summary>
-	public void removeRespond(T data) {
+		/// <summary>
+		/// Clear the request buffer.
+		/// </summary>
+		public void clearRequest() {
 
-		_respondBuffer.Remove (data);
+			_requestBuffer.Clear ();
 
-	}
+		}
 
-	/// <summary>
-	/// Clear the data buffer.
-	/// </summary>
-	public void clearBuffers() {
+		/// <summary>
+		/// Clear the respond buffer.
+		/// </summary>
+		public void clearRespond() {
 
-		_requestBuffer.Clear ();
-		_respondBuffer.Clear ();
+			_respondBuffer.Clear ();
 
-	}
+		}
 
-	/// <summary>
-	/// Clear the request buffer.
-	/// </summary>
-	public void clearRequest() {
+		/// <summary>
+		/// Add 1 to the error count.
+		/// This mean an error occurred.
+		/// </summary>
+		public void addErrorCount() {
 
-		_requestBuffer.Clear ();
+			_errorCount += 1;
 
-	}
+		}
 
-	/// <summary>
-	/// Clear the respond buffer.
-	/// </summary>
-	public void clearRespond() {
+		/// <summary>
+		/// Resets the error count.
+		/// </summary>
+		public void resetErrorCount() {
 
-		_respondBuffer.Clear ();
+			_errorCount = 0;
 
-	}
-
-	/// <summary>
-	/// Add 1 to the error count.
-	/// This mean an error occurred.
-	/// </summary>
-	public void addErrorCount() {
-
-		_errorCount += 1;
-
-	}
-
-	/// <summary>
-	/// Resets the error count.
-	/// </summary>
-	public void resetErrorCount() {
-
-		_errorCount = 0;
+		}
 
 	}
 
