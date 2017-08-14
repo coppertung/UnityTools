@@ -9,7 +9,7 @@ namespace UnityTools {
 	public class SystemLogger {
 
 		public static string logDirectory = Application.persistentDataPath + "/Log/";
-		public static string logFile = "systemLog-" + DateTime.Now.Year.ToString () + "-" + DateTime.Now.Month.ToString () + "-" + DateTime.Now.Day.ToString () + ".log";
+		public static string logFile = Application.productName + "-systemLog-" + DateTime.Now.Year.ToString () + "-" + DateTime.Now.Month.ToString () + "-" + DateTime.Now.Day.ToString () + ".log";
 
 		/// <summary>
 		/// Log the specified message to a log file, which will be stored in persistent data path.

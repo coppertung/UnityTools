@@ -13,8 +13,26 @@ namespace UnityTools.Assets {
 
 	public class AssetsLoader {
 
-		public static AssetBundle assetBundle;
-		private static bool loadingAssetBundle = false;
+		private static AssetBundle _assetBundle;
+		private static bool _loadingAssetBundle = false;
+
+		/// <summary>
+		/// The assetbundle that is currently loaded.
+		/// </summary>
+		public static AssetBundle assetBundle {
+			get {
+				return _assetBundle;
+			}
+		}
+		/// <summary>
+		/// Whether the assetbundle is being loading or not.
+		/// </summary>
+		/// <value><c>true</c> if loading asset bundle; otherwise, <c>false</c>.</value>
+		public static bool loadingAssetBundle {
+			get {
+				return _loadingAssetBundle;
+			}
+		}
 
 		#if UNITY_EDITOR
 		/// <summary>
@@ -25,14 +43,6 @@ namespace UnityTools.Assets {
 		/// **NOT WORKING UNTIL UNITY CURRENT VERSION**
 		/// </summary>
 		public static bool loadFromAssetFolder = true;
-		/// <summary>
-		/// Check whether the asset exists.
-		/// </summary>
-		public static bool AssetFound(string assetBundleName, string assetName) {
-
-			return (AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName (assetBundleName, assetName).Length > 0);
-
-		}
 
 		/// <summary>
 		/// Load the assets directly from the asset folder, noted that it can operate in editor only.
@@ -50,6 +60,22 @@ namespace UnityTools.Assets {
 
 		}
 		#endif
+		/// <summary>
+		/// Check whether the asset exists.
+		/// </summary>
+		public static bool AssetFound(string assetBundleName, string assetName) {
+
+			#if UNITY_EDITOR
+			if (loadFromAssetFolder)
+				return (AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName (assetBundleName, assetName).Length > 0);
+			else {
+			#endif
+				return (_assetBundle.name.Equals (assetBundleName) && _assetBundle.Contains (assetName));
+			#if UNITY_EDITOR
+			}
+			#endif
+
+		}
 
 		///	<summary>
 		///	Download and store the asset bundle in the local drive in asyncchronous way.
@@ -92,10 +118,10 @@ namespace UnityTools.Assets {
 		///	</summary>
 		public static IEnumerator LoadAssetsFromFolderAsync(string file, Action<float> progressFunction, Action<Exception> errorHandler) {
 
-			if (assetBundle != null) {
+			if (_assetBundle != null) {
 				ClearAssetBundle (true);
 			}
-			loadingAssetBundle = true;
+			_loadingAssetBundle = true;
 			AssetBundleCreateRequest request = AssetBundle.LoadFromFileAsync (file);
 			if (!File.Exists (file)) {
 				errorHandler (new Exception ("File Not Found"));
@@ -105,10 +131,10 @@ namespace UnityTools.Assets {
 					yield return null;
 				}
 				if (request.isDone) {
-					assetBundle = request.assetBundle;
+					_assetBundle = request.assetBundle;
 				}
 			}
-			loadingAssetBundle = false;
+			_loadingAssetBundle = false;
 
 		}
 
@@ -116,12 +142,11 @@ namespace UnityTools.Assets {
 		/// Loads the assets from specific path or assets folder.
 		/// Noted that assets bundle should be downloaded and be stored before calling this function.
 		/// </summary>
-		public static IEnumerator LoadAssets<T>(string assetBundleName, string assetName, string filePath, System.Type type, Action<float> progressFunction, Action<T> completeFunction, Action<Exception> errorHandler) where T : UnityEngine.Object {
+		public static IEnumerator LoadAssets<T>(string assetBundleName, string assetName, string filePath, Action<float> progressFunction, Action<T> completeFunction, Action<Exception> errorHandler) where T : UnityEngine.Object {
 
 			#if UNITY_EDITOR
 			if (loadFromAssetFolder) {
-				Debug.Log("Start loading from the asset folder...");
-				LocalAssetsLoader loader = LoadAssetsInEditor(assetBundleName, assetName, type, errorHandler);
+				LocalAssetsLoader loader = LoadAssetsInEditor(assetBundleName, assetName, typeof(T), errorHandler);
 				while(!loader.isDone) {
 					yield return null;
 				}
@@ -136,16 +161,15 @@ namespace UnityTools.Assets {
 					// wait until asset bundle is being loaded
 					yield return new WaitForSecondsRealtime (0.1f);
 				}
-				if (assetBundle == null || !assetBundle.name.Equals(assetBundleName)) {
+				if (_assetBundle == null || !_assetBundle.name.Equals(assetBundleName)) {
 					yield return LoadAssetsFromFolderAsync (filePath + assetBundleName, progressFunction, errorHandler);
 					while (loadingAssetBundle) {
 						// wait until asset bundle is being loaded
 						yield return new WaitForSecondsRealtime (0.1f);
 					}
 				}
-				Debug.Log ("Start loading from the assetbundle...");
 				AssetBundleRequest request;
-				request = assetBundle.LoadAssetAsync (assetName, type);
+				request = _assetBundle.LoadAssetAsync (assetName, typeof(T));
 				while (!request.isDone) {
 					yield return null;
 				}
@@ -160,7 +184,8 @@ namespace UnityTools.Assets {
 
 		public static void ClearAssetBundle(bool unloadAllLoadedObjects) {
 
-			assetBundle.Unload (unloadAllLoadedObjects);
+			_assetBundle.Unload (unloadAllLoadedObjects);
+			_assetBundle = null;
 
 		}
 
