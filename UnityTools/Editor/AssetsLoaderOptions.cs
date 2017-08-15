@@ -2,24 +2,35 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityTools.Assets;
 
-public class AssetsLoaderOptions : MonoBehaviour {
+namespace UnityTools.Assets {
 
-	public const string loadFromAssetFolderOptions = "UnityTools/Assets Loader/Load From Asset Folder";
+	public class AssetsLoaderOptions : MonoBehaviour {
 
-	[MenuItem(loadFromAssetFolderOptions)]
-	public static void toggleLoadFromAssetFolderOptions() {
+		public const string loadFromAssetFolderOptions = "UnityTools/Assets/Load From Asset Folder";
+		public const string buildAssetBundleOptions = "UnityTools/Assets/Build AssetBundle";
 
-		AssetsLoader.loadFromAssetFolder = !AssetsLoader.loadFromAssetFolder;
+		[MenuItem(loadFromAssetFolderOptions)]
+		public static void toggleLoadFromAssetFolderOptions() {
 
-	}
+			AssetsLoader.loadFromAssetFolder = !AssetsLoader.loadFromAssetFolder;
 
-	[MenuItem(loadFromAssetFolderOptions, true)]
-	public static bool toggleLoadFromAssetFolderValidate() {
+		}
 
-		Menu.SetChecked (loadFromAssetFolderOptions, AssetsLoader.loadFromAssetFolder);
-		return true;
+		[MenuItem(loadFromAssetFolderOptions, true)]
+		public static bool toggleLoadFromAssetFolderValidate() {
+
+			Menu.SetChecked (loadFromAssetFolderOptions, AssetsLoader.loadFromAssetFolder);
+			return true;
+
+		}
+
+		[MenuItem(buildAssetBundleOptions)]
+		public static void buildAssetBundle() {
+
+			AssetBundleBuilder.Build ();
+
+		}
 
 	}
 

@@ -42,7 +42,7 @@ namespace UnityTools.Assets {
 		/// BUG: ALWAYS being reset in editor play mode
 		/// **NOT WORKING UNTIL UNITY CURRENT VERSION**
 		/// </summary>
-		public static bool loadFromAssetFolder = true;
+		public static bool loadFromAssetFolder = false;
 
 		/// <summary>
 		/// Load the assets directly from the asset folder, noted that it can operate in editor only.
