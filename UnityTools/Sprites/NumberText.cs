@@ -9,12 +9,21 @@ namespace UnityTools.Sprites {
 	public class NumberText : MonoBehaviour {
 
 		private static Dictionary<string, Sprite> _numTextDict = new Dictionary<string, Sprite> ();
+
+		/// <summary>
+		/// Dictionary which related to the sprites of numbers.
+		/// Noted that positive/negative sign and dollar sign can also be included.
+		/// </summary>
 		public static Dictionary<string, Sprite> numTextDict {
 			get {
 				return _numTextDict;
 			}
 		}
 
+		/// <summary>
+		/// Add the sprite to the dictionary.
+		/// Noted that it only supports for the number, dot, dollar sign, positive and negative sign.
+		/// </summary>
 		public static void addToDict(Sprite image) {
 				
 			if (image.name.Contains ("dot") || image.name.Contains (".")) {
@@ -34,10 +43,17 @@ namespace UnityTools.Sprites {
 
 		}
 
+		/// <summary>
+		/// Show the sprites of the requested value in horizontal way started from the reference point.
+		/// Reminded that a reference object with image (not raw image) component is necessary to provide in order to instantiate it on screen.
+		/// </summary>
 		public static void showNumberInHorizontal(GameObject referenceObject, Transform referencePoint, float value, int toDecimalPoint, bool positive, bool isMoney, float scale, bool showPositiveSign = true) {
 				
 			Vector3 refPos = referencePoint.position;
+			Vector2 scaling = Utils.GetScreenScaleFromCanvasScaler (referencePoint.gameObject);
 			Vector2 refSize = referenceObject.GetComponent<Image> ().rectTransform.sizeDelta;
+			refSize = new Vector2 (refSize.x / scaling.x, refSize.y / scaling.y);
+
 			int placeValue = 0;
 			for (placeValue = 0; placeValue < int.MaxValue; placeValue++) {
 				if ((int)(value / Mathf.Pow (10, placeValue)) > 0 || (value / Mathf.Pow (10, placeValue) == 0 && (int)(value % Mathf.Pow (10, placeValue)) > 0)) {
@@ -58,7 +74,7 @@ namespace UnityTools.Sprites {
 					positiveSign.transform.localScale = new Vector3 (scale, scale, scale);
 				} else {
 					Sprite negativeSprite;
-					_numTextDict.TryGetValue ("+", out negativeSprite);
+					_numTextDict.TryGetValue ("-", out negativeSprite);
 					GameObject negativeSign = Instantiate (referenceObject);
 					negativeSign.GetComponent<Image> ().sprite = negativeSprite;
 					negativeSign.transform.SetParent (referencePoint);
@@ -89,17 +105,12 @@ namespace UnityTools.Sprites {
 				newNumber.transform.position = refPos;
 				newNumber.transform.localScale = new Vector3 (scale, scale, scale);
 			} else {
-				for (int i = placeValue - 1; i >= 0; i--) {
+				for (int i = 0; i < placeValue; i++) {
 					if (showPositiveSign || i > 0) {
 						refPos += new Vector3 (refSize.x * scale, 0, 0);
 					}
 					int num = 0;
-					if (i == 0) {
-						// find the unit number
-						num = (int)((value % 100) / 10);
-					} else {
-						num = (int)((value % Mathf.Pow (10, i + 1)) / Mathf.Pow (10, i));
-					}
+					num = (int)((value % Mathf.Pow (10, placeValue - i)) / Mathf.Pow (10, placeValue - i - 1));
 					Debug.Log (i + ":" + num + "[" + value + "]");
 					Sprite numberSprite;
 					_numTextDict.TryGetValue (num.ToString (), out numberSprite);
@@ -122,7 +133,13 @@ namespace UnityTools.Sprites {
 				dotObject.transform.localScale = new Vector3 (scale, scale, scale);
 				refPos += new Vector3 (refSize.x * 0.6f * scale, 0, 0);
 				for (int i = 0; i < toDecimalPoint; i++) {
-					int num = Mathf.RoundToInt ((value * Mathf.Pow (10, i + 1) % 100) / 10);
+					int num;
+					if (i == toDecimalPoint - 1) {
+						num = Mathf.RoundToInt (value * Mathf.Pow (10, i + 1)) % 10;
+					} else {
+						num = (int)((value * Mathf.Pow (10, i + 1)) % 10);
+					}
+					Debug.Log (i + ":" + num + "[" + value + "]");
 					Sprite decimalNumberSprite;
 					_numTextDict.TryGetValue (num.ToString(), out decimalNumberSprite);
 					GameObject newDecimalNumber = Instantiate (referenceObject);

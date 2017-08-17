@@ -46,6 +46,7 @@ namespace UnityTools.Assets {
 
 		/// <summary>
 		/// Load the assets directly from the asset folder, noted that it can operate in editor only.
+		/// **SHOULD BE ASYNCHRONOUS FUNCTION THEORETICALLY BUT NOT SUPPORTED IN PERSONAL VERSION**
 		/// </summary>
 		public static LocalAssetsLoader LoadAssetsInEditor(string assetBundleName, string assetName, System.Type type, Action<Exception> errorHandler) {
 

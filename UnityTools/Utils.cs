@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using UnityEditor;
 #endif
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityTools {
 
@@ -65,6 +66,20 @@ namespace UnityTools {
 				rngNum = Math.Abs(rngNum);
 			}
 			return rngNum;
+
+		}
+
+		/// <summary>
+		/// Gets the screen scale from the canvas scaler of the parent of the input gameobject (assumed that it is a canvas).
+		/// </summary>
+		public static Vector2 GetScreenScaleFromCanvasScaler(GameObject uiComponent) {
+
+			CanvasScaler canvasScaler = uiComponent.GetComponentInParent<CanvasScaler> ();
+			if (canvasScaler) {
+				return new Vector2 (canvasScaler.referenceResolution.x / Screen.width, canvasScaler.referenceResolution.y / Screen.height);
+			} else {
+				return Vector2.one;
+			}
 
 		}
 
