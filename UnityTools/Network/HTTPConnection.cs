@@ -21,7 +21,7 @@ namespace UnityTools.Network {
 			if (request.isNetworkError) {
 				errorHandler (new Exception ("Network error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error"));
+				errorHandler (new Exception ("[" + url + "]Http error"));
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}

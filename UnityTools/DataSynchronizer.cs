@@ -6,50 +6,64 @@ using UnityEngine;
 namespace UnityTools {
 
 	public class DataSynchronizer<T> {
-
-		private List<T> _requestBuffer;
-		private List<T> _respondBuffer;
-		private int _errorCount;
+		public delegate bool SynchronizationMethod();
 
 		/// <summary>
 		/// A Buffer used to store the expected respond of the requests.
 		/// </summary>
 		public List<T> requestBuffer {
-			get {
-				return _requestBuffer;
-			}
+			get;
+			private set;
 		}
 		/// <summary>
 		/// A Buffer used to store the actual responds.
 		/// </summary>
 		public List<T> respondBuffer {
-			get {
-				return _respondBuffer;
-			}
+			get;
+			private set;
 		}	
 		/// <summary>
 		/// Count for errors.
 		/// </summary>
 		public int errorCount {
-			get {
-				return _errorCount;
-			}
+			get;
+			private set;
 		}
+
 		/// <summary>
-		/// Implemented by the users.
-		/// Usually used to check for invalid data.
+		/// Return true if there is no error and return false if there is any.
+		/// Call doSynchronization.Invoke() to do synchronization.
 		/// </summary>
-		public readonly Func<T> doSynchronization;
+		public SynchronizationMethod doSynchronization {
+			get;
+			private set;
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the synchronizer.
-		/// Noted that self-defined synchronize method should be included.
 		/// </summary>
-		public DataSynchronizer(Func<T> synchronizeMethod) {
+		public DataSynchronizer() {
 
-			_requestBuffer = new List<T> ();
-			_respondBuffer = new List<T> ();
-			doSynchronization = synchronizeMethod;
+			requestBuffer = new List<T> ();
+			respondBuffer = new List<T> ();
+
+		}
+
+		/// <summary>
+		/// Add the sychronization function to the delegated function doSynchronization (Read-only).
+		/// </summary>
+		public void addSyncMethod(SynchronizationMethod method) {
+
+			doSynchronization += method;
+
+		}
+
+		/// <summary>
+		/// Add the sychronization function to the delegated function doSynchronization (Read-only).
+		/// </summary>
+		public void removeSyncMethod(SynchronizationMethod method) {
+
+			doSynchronization += method;
 
 		}
 
@@ -58,7 +72,7 @@ namespace UnityTools {
 		/// </summary>
 		public void addRequest(T data) {
 
-			_requestBuffer.Add (data);
+			requestBuffer.Add (data);
 
 		}
 
@@ -67,7 +81,7 @@ namespace UnityTools {
 		/// </summary>
 		public void addRespond(T data) {
 
-			_respondBuffer.Add (data);
+			respondBuffer.Add (data);
 
 		}
 
@@ -76,7 +90,7 @@ namespace UnityTools {
 		/// </summary>
 		public void removeRequest(T data) {
 	
-			_requestBuffer.Remove (data);
+			requestBuffer.Remove (data);
 	
 		}
 
@@ -85,7 +99,7 @@ namespace UnityTools {
 		/// </summary>
 		public void removeRespond(T data) {
 	
-			_respondBuffer.Remove (data);
+			respondBuffer.Remove (data);
 
 		}
 
@@ -94,8 +108,8 @@ namespace UnityTools {
 		/// </summary>
 		public void clearBuffers() {
 
-			_requestBuffer.Clear ();
-			_respondBuffer.Clear ();
+			requestBuffer.Clear ();
+			respondBuffer.Clear ();
 
 		}
 
@@ -104,7 +118,7 @@ namespace UnityTools {
 		/// </summary>
 		public void clearRequest() {
 
-			_requestBuffer.Clear ();
+			requestBuffer.Clear ();
 
 		}
 
@@ -113,7 +127,7 @@ namespace UnityTools {
 		/// </summary>
 		public void clearRespond() {
 
-			_respondBuffer.Clear ();
+			respondBuffer.Clear ();
 
 		}
 
@@ -123,7 +137,7 @@ namespace UnityTools {
 		/// </summary>
 		public void addErrorCount() {
 
-			_errorCount += 1;
+			errorCount += 1;
 
 		}
 
@@ -132,7 +146,7 @@ namespace UnityTools {
 		/// </summary>
 		public void resetErrorCount() {
 
-			_errorCount = 0;
+			errorCount = 0;
 
 		}
 
