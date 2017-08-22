@@ -6,6 +6,7 @@ using UnityEngine;
 namespace UnityTools {
 
 	public class DataSynchronizer<T> {
+		
 		public delegate bool SynchronizationMethod();
 
 		/// <summary>

@@ -21,7 +21,30 @@ namespace UnityTools.Network {
 			if (request.isNetworkError) {
 				errorHandler (new Exception ("Network error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("[" + url + "]Http error"));
+				errorHandler (new Exception ("Http error"));
+			} else {
+				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+			}
+
+		}
+
+		/// <summary>
+		/// Sending a GET request to the server with header in order to pass cookies or tokens, noted that the keys of header are case-sensitive.
+		/// T stands for response object.
+		/// **REQUIRE TESTING LATER**
+		/// </summary>
+		public static IEnumerator GET<T>(string url, Hashtable header, Action<T> responseCallback, Action<Exception> errorHandler) {
+
+			UnityWebRequest request = UnityWebRequest.Get (url);
+			foreach (DictionaryEntry headerValue in header) {
+				request.SetRequestHeader ((string)headerValue.Key, (string)headerValue.Value);
+			}
+			yield return request.Send ();
+
+			if (request.isNetworkError) {
+				errorHandler (new Exception ("Network error"));
+			} else if (request.isHttpError) {
+				errorHandler (new Exception ("Http error"));
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}

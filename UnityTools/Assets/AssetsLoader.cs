@@ -27,7 +27,6 @@ namespace UnityTools.Assets {
 		/// <summary>
 		/// Whether the assetbundle is being loading or not.
 		/// </summary>
-		/// <value><c>true</c> if loading asset bundle; otherwise, <c>false</c>.</value>
 		public static bool loadingAssetBundle {
 			get {
 				return _loadingAssetBundle;
