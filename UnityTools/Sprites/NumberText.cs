@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace UnityTools.Sprites {
 	
-	public class NumberText : MonoBehaviour {
+	public class NumberText {
 
 		private static Dictionary<string, Sprite> _numTextDict = new Dictionary<string, Sprite> ();
 
@@ -67,7 +67,7 @@ namespace UnityTools.Sprites {
 				if (positive) {
 					Sprite positiveSprite;
 					_numTextDict.TryGetValue ("+", out positiveSprite);
-					GameObject positiveSign = Instantiate (referenceObject);
+					GameObject positiveSign = GameObject.Instantiate (referenceObject);
 					positiveSign.GetComponent<Image> ().sprite = positiveSprite;
 					positiveSign.transform.SetParent (referencePoint);
 					positiveSign.transform.position = refPos;
@@ -75,7 +75,7 @@ namespace UnityTools.Sprites {
 				} else {
 					Sprite negativeSprite;
 					_numTextDict.TryGetValue ("-", out negativeSprite);
-					GameObject negativeSign = Instantiate (referenceObject);
+					GameObject negativeSign = GameObject.Instantiate (referenceObject);
 					negativeSign.GetComponent<Image> ().sprite = negativeSprite;
 					negativeSign.transform.SetParent (referencePoint);
 					negativeSign.transform.position = refPos;
@@ -89,7 +89,7 @@ namespace UnityTools.Sprites {
 				}
 				Sprite dollarSprite;
 				_numTextDict.TryGetValue ("$", out dollarSprite);
-				GameObject dollarSign = Instantiate (referenceObject);
+				GameObject dollarSign = GameObject.Instantiate (referenceObject);
 				dollarSign.GetComponent<Image> ().sprite = dollarSprite;
 				dollarSign.transform.SetParent (referencePoint);
 				dollarSign.transform.position = refPos;
@@ -99,7 +99,7 @@ namespace UnityTools.Sprites {
 			if (placeValue == 0) {
 				Sprite numberSprite;
 				_numTextDict.TryGetValue ("0", out numberSprite);
-				GameObject newNumber = Instantiate (referenceObject);
+				GameObject newNumber = GameObject.Instantiate (referenceObject);
 				newNumber.GetComponent<Image> ().sprite = numberSprite;
 				newNumber.transform.SetParent (referencePoint);
 				newNumber.transform.position = refPos;
@@ -114,7 +114,7 @@ namespace UnityTools.Sprites {
 					Debug.Log (i + ":" + num + "[" + value + "]");
 					Sprite numberSprite;
 					_numTextDict.TryGetValue (num.ToString (), out numberSprite);
-					GameObject newNumber = Instantiate (referenceObject);
+					GameObject newNumber = GameObject.Instantiate (referenceObject);
 					newNumber.GetComponent<Image> ().sprite = numberSprite;
 					newNumber.transform.SetParent (referencePoint);
 					newNumber.transform.position = refPos;
@@ -126,7 +126,7 @@ namespace UnityTools.Sprites {
 				refPos += new Vector3 (refSize.x * 0.6f * scale, 0, 0);
 				Sprite dotSprite;
 				_numTextDict.TryGetValue (".", out dotSprite);
-				GameObject dotObject = Instantiate (referenceObject);
+				GameObject dotObject = GameObject.Instantiate (referenceObject);
 				dotObject.transform.SetParent (referencePoint);
 				dotObject.GetComponent<Image> ().sprite = dotSprite;
 				dotObject.transform.position = refPos;
@@ -142,7 +142,7 @@ namespace UnityTools.Sprites {
 					Debug.Log (i + ":" + num + "[" + value + "]");
 					Sprite decimalNumberSprite;
 					_numTextDict.TryGetValue (num.ToString(), out decimalNumberSprite);
-					GameObject newDecimalNumber = Instantiate (referenceObject);
+					GameObject newDecimalNumber = GameObject.Instantiate (referenceObject);
 					newDecimalNumber.GetComponent<Image> ().sprite = decimalNumberSprite;
 					newDecimalNumber.transform.SetParent (referencePoint);
 					newDecimalNumber.transform.position = refPos;

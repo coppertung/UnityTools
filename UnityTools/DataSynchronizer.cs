@@ -105,7 +105,7 @@ namespace UnityTools {
 		}
 
 		/// <summary>
-		/// Clear the data buffer.
+		/// Clear the data buffers (both request and respond).
 		/// </summary>
 		public void clearBuffers() {
 
