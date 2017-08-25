@@ -42,7 +42,7 @@ namespace UnityTools {
 			}
 		}
 
-		private static List<IUpdateable> updateCallsList = new List<IUpdateable>();
+		private static List<IUpdateable> updateablesList = new List<IUpdateable>();
 
 
 		void Awake() {
@@ -57,9 +57,9 @@ namespace UnityTools {
 
 		void Update () {
 
-			if (updateCallsList.Count > 0) {
-				for (int i = 0; i < updateCallsList.Count; i++) {
-					updateCallsList [i].updateEvent ();
+			if (updateablesList.Count > 0) {
+				for (int i = 0; i < updateablesList.Count; i++) {
+					updateablesList [i].updateEvent ();
 				}
 			}
 
@@ -67,14 +67,14 @@ namespace UnityTools {
 
 		/// <summary>
 		/// Register the specified Update Call.
-		/// Can invoke the sort by setting the autoSort as true.
+		/// Can invoke the sort by setting the autoSort as true (default is false).
 		/// </summary>
-		public static void Register(IUpdateable updateCall, bool autoSort = false) {
+		public static void Register(IUpdateable updateable, bool autoSort = false) {
 
-			if (updateCall == null) {
+			if (updateable == null) {
 				throw new ArgumentNullException ();
 			} else {
-				updateCallsList.Add (updateCall);
+				updateablesList.Add (updateable);
 			}
 			if (autoSort)
 				Sort ();
@@ -84,12 +84,12 @@ namespace UnityTools {
 		/// <summary>
 		/// Unregister the specified Update Call.
 		/// </summary>
-		public static void Unregister(IUpdateable updateCall) {
+		public static void Unregister(IUpdateable updateable) {
 
-			if (updateCall == null) {
+			if (updateable == null) {
 				throw new ArgumentNullException ();
 			} else {
-				updateCallsList.Remove (updateCall);
+				updateablesList.Remove (updateable);
 			}
 
 		}
@@ -99,7 +99,7 @@ namespace UnityTools {
 		/// </summary>
 		public static void Sort() {
 
-			updateCallsList.Sort (delegate(IUpdateable x, IUpdateable y) {
+			updateablesList.Sort (delegate(IUpdateable x, IUpdateable y) {
 				if (x.priority > y.priority)
 					return 1;	// move forwards
 				else if (x.priority == y.priority)

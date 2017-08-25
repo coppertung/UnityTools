@@ -23,11 +23,15 @@ namespace UnityTools {
 					return "Android";
 				case BuildTarget.iOS:
 					return "iOS";
-				case BuildTarget.WebGL:
-					return "WebGL";
+				case BuildTarget.StandaloneOSXIntel:
+				case BuildTarget.StandaloneOSXIntel64:
+				case BuildTarget.StandaloneOSXUniversal:
+					return "OSX";
 				case BuildTarget.StandaloneWindows:
 				case BuildTarget.StandaloneWindows64:
 					return "Windows";
+				case BuildTarget.WebGL:
+					return "WebGL";
 				default:
 					return null;
 				}

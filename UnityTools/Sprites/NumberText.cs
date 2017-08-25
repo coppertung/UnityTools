@@ -97,6 +97,7 @@ namespace UnityTools.Sprites {
 			}
 			// number till unit
 			if (placeValue == 0) {
+				refPos += new Vector3 (refSize.x * scale, 0, 0);
 				Sprite numberSprite;
 				_numTextDict.TryGetValue ("0", out numberSprite);
 				GameObject newNumber = GameObject.Instantiate (referenceObject);
