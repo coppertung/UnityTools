@@ -29,6 +29,7 @@ namespace UnityTools {
 
 	/// <summary>
 	/// Update Manager is used to manage the update calls.
+	/// Must be attached to gameobject that won't be destroy.
 	/// However, it is not necessary to use the Update Manager if there is a small amount of gameobjects and update calls only.
 	/// Recommended to use when there is over **1k (need to test)** update calls in each frame.
 	/// **REQUIRE TESTING LATER**
