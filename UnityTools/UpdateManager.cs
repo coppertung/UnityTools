@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityTools.Patterns;
 
 namespace UnityTools {
 
@@ -32,35 +33,26 @@ namespace UnityTools {
 	/// Must be attached to gameobject that won't be destroy.
 	/// However, it is not necessary to use the Update Manager if there is a small amount of gameobjects and update calls only.
 	/// Recommended to use when there is over **1k (need to test)** update calls in each frame.
-	/// **REQUIRE TESTING LATER**
 	/// </summary>
-	public class UpdateManager : MonoBehaviour {
+	public class UpdateManager : Singleton<UpdateManager> {
 
-		private static UpdateManager _instance;
-		public static UpdateManager Instance {
+		private static List<IUpdateable> _updateablesList = new List<IUpdateable>();
+		/// <summary>
+		/// List which stored all the registered updateables.
+		/// </summary>
+		public static List<IUpdateable> updateablesList {
 			get {
-				return _instance;
+				return _updateablesList;
 			}
-		}
-
-		private static List<IUpdateable> updateablesList = new List<IUpdateable>();
-
-
-		void Awake() {
-
-			if (_instance == null) {
-				_instance = this;
-			} else {
-				throw new Exception ("There should not be more than one Update Manager!");
-			}
-
 		}
 
 		void Update () {
 
-			if (updateablesList.Count > 0) {
-				for (int i = 0; i < updateablesList.Count; i++) {
-					updateablesList [i].updateEvent ();
+			if (_updateablesList.Count > 0) {
+				for (int i = 0; i < _updateablesList.Count; i++) {
+					if (_updateablesList [i] != null) {
+						_updateablesList [i].updateEvent ();
+					}
 				}
 			}
 
@@ -75,7 +67,7 @@ namespace UnityTools {
 			if (updateable == null) {
 				throw new ArgumentNullException ();
 			} else {
-				updateablesList.Add (updateable);
+				_updateablesList.Add (updateable);
 			}
 			if (autoSort)
 				Sort ();
@@ -90,7 +82,7 @@ namespace UnityTools {
 			if (updateable == null) {
 				throw new ArgumentNullException ();
 			} else {
-				updateablesList.Remove (updateable);
+				_updateablesList.Remove (updateable);
 			}
 
 		}
@@ -100,7 +92,7 @@ namespace UnityTools {
 		/// </summary>
 		public static void Sort() {
 
-			updateablesList.Sort (delegate(IUpdateable x, IUpdateable y) {
+			_updateablesList.Sort (delegate(IUpdateable x, IUpdateable y) {
 				if (x.priority > y.priority)
 					return 1;	// move forwards
 				else if (x.priority == y.priority)
