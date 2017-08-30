@@ -11,12 +11,12 @@ namespace UnityTools.Assets {
 
 		public UnityEngine.Object asset;
 
-		public bool isDone {
+		public new bool isDone {
 			get {
 				return asset != null;
 			}
 		}
-		public float progress {
+		public new float progress {
 			get {
 				return asset == null ? 0 : 1;
 			}
