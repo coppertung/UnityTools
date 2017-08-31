@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class PlayerPrefsOptions : MonoBehaviour {
+namespace UnityTools {
 
-	public const string clearOptions = "UnityTools/PlayerPrefs/Clear All";
+	public class PlayerPrefsOptions : MonoBehaviour {
 
-	[MenuItem(clearOptions)]
-	public static void clearPlayerPrefs() {
+		public const string clearOptions = "UnityTools/PlayerPrefs/Clear All";
 
-		PlayerPrefs.DeleteAll ();
+		[MenuItem(clearOptions)]
+		public static void clearPlayerPrefs() {
+
+			PlayerPrefs.DeleteAll ();
+
+		}
 
 	}
 

@@ -35,12 +35,14 @@ namespace UnityTools {
 		void init (int id, Vector3 position, Quaternion rotation);
 		/// <summary>
 		/// Enable call.
+		/// NOT being called automatically.
 		/// </summary>
 		void onEnable();
 		/// <summary>
 		/// Disable call.
+		/// NOT being called automatically.
 		/// </summary>
-		void onDisable ();
+		void onDisable();
 
 	}
 

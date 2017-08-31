@@ -22,7 +22,7 @@ namespace UnityTools {
 
 		/// <summary>
 		/// Used to replace the Update().
-		/// Noted that it will be automatically called by the Update Manager once it registered.
+		/// Noted that it will be automatically called by the Update Manager once it is registered.
 		/// </summary>
 		void updateEvent();
 
