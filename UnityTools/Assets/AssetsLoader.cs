@@ -174,7 +174,6 @@ namespace UnityTools.Assets {
 					yield return null;
 				}
 				if (request.isDone) {
-					Debug.Log (request.asset);
 					completeFunction ((T)request.asset);
 				}
 			#if UNITY_EDITOR

@@ -14,23 +14,13 @@ namespace UnityTools.Languages {
 	/// <?xml version="1.0" encoding="utf-8"?>
 	/// <languages>
 	/// 	<English>
-	/// 		<string name="test">testing</string>
+	/// 		<string id="test">testing</string>
 	/// 	</English>
 	/// </languages>
 	/// </summary>
-	public class XmlWordDict {
+	public class XmlWordDict : WordDict {
 
-		private Dictionary<string, string> wordsDict;
 		private XmlDocument xmlDoc;
-		private string language;
-
-		/// <summary>
-		/// Is the dictionary completed loading?
-		/// </summary>
-		public bool isLoaded {
-			get;
-			private set;
-		}
 
 		/// <summary>
 		/// Import the dictionary using a xml file with a provided file path.
@@ -78,7 +68,7 @@ namespace UnityTools.Languages {
 
 		}
 
-		private IEnumerator init() {
+		protected override IEnumerator init() {
 
 			if (wordsDict == null)
 				wordsDict = new Dictionary<string, string> ();
@@ -89,11 +79,11 @@ namespace UnityTools.Languages {
 				IEnumerator field = element.GetEnumerator ();
 				while (field.MoveNext ()) {
 					XmlElement item = (XmlElement)field.Current;
-					wordsDict.Add (item.GetAttribute ("name"), item.InnerText);
+					wordsDict.Add (item.GetAttribute ("id"), item.InnerText);
 					yield return null;
 				}
 			} else {
-				throw new NullReferenceException ("There is no element found!");
+				throw new KeyNotFoundException ();
 			}
 			isLoaded = true;
 
@@ -134,31 +124,6 @@ namespace UnityTools.Languages {
 
 			// clear the cache to release memory
 			Caching.ClearCache ();
-
-		}
-
-		/// <summary>
-		/// Switch the language of the dictionary.
-		/// </summary>
-		public void setLanguage(string language, MonoBehaviour obj) {
-
-			this.language = language;
-			obj.StartCoroutine (init ());
-
-		}
-
-		/// <summary>
-		/// Get the word from the dictionary with specific name.
-		/// </summary>
-		public string getWord(string name) {
-
-			if (!wordsDict.ContainsKey (name)) {
-				throw new KeyNotFoundException ();
-			} else {
-				string value = null;
-				wordsDict.TryGetValue (name, out value);
-				return value;
-			}
 
 		}
 

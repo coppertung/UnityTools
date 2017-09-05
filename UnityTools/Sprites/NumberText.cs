@@ -112,7 +112,6 @@ namespace UnityTools.Sprites {
 					}
 					int num = 0;
 					num = (int)((value % Mathf.Pow (10, placeValue - i)) / Mathf.Pow (10, placeValue - i - 1));
-					Debug.Log (i + ":" + num + "[" + value + "]");
 					Sprite numberSprite;
 					_numTextDict.TryGetValue (num.ToString (), out numberSprite);
 					GameObject newNumber = GameObject.Instantiate (referenceObject);
@@ -140,7 +139,6 @@ namespace UnityTools.Sprites {
 					} else {
 						num = (int)((value * Mathf.Pow (10, i + 1)) % 10);
 					}
-					Debug.Log (i + ":" + num + "[" + value + "]");
 					Sprite decimalNumberSprite;
 					_numTextDict.TryGetValue (num.ToString(), out decimalNumberSprite);
 					GameObject newDecimalNumber = GameObject.Instantiate (referenceObject);
