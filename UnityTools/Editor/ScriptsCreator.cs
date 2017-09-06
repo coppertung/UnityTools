@@ -13,6 +13,7 @@ namespace UnityTools {
 
 		public bool inheritDefault = false;
 		public bool inheritMonoBehaviour = true;
+		public bool inheritSingleton = false;
 		public bool inheritIUpdateable = false;
 		public bool inheritIPoolObject = false;
 
@@ -39,11 +40,18 @@ namespace UnityTools {
 				if (inheritDefault && (inheritIPoolObject || inheritIUpdateable)) {
 					writer.WriteLine ("using UnityTools;");
 				}
+				if (inheritDefault && inheritMonoBehaviour && inheritSingleton) {
+					writer.WriteLine ("using UnityTools.Patterns;");
+				}
 				writer.WriteLine ();
 				writer.Write ("public class " + className);
 				if (inheritDefault) {
 					if (inheritMonoBehaviour) {
-						writer.Write (" : MonoBehaviour");
+						if (inheritSingleton) {
+							writer.Write (" : Singleton<" + className + ">");
+						} else {
+							writer.Write (" : MonoBehaviour");
+						}
 						if (inheritIPoolObject) {
 							writer.Write (", IPoolObject");
 						}
@@ -129,7 +137,9 @@ namespace UnityTools {
 			className = EditorGUILayout.TextField ("Class Name", className);
 
 			inheritDefault = EditorGUILayout.BeginToggleGroup ("Inherit default classes", inheritDefault);
-			inheritMonoBehaviour = EditorGUILayout.Toggle ("MonoBehaviour", inheritMonoBehaviour);
+			inheritMonoBehaviour = EditorGUILayout.BeginToggleGroup ("InheritMonoBehaviour", inheritMonoBehaviour);
+			inheritSingleton = EditorGUILayout.Toggle ("Singleton", inheritSingleton);
+			EditorGUILayout.EndToggleGroup ();
 			inheritIUpdateable = EditorGUILayout.Toggle ("IUpdateable", inheritIUpdateable);
 			inheritIPoolObject = EditorGUILayout.Toggle ("IPoolObject", inheritIPoolObject);
 			EditorGUILayout.EndToggleGroup ();

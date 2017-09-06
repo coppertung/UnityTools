@@ -21,7 +21,7 @@ namespace UnityTools.Network {
 			if (request.isNetworkError) {
 				errorHandler (new Exception ("Network error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error"));
+				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}
@@ -44,7 +44,7 @@ namespace UnityTools.Network {
 			if (request.isNetworkError) {
 				errorHandler (new Exception ("Network error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error"));
+				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}
@@ -63,11 +63,11 @@ namespace UnityTools.Network {
 			request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer ();
 			request.SetRequestHeader ("Content-Type", "application/json");
 			yield return request.Send ();
-				
+
 			if (request.isNetworkError) {
 				errorHandler (new Exception ("Network error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error"));
+				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}
@@ -90,7 +90,7 @@ namespace UnityTools.Network {
 			if (request.isNetworkError) {
 				errorHandler (new Exception ("Network error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error"));
+				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
 			} else {
 				Dictionary<String, String> headers = request.GetResponseHeaders ();
 				string cookies = null;
