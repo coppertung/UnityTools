@@ -181,6 +181,11 @@ namespace UnityTools.Assets {
 			#endif
 		}
 
+        /// <summary>
+        /// Clear the loaded asset bundle.
+        /// Noted that if unloadAllLoadedObjects is true, then all loaded assets of this asset bundle will be destroy also.
+        /// In the other hands, if unloadAllLoadedObjects is false, then all loaded assets of this asset bundle will become instances after the asset bundle being destroyed.
+        /// </summary>
 		public static void ClearAssetBundle(bool unloadAllLoadedObjects) {
 
 			_assetBundle.Unload (unloadAllLoadedObjects);

@@ -38,6 +38,11 @@ namespace UnityTools {
 			}
 		}
 		#endif
+        
+        /// <summary>
+        /// The default start date time of the unix time stamp.
+        /// </summary>
+        public static DateTime UnixStartDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
 
 		///	<summary>
 		///	Generated an integer number randomly in range [0, max).
@@ -86,11 +91,6 @@ namespace UnityTools {
 			}
 
 		}
-
-        /// <summary>
-        /// The default start date time of the unix time stamp.
-        /// </summary>
-        public static DateTime UnixStartDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
 
         /// <summary>
         /// Convert unix time stamp to DateTime object.

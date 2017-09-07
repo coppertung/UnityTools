@@ -14,13 +14,15 @@ namespace UnityTools {
 		public bool inheritDefault = false;
 		public bool inheritMonoBehaviour = true;
 		public bool inheritSingleton = false;
-		public bool inheritIUpdateable = false;
-		public bool inheritIPoolObject = false;
+        public bool inheritIUpdateable = false;
+        public bool inheritIFixedUpdateable = false;
+        public bool inheritILateUpdateable = false;
+        public bool inheritIPoolObject = false;
 
 		[MenuItem(scriptCreatorOptions)]
 		public static void showWindow() {
 
-			EditorWindow.GetWindow (typeof(ScriptsCreator));
+			EditorWindow.GetWindow (typeof(ScriptsCreator), false, "Script Creator");
 
 		}
 
@@ -57,16 +59,42 @@ namespace UnityTools {
 						}
 						if (inheritIUpdateable) {
 							writer.Write (", IUpdateable");
-						}
-					} else if (inheritIPoolObject) {
+                        }
+                        if (inheritIFixedUpdateable) {
+                            writer.Write(", IFixedUpdateable");
+                        }
+                        if (inheritILateUpdateable) {
+                            writer.Write(", ILateUpdateable");
+                        }
+                    } else if (inheritIPoolObject) {
 						writer.Write (" : IPoolObject");
 						if (inheritIUpdateable) {
 							writer.Write (", IUpdateable");
-						}
-					} else if (inheritIUpdateable) {
+                        }
+                        if (inheritIFixedUpdateable) {
+                            writer.Write(", IFixedUpdateable");
+                        }
+                        if (inheritILateUpdateable) {
+                            writer.Write(", ILateUpdateable");
+                        }
+                    } else if (inheritIUpdateable) {
 						writer.Write (" : IUpdateable");
-					}
-				}
+                        if (inheritIFixedUpdateable) {
+                            writer.Write(", IFixedUpdateable");
+                        }
+                        if (inheritILateUpdateable) {
+                            writer.Write(", ILateUpdateable");
+                        }
+                    } else if (inheritIFixedUpdateable) {
+                        writer.Write(" : IFixedUpdateable");
+                        if (inheritILateUpdateable) {
+                            writer.Write(", ILateUpdateable");
+                        }
+                    }
+                    else if (inheritILateUpdateable) {
+                        writer.Write(" : ILateUpdateable");
+                    }
+                }
 				writer.WriteLine (" {");
 				writer.WriteLine ();
 				if (inheritDefault) {
@@ -85,7 +113,7 @@ namespace UnityTools {
 						writer.WriteLine ("\t}");
 						writer.WriteLine ();
 					}
-					if (inheritIUpdateable) {
+					if (inheritIUpdateable || inheritIFixedUpdateable || inheritILateUpdateable) {
 						writer.WriteLine ("\t// The update call will be called in prior if the priority is larger.");
 						writer.WriteLine ("\tpublic int priority {");
 						writer.WriteLine ("\t\tget;");
@@ -120,8 +148,24 @@ namespace UnityTools {
 						writer.WriteLine ("\t\t// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.");
 						writer.WriteLine ("\t}");
 						writer.WriteLine ();
-					}
-				}
+                    }
+                    if (inheritIFixedUpdateable)
+                    {
+                        writer.WriteLine("\tpublic void fixedUpdateEvent() {");
+                        writer.WriteLine("\t\t// Used to replace the FixedUpdate().");
+                        writer.WriteLine("\t\t// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.");
+                        writer.WriteLine("\t}");
+                        writer.WriteLine();
+                    }
+                    if (inheritILateUpdateable)
+                    {
+                        writer.WriteLine("\tpublic void lateUpdateEvent() {");
+                        writer.WriteLine("\t\t// Used to replace the LateUpdate().");
+                        writer.WriteLine("\t\t// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.");
+                        writer.WriteLine("\t}");
+                        writer.WriteLine();
+                    }
+                }
 				writer.WriteLine ("}");
 				writer.Close ();
 			} else {
@@ -141,7 +185,9 @@ namespace UnityTools {
 			inheritSingleton = EditorGUILayout.Toggle ("Singleton", inheritSingleton);
 			EditorGUILayout.EndToggleGroup ();
 			inheritIUpdateable = EditorGUILayout.Toggle ("IUpdateable", inheritIUpdateable);
-			inheritIPoolObject = EditorGUILayout.Toggle ("IPoolObject", inheritIPoolObject);
+            inheritIFixedUpdateable = EditorGUILayout.Toggle("IFixedUpdateable", inheritIFixedUpdateable);
+            inheritILateUpdateable = EditorGUILayout.Toggle("ILateUpdateable", inheritILateUpdateable);
+            inheritIPoolObject = EditorGUILayout.Toggle ("IPoolObject", inheritIPoolObject);
 			EditorGUILayout.EndToggleGroup ();
 
 			if (GUILayout.Button ("Generate Script")) {

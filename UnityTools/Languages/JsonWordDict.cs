@@ -8,6 +8,9 @@ using UnityEngine.Networking;
 
 namespace UnityTools.Languages {
 
+    /// <summary>
+    /// The outer part of the dictionary, which holds elements.
+    /// </summary>
 	[System.Serializable]
 	public class JsonWordDictDocument {
 
@@ -15,6 +18,9 @@ namespace UnityTools.Languages {
 
 	}
 
+    /// <summary>
+    /// The element of the dictionary, which holds language and entities.
+    /// </summary>
 	[System.Serializable]
 	public class JsonWordDictElement {
 
@@ -23,6 +29,9 @@ namespace UnityTools.Languages {
 
 	}
 
+    /// <summary>
+    /// The entity of the dictionary, which holds id (key) and value.
+    /// </summary>
 	[System.Serializable]
 	public class JsonWordDictEntity {
 
@@ -110,6 +119,7 @@ namespace UnityTools.Languages {
 			for (i = 0; i < jsonDoc.elements.Length; i++) {
 				if (jsonDoc.elements [i].language.Equals (language)) {
 					jsonElement = jsonDoc.elements [i];
+                    break;
 				}
 			}
 			yield return null;
