@@ -48,6 +48,15 @@ namespace UnityTools.Languages {
 
 		}
 
+        /// <summary>
+        /// Clear the dictionary.
+        /// </summary>
+        public void clear() {
+
+            wordsDict.Clear();
+
+        }
+
 	}
 
 }
