@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -10,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UnityTools {
 
-	public class Utils {
+    public class Utils {
 
 		#if UNITY_EDITOR
 		/// <summary>

@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace UnityTools {
 
-	public class PlayerPrefsOptions : MonoBehaviour {
+    public class PlayerPrefsOptions : MonoBehaviour {
 
 		public const string clearOptions = "UnityTools/PlayerPrefs/Clear All";
 

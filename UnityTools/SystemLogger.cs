@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityTools {
 
-	public class SystemLogger {
+    public class SystemLogger {
 
         /// <summary>
         /// The directory of the log file.

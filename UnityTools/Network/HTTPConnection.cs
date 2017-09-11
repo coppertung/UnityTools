@@ -59,8 +59,8 @@ namespace UnityTools.Network {
 				
 			byte[] postData = Encoding.UTF8.GetBytes (jsonData);
 			UnityWebRequest request = new UnityWebRequest (url, "POST");
-			request.uploadHandler = (UploadHandler)new UploadHandlerRaw (postData);
-			request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer ();
+			request.uploadHandler = new UploadHandlerRaw(postData);
+			request.downloadHandler = new DownloadHandlerBuffer();
 			request.SetRequestHeader ("Content-Type", "application/json");
 			yield return request.Send ();
 
@@ -82,8 +82,8 @@ namespace UnityTools.Network {
 	
 			byte[] postData = Encoding.UTF8.GetBytes (jsonData);
 			UnityWebRequest request = new UnityWebRequest (url, "POST");
-			request.uploadHandler = (UploadHandler)new UploadHandlerRaw (postData);
-			request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer ();
+			request.uploadHandler = new UploadHandlerRaw(postData);
+			request.downloadHandler = new DownloadHandlerBuffer();
 			request.SetRequestHeader ("Content-Type", "application/json");
 			yield return request.Send ();
 	

@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace UnityTools.Assets {
 
-	public class AssetsLoaderOptions : MonoBehaviour {
+    public class AssetsLoaderOptions : MonoBehaviour {
 
 		public const string loadFromAssetFolderOptions = "UnityTools/Assets/Load From Asset Folder";
 		public const string buildAssetBundleOptions = "UnityTools/Assets/Build AssetBundle";

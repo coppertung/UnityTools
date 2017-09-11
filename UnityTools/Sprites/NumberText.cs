@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityTools.Sprites {
-	
-	public class NumberText {
+
+    public class NumberText {
 
 		private static Dictionary<string, Sprite> _numTextDict = new Dictionary<string, Sprite> ();
 

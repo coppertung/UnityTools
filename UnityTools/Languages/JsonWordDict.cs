@@ -101,7 +101,7 @@ namespace UnityTools.Languages {
 		/// </summary>
 		public JsonWordDict(string url, string language, Action<Exception> errorHandler, MonoBehaviour obj) {
 
-			this.isLoaded = false;
+            isLoaded = false;
 			language.Replace (" ", "_");
 			this.language = language;
 			obj.StartCoroutine (loadFromWeb (url, errorHandler));

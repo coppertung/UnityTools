@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityTools {
 
-	public class StandardShaderUtils {
+    public class StandardShaderUtils {
 		
 		/// <summary>
 		/// Rendering mode of the Standard shader, including: Opaque, Cutout, Fade and Transparent

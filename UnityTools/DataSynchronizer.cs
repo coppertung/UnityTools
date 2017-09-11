@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 namespace UnityTools {
 
-	public class DataSynchronizer<T> {
+    public class DataSynchronizer<T> {
 		
 		public delegate bool SynchronizationMethod();
 

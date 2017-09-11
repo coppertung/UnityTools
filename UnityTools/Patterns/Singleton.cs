@@ -14,10 +14,10 @@ namespace UnityTools.Patterns {
 		public static T Instance {
 			get {
 				if (_instance == null) {
-					if (GameObject.FindObjectsOfType (typeof(T)).Length > 1) {
+					if (FindObjectsOfType(typeof(T)).Length > 1) {
 						throw new Exception ("There must not have more than one " + typeof(T).Name);
 					}
-					_instance = (T) GameObject.FindObjectOfType (typeof(T));
+					_instance = (T)FindObjectOfType(typeof(T));
 				}
 				return _instance;
 			}

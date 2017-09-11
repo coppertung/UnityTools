@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityTools {
 
-	/// <summary>
-	/// This is the interface for the pooled objects in Object Pooler.
-	/// </summary>
-	public interface IPoolObject {
+    /// <summary>
+    /// This is the interface for the pooled objects in Object Pooler.
+    /// </summary>
+    public interface IPoolObject {
 
 		/// <summary>
 		/// The identifier of the pool object.

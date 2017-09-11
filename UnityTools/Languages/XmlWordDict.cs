@@ -29,10 +29,10 @@ namespace UnityTools.Languages {
 		/// </summary>
 		public XmlWordDict(string filePath, string language, MonoBehaviour obj) {
 
-			this.isLoaded = false;
+            isLoaded = false;
 			language.Replace (" ", "_");
 			this.language = language;
-			this.xmlDoc = new XmlDocument ();
+            xmlDoc = new XmlDocument ();
 			loadFromFile (filePath, obj);
 
 		}
@@ -43,10 +43,10 @@ namespace UnityTools.Languages {
 		/// </summary>
 		public XmlWordDict(TextAsset asset, string language, MonoBehaviour obj) {
 
-			this.isLoaded = false;
+            isLoaded = false;
 			language.Replace (" ", "_");
 			this.language = language;
-			this.xmlDoc = new XmlDocument ();
+            xmlDoc = new XmlDocument ();
 			loadFromAsset (asset, obj);
 
 		}
@@ -60,10 +60,10 @@ namespace UnityTools.Languages {
 		/// </summary>
 		public XmlWordDict(string url, string language, Action<Exception> errorHandler, MonoBehaviour obj) {
 
-			this.isLoaded = false;
+            isLoaded = false;
 			language.Replace (" ", "_");
 			this.language = language;
-			this.xmlDoc = new XmlDocument ();
+            xmlDoc = new XmlDocument ();
 			obj.StartCoroutine (loadFromWeb (url, errorHandler));
 
 		}

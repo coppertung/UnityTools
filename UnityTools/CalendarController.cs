@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using UnityEngine;
 
 namespace UnityTools {
 
-	public class CalendarController {
+    public class CalendarController {
 
 		/// <summary>
 		/// Class which used to store the data of day.

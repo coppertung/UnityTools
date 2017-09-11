@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityTools.Patterns;
 
 namespace UnityTools {
 
-	/// <summary>
-	/// This is the interface to use for register the Update Manager.
-	/// Update calls must implemented in updateEvent().
-	/// </summary>
-	public interface IUpdateable {
+    /// <summary>
+    /// This is the interface to use for register the Update Manager.
+    /// Update calls must implemented in updateEvent().
+    /// </summary>
+    public interface IUpdateable {
 
 		/// <summary>
 		/// The update call will be called in prior if the priority is larger.
