@@ -9,8 +9,10 @@ namespace UnityTools.AI {
 
     [ExecuteInEditMode]
     public class TopDown2DNavMeshBaker : MonoBehaviour {
-
+		
+		public float unitError;
         public float unitLength;
+
         public List<NavMesh2DNode> navMeshNodes;
         public List<NavMesh2DNode> obstacleNodes;
 
@@ -60,8 +62,8 @@ namespace UnityTools.AI {
                                 for(int k = 0; k < obstacles.Length; k++) {
                                     Vector3 obstacleSize = obstacles[k].GetComponent<SpriteRenderer>().bounds.size;
                                     obstacleSize.z = 0;
-                                    if ((Mathf.Abs(obstacles[k].transform.position.x - newNode.position.x) <= obstacleSize.x / 2 + unitLength / 4)
-                                        && (Mathf.Abs(obstacles[k].transform.position.y - newNode.position.y) <= obstacleSize.y / 2 + unitLength / 4)
+                                    if ((Mathf.Abs(obstacles[k].transform.position.x - newNode.position.x) <= obstacleSize.x / 2 + unitError)
+                                        && (Mathf.Abs(obstacles[k].transform.position.y - newNode.position.y) <= obstacleSize.y / 2 + unitError)
                                         || newNode.position.x < gameObjectCenter.x - gameObjectSize.x / 2 || newNode.position.x > gameObjectCenter.x + gameObjectSize.x / 2
                                         || newNode.position.y < gameObjectCenter.y - gameObjectSize.y / 2 || newNode.position.y > gameObjectCenter.y + gameObjectSize.y / 2) {
                                         // there is obstacle or out of bound
@@ -140,11 +142,15 @@ namespace UnityTools.AI {
 
         public override void OnInspectorGUI() {
             
-            // variables
+			// variables
             GUILayout.BeginHorizontal();
             GUILayout.Label("Unit Length: ");
-            script.unitLength = float.Parse(GUILayout.TextField(script.unitLength.ToString()));
-            GUILayout.EndHorizontal();
+			script.unitLength = EditorGUILayout.FloatField (script.unitLength);
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("Unit Error (suggested that not more than 1/4 unit length): ");
+			script.unitError = EditorGUILayout.FloatField (script.unitError);
+			GUILayout.EndHorizontal();
             // Buttons
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Bake")) {
