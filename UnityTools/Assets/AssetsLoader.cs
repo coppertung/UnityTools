@@ -6,7 +6,9 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using UnityEngine.Networking;
+#if UNITY_IOS
 using UnityEngine.iOS;
+#endif
 
 namespace UnityTools.Assets {
 
