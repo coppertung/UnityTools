@@ -35,7 +35,9 @@ namespace UnityTools.AI {
         private void bakeInTriangle() {
 
             // generate nav mesh nodes
-            GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
+			GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
+			int count = 0;
+
             for (int n = 0; n < gameObjects.Length; n++) {
                 if (gameObjects[n].isStatic && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
                 {
@@ -44,7 +46,7 @@ namespace UnityTools.AI {
 
                     int row = (int)(gameObjectSize.y / (unitLength / 2));
                     int maxCol = (int)(gameObjectSize.x / (unitLength / 2));
-                    Debug.Log("row = " + row + ", col = " + maxCol);
+                    // Debug.Log("row = " + row + ", col = " + maxCol);
 
                     Vector3 startPoint = Vector3.zero;
 
@@ -56,7 +58,9 @@ namespace UnityTools.AI {
                         {
                             if (j % 2 == 0) {
                                 NavMesh2DNode newNode = new NavMesh2DNode();
+								newNode.id = count;
                                 newNode.position = new Vector3(startPoint.x + j * unitLength / 2, startPoint.y - i * unitLength / 2, 0);
+								newNode.neighbours = new List<NavMesh2DNode> ();
                                 NavMesh2DObstacle[] obstacles = (NavMesh2DObstacle[])FindObjectsOfType(typeof(NavMesh2DObstacle));
                                 // check if there is obstacles exist at the node
                                 for(int k = 0; k < obstacles.Length; k++) {
@@ -71,19 +75,22 @@ namespace UnityTools.AI {
                                         obstacleNodes.Add(newNode);
                                     }
                                 }
-                                if (!navMeshNodes.Contains(newNode))
-                                {
+								if (!navMeshNodes.Contains(newNode) && !obstacleNodes.Contains(newNode)) {
                                     // Debug.Log("Add new node: " + newNode.position.x + ", " + newNode.position.y);
                                     navMeshNodes.Add(newNode);
+									count += 1;
+									// find neighbours
+									for (int k = 0; k < navMeshNodes.Count - 1; k++) {
+										if (navMeshNodes [k].neighbours.Count < 8 && Vector3.Distance (navMeshNodes [k].position, navMeshNodes [navMeshNodes.Count - 1].position) <= unitLength) {
+											navMeshNodes [k].neighbours.Add (navMeshNodes [navMeshNodes.Count - 1]);
+											navMeshNodes [navMeshNodes.Count - 1].neighbours.Add (navMeshNodes [k]);
+										}
+									}
                                 }
                             }
                         }
                     }
                 }
-            }
-            // find neithbour
-            for(int i = 0; i < navMeshNodes.Count; i++) {
-
             }
             Debug.Log("Finish Baking.");
 
@@ -105,9 +112,15 @@ namespace UnityTools.AI {
                 for (int i = 0; i < navMeshNodes.Count; i++)
                 {
                     Gizmos.color = Color.gray;
-                    Gizmos.DrawSphere(new Vector3(navMeshNodes[i].position.x, navMeshNodes[i].position.y, 0), 0.1f);
+					Gizmos.DrawSphere(new Vector3(navMeshNodes[i].position.x, navMeshNodes[i].position.y, 0), 0.1f);
+					Gizmos.color = Color.green;
+					for (int j = 0; j < navMeshNodes [i].neighbours.Count; j++) {
+						if (navMeshNodes [i].neighbours [j].id > navMeshNodes [i].id) {
+							Gizmos.DrawLine (navMeshNodes [i].position, navMeshNodes [i].neighbours [j].position);
+						}
+					}
                 }
-                Debug.Log("Drawed " + navMeshNodes.Count + " Nodes.");
+                // Debug.Log("Drawed " + navMeshNodes.Count + " Nodes.");
             }
             // draw all obstacle nodes on scene
             if (obstacleNodes != null && obstacleNodes.Count > 0)
@@ -117,7 +130,7 @@ namespace UnityTools.AI {
                     Gizmos.color = Color.red;
                     Gizmos.DrawSphere(new Vector3(obstacleNodes[i].position.x, obstacleNodes[i].position.y, 0), 0.1f);
                 }
-                Debug.Log("Drawed " + obstacleNodes.Count + " Nodes.");
+                // Debug.Log("Drawed " + obstacleNodes.Count + " Nodes.");
             }
 
         }
