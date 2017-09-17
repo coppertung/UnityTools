@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,24 +10,43 @@ namespace UnityTools.AI {
 
     [ExecuteInEditMode]
     public class TopDown2DNavMeshBaker : MonoBehaviour {
-		
+
+		// saved file name
+		public const string NAVMESH_NODES = "NavMeshNodes";
+		public const string OBSTACLE_NODES = "ObstacleNodes";
+		// basic setting
 		public float unitError;
         public float unitLength;
+		// display setting
+		public bool showNode;
 
-        public List<NavMesh2DNode> navMeshNodes;
-        public List<NavMesh2DNode> obstacleNodes;
+        public static NavMesh2DNodeList navMeshNodes;
+		public static NavMesh2DNodeList obstacleNodes;
+
+		// GOT PROBLEMS
+		public void init() {
+
+			if (navMeshNodes == null) {
+				navMeshNodes = NavMesh2DNodeList.read (NAVMESH_NODES);
+				if (navMeshNodes == null) {
+					navMeshNodes = new NavMesh2DNodeList ();
+					navMeshNodes.nodes = new List<NavMesh2DNode> ();
+				}
+			}
+			if (obstacleNodes == null) {
+				obstacleNodes =NavMesh2DNodeList.read (NAVMESH_NODES);
+				if (obstacleNodes == null) {
+					obstacleNodes = new NavMesh2DNodeList ();
+					obstacleNodes.nodes = new List<NavMesh2DNode> ();
+				}
+			}
+
+		}
 
         public void bake() {
 
             // initialization
-            if (navMeshNodes == null)
-                navMeshNodes = new List<NavMesh2DNode>();
-            else
-                clear();
-            if (obstacleNodes == null)
-                obstacleNodes = new List<NavMesh2DNode>();
-            else
-                clear();
+			clear();
 
             bakeInTriangle();
 
@@ -45,7 +65,7 @@ namespace UnityTools.AI {
                     Vector3 gameObjectCenter = gameObjects[n].transform.position;
 
                     int row = (int)(gameObjectSize.y / (unitLength / 2));
-                    int maxCol = (int)(gameObjectSize.x / (unitLength / 2));
+                    int maxCol = (int)(gameObjectSize.x / unitLength);
                     // Debug.Log("row = " + row + ", col = " + maxCol);
 
                     Vector3 startPoint = Vector3.zero;
@@ -56,82 +76,109 @@ namespace UnityTools.AI {
                         startPoint.y = gameObjectCenter.y + gameObjectSize.y / 2;
                         for (int j = 0; j <= maxCol; j++)
                         {
-                            if (j % 2 == 0) {
-                                NavMesh2DNode newNode = new NavMesh2DNode();
-								newNode.id = count;
-                                newNode.position = new Vector3(startPoint.x + j * unitLength / 2, startPoint.y - i * unitLength / 2, 0);
-								newNode.neighbours = new List<NavMesh2DNode> ();
-                                NavMesh2DObstacle[] obstacles = (NavMesh2DObstacle[])FindObjectsOfType(typeof(NavMesh2DObstacle));
-                                // check if there is obstacles exist at the node
-                                for(int k = 0; k < obstacles.Length; k++) {
-                                    Vector3 obstacleSize = obstacles[k].GetComponent<SpriteRenderer>().bounds.size;
-                                    obstacleSize.z = 0;
-                                    if ((Mathf.Abs(obstacles[k].transform.position.x - newNode.position.x) <= obstacleSize.x / 2 + unitError)
-                                        && (Mathf.Abs(obstacles[k].transform.position.y - newNode.position.y) <= obstacleSize.y / 2 + unitError)
-                                        || newNode.position.x < gameObjectCenter.x - gameObjectSize.x / 2 || newNode.position.x > gameObjectCenter.x + gameObjectSize.x / 2
-                                        || newNode.position.y < gameObjectCenter.y - gameObjectSize.y / 2 || newNode.position.y > gameObjectCenter.y + gameObjectSize.y / 2) {
-                                        // there is obstacle or out of bound
-                                        // Debug.Log("Found obstacle: " + newNode.position.x + ", " + newNode.position.y);
-                                        obstacleNodes.Add(newNode);
-                                    }
-                                }
-								if (!navMeshNodes.Contains(newNode) && !obstacleNodes.Contains(newNode)) {
-                                    // Debug.Log("Add new node: " + newNode.position.x + ", " + newNode.position.y);
-                                    navMeshNodes.Add(newNode);
-									count += 1;
-									// find neighbours
-									for (int k = 0; k < navMeshNodes.Count - 1; k++) {
-										if (navMeshNodes [k].neighbours.Count < 8 && Vector3.Distance (navMeshNodes [k].position, navMeshNodes [navMeshNodes.Count - 1].position) <= unitLength) {
-											navMeshNodes [k].neighbours.Add (navMeshNodes [navMeshNodes.Count - 1]);
-											navMeshNodes [navMeshNodes.Count - 1].neighbours.Add (navMeshNodes [k]);
+                            NavMesh2DNode newNode = new NavMesh2DNode();
+							newNode.id = count;
+                            newNode.position = new Vector3(startPoint.x + j * unitLength, startPoint.y - i * unitLength / 2, 0);
+							newNode.neighbours = new List<int> ();
+                            // check if there is obstacles exist at the node
+							if(Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x + unitError, newNode.position.y + unitError))
+								|| Physics2D.OverlapPoint(new Vector2(newNode.position.x + unitError, newNode.position.y)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x - unitError, newNode.position.y))
+								|| Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y + unitError)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y - unitError))
+								|| Physics2D.OverlapPoint(new Vector2(newNode.position.x - unitError, newNode.position.y + unitError)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x + unitError, newNode.position.y - unitError))
+								|| newNode.position.x < gameObjectCenter.x - gameObjectSize.x / 2 || newNode.position.x > gameObjectCenter.x + gameObjectSize.x / 2
+								|| newNode.position.y < gameObjectCenter.y - gameObjectSize.y / 2 || newNode.position.y > gameObjectCenter.y + gameObjectSize.y / 2) {
+								// there is obstacle or out of bound
+								// Debug.Log("Found obstacle: " + newNode.position.x + ", " + newNode.position.y);
+								obstacleNodes.nodes.Add(newNode);
+							}
+							if (!navMeshNodes.nodes.Contains(newNode) && !obstacleNodes.nodes.Contains(newNode)) {
+                                // Debug.Log("Add new node: " + newNode.position.x + ", " + newNode.position.y);
+								navMeshNodes.nodes.Add(newNode);
+								count += 1;
+								// find neighbours
+								for (int k = 0; k < navMeshNodes.nodes.Count - 1; k++) {
+									float distance = Vector3.Distance (navMeshNodes.nodes [k].position, navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position);
+									if (navMeshNodes.nodes [k].neighbours.Count < 8 && distance <= unitLength) {
+										Vector2 origin = new Vector2 (navMeshNodes.nodes [k].position.x, navMeshNodes.nodes [k].position.y);
+										Vector2 dest = new Vector2 (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.x, navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.y);
+										RaycastHit2D hit = Physics2D.Linecast (origin, dest);
+										if (hit.transform == null) {
+											navMeshNodes.nodes [k].neighbours.Add (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].id);
+											navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].neighbours.Add (navMeshNodes.nodes [k].id);
 										}
 									}
-                                }
+								}
                             }
                         }
                     }
                 }
             }
-            Debug.Log("Finish Baking.");
+			Debug.Log ("Finish Baking. [NavMesh Points: " + navMeshNodes.nodes.Count + " | Obstacle Points: " + obstacleNodes.nodes.Count + "]");
+			navMeshNodes.save (NAVMESH_NODES);
+			obstacleNodes.save (OBSTACLE_NODES);
 
         }
 
         public void clear() {
 
-            navMeshNodes.Clear();
-            obstacleNodes.Clear();
+			if (navMeshNodes != null && navMeshNodes.nodes != null)
+				navMeshNodes.nodes.Clear ();
+			else {
+				navMeshNodes = new NavMesh2DNodeList ();
+				navMeshNodes.nodes = new List<NavMesh2DNode> ();
+			}
+			if (obstacleNodes != null && obstacleNodes.nodes != null)
+				obstacleNodes.nodes.Clear ();
+			else {
+				obstacleNodes = new NavMesh2DNodeList ();
+				obstacleNodes.nodes = new List<NavMesh2DNode> ();
+			}
+			if (File.Exists (Application.persistentDataPath + "/" + NAVMESH_NODES)) {
+				File.Delete (Application.persistentDataPath + "/" + NAVMESH_NODES);
+			}
+			if (File.Exists (Application.persistentDataPath + "/" + OBSTACLE_NODES)) {
+				File.Delete (Application.persistentDataPath + "/" + OBSTACLE_NODES);
+			}
 
         }
 
-        private void OnDrawGizmosSelected()
+        void OnDrawGizmosSelected()
         {
 
+			//initialization
+			if (navMeshNodes == null || obstacleNodes == null) {
+				init ();
+				Debug.Log (navMeshNodes);
+				Debug.Log (obstacleNodes);
+			}
             // draw all nav mesh nodes on scene
-            if (navMeshNodes != null && navMeshNodes.Count > 0)
+			if (navMeshNodes != null && navMeshNodes.nodes.Count > 0)
             {
-                for (int i = 0; i < navMeshNodes.Count; i++)
+				for (int i = 0; i < navMeshNodes.nodes.Count; i++)
                 {
-                    Gizmos.color = Color.gray;
-					Gizmos.DrawSphere(new Vector3(navMeshNodes[i].position.x, navMeshNodes[i].position.y, 0), 0.1f);
+					if (showNode) {
+						Gizmos.color = Color.gray;
+						Gizmos.DrawSphere (new Vector3 (navMeshNodes.nodes [i].position.x, navMeshNodes.nodes [i].position.y, 0), 0.1f);
+					}
 					Gizmos.color = Color.green;
-					for (int j = 0; j < navMeshNodes [i].neighbours.Count; j++) {
-						if (navMeshNodes [i].neighbours [j].id > navMeshNodes [i].id) {
-							Gizmos.DrawLine (navMeshNodes [i].position, navMeshNodes [i].neighbours [j].position);
+					for (int j = 0; j < navMeshNodes.nodes [i].neighbours.Count; j++) {
+						if (navMeshNodes.nodes [i].neighbours [j] > navMeshNodes.nodes [i].id) {
+							Gizmos.DrawLine (navMeshNodes.nodes [i].position, navMeshNodes.nodes [navMeshNodes.nodes [i].neighbours [j]].position);
 						}
 					}
                 }
                 // Debug.Log("Drawed " + navMeshNodes.Count + " Nodes.");
             }
-            // draw all obstacle nodes on scene
-            if (obstacleNodes != null && obstacleNodes.Count > 0)
-            {
-                for (int i = 0; i < obstacleNodes.Count; i++)
-                {
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(new Vector3(obstacleNodes[i].position.x, obstacleNodes[i].position.y, 0), 0.1f);
-                }
-                // Debug.Log("Drawed " + obstacleNodes.Count + " Nodes.");
-            }
+			if (showNode) {
+				// draw all obstacle nodes on scene
+				if (obstacleNodes != null && obstacleNodes.nodes.Count > 0) {
+					for (int i = 0; i < obstacleNodes.nodes.Count; i++) {
+						Gizmos.color = Color.red;
+						Gizmos.DrawSphere (new Vector3 (obstacleNodes.nodes [i].position.x, obstacleNodes.nodes [i].position.y, 0), 0.1f);
+					}
+					// Debug.Log("Drawed " + obstacleNodes.Count + " Nodes.");
+				}
+			}
 
         }
 
@@ -156,6 +203,7 @@ namespace UnityTools.AI {
         public override void OnInspectorGUI() {
             
 			// variables
+			GUILayout.Label("Settings", EditorStyles.boldLabel);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Unit Length: ");
 			script.unitLength = EditorGUILayout.FloatField (script.unitLength);
@@ -164,6 +212,8 @@ namespace UnityTools.AI {
 			GUILayout.Label("Unit Error (suggested that not more than 1/4 unit length): ");
 			script.unitError = EditorGUILayout.FloatField (script.unitError);
 			GUILayout.EndHorizontal();
+			GUILayout.Label("Displays", EditorStyles.boldLabel);
+			script.showNode = GUILayout.Toggle (script.showNode, "Show Nodes");
             // Buttons
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Bake")) {
@@ -177,27 +227,6 @@ namespace UnityTools.AI {
                 EditorUtility.SetDirty(script);
 
         }
-        /*
-        void OnSceneGUI() {
-
-            if(script.navMeshNodes != null && script.navMeshNodes.Count > 0) {
-                for(int i = 0; i < script.navMeshNodes.Count; i++) {
-                    Handles.color = new Color(0.5f, 0.5f, 0.5f);
-                    Handles.DotHandleCap(
-                        0,
-                        script.transform.position + new Vector3(script.navMeshNodes[i].position.x, script.navMeshNodes[i].position.y, 0),
-                        script.transform.rotation,
-                        1f,
-                        EventType.Repaint
-                        );
-                }
-                Debug.Log("Drawed " + script.navMeshNodes.Count + "Nodes.");
-            }
-            if (GUI.changed)
-                EditorUtility.SetDirty(script);
-
-        }
-        */
     }
 
 }
