@@ -8,11 +8,36 @@ using UnityEngine;
 namespace UnityTools.AI {
 
 	[System.Serializable]
-    public class NavMesh2DNode {
+    public class NavMesh2DNode : IAStarable<Vector3> {
         
-		public int id;
-        public Vector3 position;
-        public List<int> neighbours;
+		public int id {
+			get;
+			set;
+		}
+		public Vector3 position {
+			get;
+			set;
+		}
+		public Vector3 value {
+			get {
+				return position;
+			}
+		}
+		public List<int> neighbours {
+			get;
+			set;
+		}
+
+		public heuristicFunctionEvent heuristicFunction {
+			get;
+			set;
+		}
+
+		public float cost (Vector3 target) {
+
+			return Vector3.Distance (position, target);
+
+		}
 
     }
 

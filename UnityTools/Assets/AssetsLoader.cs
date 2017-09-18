@@ -89,10 +89,15 @@ namespace UnityTools.Assets {
 				progressFunction (download.downloadProgress);
 				yield return null;
 			}
+			#if UNITY_2017_1_OR_NEWER
 			if (download.isNetworkError) {
-				errorHandler (new Exception ("Network Error"));
+			errorHandler (new Exception ("Network Error"));
 			} else if (download.isHttpError) {
-				errorHandler (new Exception ("HTTP Error"));
+			errorHandler (new Exception ("HTTP Error"));
+			#else
+			if (download.isError) {
+				errorHandler (new Exception (download.error));
+			#endif
 			} else {
 				// save the bundle
 				if (Directory.Exists (filepath)) {
@@ -108,7 +113,11 @@ namespace UnityTools.Assets {
 				#endif
 				yield return null;
 				// clear the cached file to release the used spaces
+				#if UNITY_2017_1_OR_NEWER
 				Caching.ClearCache ();
+				#else
+				Caching.CleanCache();
+				#endif
 				completeFunction ();
 			}
 

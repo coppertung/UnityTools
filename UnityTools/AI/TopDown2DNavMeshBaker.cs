@@ -20,8 +20,14 @@ namespace UnityTools.AI {
 		// display setting
 		public bool showNode;
 
-        public static NavMesh2DNodeList navMeshNodes;
-		public static NavMesh2DNodeList obstacleNodes;
+		public static NavMesh2DNodeList navMeshNodes {
+			get;
+			protected set;
+		}
+		public static NavMesh2DNodeList obstacleNodes {
+			get;
+			protected set;
+		}
 
 		// GOT PROBLEMS
 		public void init() {

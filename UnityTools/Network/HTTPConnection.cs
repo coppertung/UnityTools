@@ -17,11 +17,15 @@ namespace UnityTools.Network {
 
 			UnityWebRequest request = UnityWebRequest.Get (url);
 			yield return request.Send ();
-				
+
+			/*
 			if (request.isNetworkError) {
-				errorHandler (new Exception ("Network error"));
+				errorHandler (new Exception ("Network Error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
+				errorHandler (new Exception ("HTTP Error"));
+			*/
+			if (request.isError) {
+				errorHandler (new Exception ("Network Error"));
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}
@@ -41,10 +45,14 @@ namespace UnityTools.Network {
 			}
 			yield return request.Send ();
 
+			/*
 			if (request.isNetworkError) {
-				errorHandler (new Exception ("Network error"));
+				errorHandler (new Exception ("Network Error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
+				errorHandler (new Exception ("HTTP Error"));
+			*/
+			if (request.isError) {
+				errorHandler (new Exception ("Network Error"));
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}
@@ -64,10 +72,15 @@ namespace UnityTools.Network {
 			request.SetRequestHeader ("Content-Type", "application/json");
 			yield return request.Send ();
 
+			#if UNITY_2017_1_OR_NEWER
 			if (request.isNetworkError) {
-				errorHandler (new Exception ("Network error"));
+			errorHandler (new Exception ("Network Error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
+			errorHandler (new Exception ("HTTP Error"));
+			#else
+			if (request.isError) {
+				errorHandler (new Exception (request.error));
+			#endif
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}
@@ -86,11 +99,16 @@ namespace UnityTools.Network {
 			request.downloadHandler = new DownloadHandlerBuffer();
 			request.SetRequestHeader ("Content-Type", "application/json");
 			yield return request.Send ();
-	
+
+			#if UNITY_2017_1_OR_NEWER
 			if (request.isNetworkError) {
-				errorHandler (new Exception ("Network error"));
+			errorHandler (new Exception ("Network Error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("Http error : " + request.downloadHandler.text));
+			errorHandler (new Exception ("HTTP Error"));
+			#else
+			if (request.isError) {
+				errorHandler (new Exception (request.error));
+			#endif
 			} else {
 				Dictionary<String, String> headers = request.GetResponseHeaders ();
 				string cookies = null;
