@@ -13,12 +13,22 @@ namespace UnityTools.AI {
 			set;
 		}
 			
-		public Vector3 target;
-		public List<Vector3> path;
+		public float speed;
+		[HideInInspector]
+		public Vector3 target {
+			get;
+			private set;
+		}
+		[HideInInspector]
+		public List<Vector3> path {
+			get;
+			private set;
+		}
 
 		public void setTarget(Vector3 target) {
 
 			this.target = target;
+			target.z = 0;
 			// find the path
 			float minStartDistance = float.MaxValue;
 			NavMesh2DNode closestStart = null;
@@ -56,23 +66,35 @@ namespace UnityTools.AI {
 		public void pathHandler(List<IAStarable<Vector3>> result) {
 
 			List<NavMesh2DNode> path = new List<NavMesh2DNode> ();
-			// add true start position
-			// do optimization if it is need
 			for (int i = 0; i < result.Count; i++) {
 				NavMesh2DNode newNode = (NavMesh2DNode)result [i];
 				newNode.heuristicFunction = null;
 				path.Add (newNode);
 			}
-			// add true goal position
+			Vector3 curPosition = transform.position;
+			curPosition.z = 0;
+			this.path.Add (curPosition);
+			// do optimization if it is need
 			for (int i = 0; i < path.Count; i++) {
 				this.path.Add (path [i].position);
 			}
+			this.path.Add (target);
 
 		}
 
 		public void updateEvent() {
 			// Used to replace the Update().
 			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
+			if (path.Count > 0) {
+				Vector3 curPosition = transform.position;
+				curPosition.z = 0;
+				if (curPosition == path [0]) {
+					path.Remove (curPosition);
+				} else {
+					transform.LookAt (path [0]);
+					transform.Translate ((path [0] - curPosition).normalized * speed * Time.deltaTime);
+				}
+			}
 		}
 
 	}

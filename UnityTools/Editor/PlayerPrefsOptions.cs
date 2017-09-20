@@ -7,7 +7,7 @@ namespace UnityTools {
 
 		public const string clearOptions = "UnityTools/PlayerPrefs/Clear All";
 
-		[MenuItem(clearOptions)]
+		[MenuItem(clearOptions, false, 10)]
 		public static void clearPlayerPrefs() {
 
 			PlayerPrefs.DeleteAll ();

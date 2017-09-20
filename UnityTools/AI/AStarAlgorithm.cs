@@ -115,7 +115,7 @@ namespace UnityTools.AI {
 				int tempNode;
 				cameFrom.TryGetValue (currentNode, out tempNode);
 				currentNode = tempNode;
-				totalPath.Add (map [currentNode]);
+				totalPath.Insert (0, map [currentNode]);
 				yield return null;
 			}
 			pathHandler (totalPath);

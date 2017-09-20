@@ -18,14 +18,15 @@ namespace UnityTools.Network {
 			UnityWebRequest request = UnityWebRequest.Get (url);
 			yield return request.Send ();
 
-			/*
+			#if UNITY_2017_1_OR_NEWER
 			if (request.isNetworkError) {
-				errorHandler (new Exception ("Network Error"));
+			errorHandler (new Exception ("Network Error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("HTTP Error"));
-			*/
+			errorHandler (new Exception ("HTTP Error"));
+			#else
 			if (request.isError) {
-				errorHandler (new Exception ("Network Error"));
+				errorHandler (new Exception (request.error));
+			#endif
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}
@@ -45,14 +46,15 @@ namespace UnityTools.Network {
 			}
 			yield return request.Send ();
 
-			/*
+			#if UNITY_2017_1_OR_NEWER
 			if (request.isNetworkError) {
-				errorHandler (new Exception ("Network Error"));
+			errorHandler (new Exception ("Network Error"));
 			} else if (request.isHttpError) {
-				errorHandler (new Exception ("HTTP Error"));
-			*/
+			errorHandler (new Exception ("HTTP Error"));
+			#else
 			if (request.isError) {
-				errorHandler (new Exception ("Network Error"));
+				errorHandler (new Exception (request.error));
+			#endif
 			} else {
 				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 			}

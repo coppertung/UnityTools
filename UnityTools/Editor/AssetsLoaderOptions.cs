@@ -15,7 +15,7 @@ namespace UnityTools.Assets {
 
 		}
 
-		[MenuItem(loadFromAssetFolderOptions, true)]
+		[MenuItem(loadFromAssetFolderOptions, true, 1)]
 		public static bool toggleLoadFromAssetFolderValidate() {
 
 			Menu.SetChecked (loadFromAssetFolderOptions, AssetsLoader.loadFromAssetFolder);
@@ -23,7 +23,7 @@ namespace UnityTools.Assets {
 
 		}
 
-		[MenuItem(buildAssetBundleOptions)]
+		[MenuItem(buildAssetBundleOptions, false, 2)]
 		public static void buildAssetBundle() {
 
 			AssetBundleBuilder.Build ();
