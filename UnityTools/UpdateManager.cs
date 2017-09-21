@@ -261,6 +261,48 @@ namespace UnityTools {
 
         }
 
+		/// <summary>
+		/// Determine if the specified updateable is being registered.
+		/// </summary>
+		public static bool IsRegistered(IUpdateable updateable) {
+
+			for (int i = 0; i < _updateablesList.Count; i++) {
+				if (updateable == _updateablesList [i]) {
+					return true;
+				}
+			}
+			return false;
+
+		}
+
+		/// <summary>
+		/// Determine if the specified fixedUpdateable is being registered.
+		/// </summary>
+		public static bool IsRegistered(IFixedUpdateable fixedUpdateable) {
+
+			for (int i = 0; i < _fixedUpdateablesList.Count; i++) {
+				if (fixedUpdateable == _fixedUpdateablesList [i]) {
+					return true;
+				}
+			}
+			return false;
+
+		}
+
+		/// <summary>
+		/// Determine if the specified lateUpdateable is being registered.
+		/// </summary>
+		public static bool IsRegistered(ILateUpdateable lateUpdateable) {
+
+			for (int i = 0; i < _lateUpdateablesList.Count; i++) {
+				if (lateUpdateable == _lateUpdateablesList [i]) {
+					return true;
+				}
+			}
+			return false;
+
+		}
+
         /// <summary>
         /// Sort the lists, where depends on the priority property that the update call will be called in prior if it got a larger priority.
         /// </summary>

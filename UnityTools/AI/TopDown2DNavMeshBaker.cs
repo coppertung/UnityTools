@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,10 +13,17 @@ namespace UnityTools.AI {
     [ExecuteInEditMode]
     public class TopDown2DNavMeshBaker : MonoBehaviour {
 
+		public enum NavMeshStyle {
+			triangle,
+			square
+		}
+
 		// saved file name
+		public const string navMeshDataSavedPath = "NavMeshData";
 		public const string NAVMESH_NODES = "NavMeshNodes";
 		public const string OBSTACLE_NODES = "ObstacleNodes";
 		// basic setting
+		public NavMeshStyle navMeshStyle = NavMeshStyle.triangle;
 		public float unitError;
         public float unitLength;
 		// display setting
@@ -29,18 +38,17 @@ namespace UnityTools.AI {
 			protected set;
 		}
 
-		// GOT PROBLEMS
-		public void init() {
+		public static void init() {
 
 			if (navMeshNodes == null) {
-				navMeshNodes = NavMesh2DNodeList.read (NAVMESH_NODES);
+				navMeshNodes = NavMesh2DNodeList.read (navMeshDataSavedPath, NAVMESH_NODES);
 				if (navMeshNodes == null) {
 					navMeshNodes = new NavMesh2DNodeList ();
 					navMeshNodes.nodes = new List<NavMesh2DNode> ();
 				}
 			}
 			if (obstacleNodes == null) {
-				obstacleNodes =NavMesh2DNodeList.read (NAVMESH_NODES);
+				obstacleNodes =NavMesh2DNodeList.read (navMeshDataSavedPath, OBSTACLE_NODES);
 				if (obstacleNodes == null) {
 					obstacleNodes = new NavMesh2DNodeList ();
 					obstacleNodes.nodes = new List<NavMesh2DNode> ();
@@ -49,20 +57,59 @@ namespace UnityTools.AI {
 
 		}
 
+		#if UNITY_EDITOR
         public void bake() {
 
             // initialization
 			clear();
 
-            bakeInTriangle();
+			switch (navMeshStyle) {
+			case NavMeshStyle.square:
+				bakeInSquare ();
+				break;
+			case NavMeshStyle.triangle:
+				bakeInTriangle();
+				break;
+			}
 
         }
+
+		private void bakeInSquare() {
+
+			// generate nav mesh nodes
+			GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
+
+			for (int n = 0; n < gameObjects.Length; n++) {
+				if (gameObjects[n].isStatic && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
+				{
+					Vector3 gameObjectSize = gameObjects[n].GetComponent<SpriteRenderer>().bounds.size;
+					Vector3 gameObjectCenter = gameObjects[n].transform.position;
+
+					int row = (int)(gameObjectSize.y / unitLength);
+					int maxCol = (int)(gameObjectSize.x / unitLength);
+					// Debug.Log("row = " + row + ", col = " + maxCol);
+
+					Vector3 startPoint = Vector3.zero;
+
+					for (int i = 0; i <= row; i++)
+					{
+						startPoint.x = gameObjectCenter.x - gameObjectSize.x / 2;
+						startPoint.y = gameObjectCenter.y + gameObjectSize.y / 2;
+						for (int j = 0; j <= maxCol; j++)
+						{
+							bakingGridPoint (startPoint, gameObjectCenter, gameObjectSize, new Vector3(startPoint.x + j * unitLength, startPoint.y - i * unitLength, 0));
+						}
+					}
+				}
+			}
+			saveNodes ();
+
+		}
 
         private void bakeInTriangle() {
 
             // generate nav mesh nodes
 			GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
-			int count = 0;
 
             for (int n = 0; n < gameObjects.Length; n++) {
                 if (gameObjects[n].isStatic && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
@@ -82,48 +129,71 @@ namespace UnityTools.AI {
                         startPoint.y = gameObjectCenter.y + gameObjectSize.y / 2;
                         for (int j = 0; j <= maxCol; j++)
                         {
-                            NavMesh2DNode newNode = new NavMesh2DNode();
-							newNode.id = count;
-                            newNode.position = new Vector3(startPoint.x + j * unitLength, startPoint.y - i * unitLength / 2, 0);
-							newNode.neighbours = new List<int> ();
-                            // check if there is obstacles exist at the node
-							if(Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x + unitError, newNode.position.y + unitError))
-								|| Physics2D.OverlapPoint(new Vector2(newNode.position.x + unitError, newNode.position.y)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x - unitError, newNode.position.y))
-								|| Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y + unitError)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y - unitError))
-								|| Physics2D.OverlapPoint(new Vector2(newNode.position.x - unitError, newNode.position.y + unitError)) || Physics2D.OverlapPoint(new Vector2(newNode.position.x + unitError, newNode.position.y - unitError))
-								|| newNode.position.x < gameObjectCenter.x - gameObjectSize.x / 2 || newNode.position.x > gameObjectCenter.x + gameObjectSize.x / 2
-								|| newNode.position.y < gameObjectCenter.y - gameObjectSize.y / 2 || newNode.position.y > gameObjectCenter.y + gameObjectSize.y / 2) {
-								// there is obstacle or out of bound
-								// Debug.Log("Found obstacle: " + newNode.position.x + ", " + newNode.position.y);
-								obstacleNodes.nodes.Add(newNode);
-							}
-							if (!navMeshNodes.nodes.Contains(newNode) && !obstacleNodes.nodes.Contains(newNode)) {
-                                // Debug.Log("Add new node: " + newNode.position.x + ", " + newNode.position.y);
-								navMeshNodes.nodes.Add(newNode);
-								count += 1;
-								// find neighbours
-								for (int k = 0; k < navMeshNodes.nodes.Count - 1; k++) {
-									float distance = Vector3.Distance (navMeshNodes.nodes [k].position, navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position);
-									if (navMeshNodes.nodes [k].neighbours.Count < 8 && distance <= unitLength) {
-										Vector2 origin = new Vector2 (navMeshNodes.nodes [k].position.x, navMeshNodes.nodes [k].position.y);
-										Vector2 dest = new Vector2 (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.x, navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.y);
-										RaycastHit2D hit = Physics2D.Linecast (origin, dest);
-										if (hit.transform == null) {
-											navMeshNodes.nodes [k].neighbours.Add (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].id);
-											navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].neighbours.Add (navMeshNodes.nodes [k].id);
-										}
-									}
-								}
-                            }
+							bakingGridPoint (startPoint, gameObjectCenter, gameObjectSize, new Vector3(startPoint.x + j * unitLength, startPoint.y - i * unitLength / 2, 0));
                         }
                     }
                 }
             }
-			Debug.Log ("Finish Baking. [NavMesh Points: " + navMeshNodes.nodes.Count + " | Obstacle Points: " + obstacleNodes.nodes.Count + "]");
-			navMeshNodes.save (NAVMESH_NODES);
-			obstacleNodes.save (OBSTACLE_NODES);
+			saveNodes ();
 
         }
+
+		private void bakingGridPoint(Vector3 startPoint, Vector3 gameObjectCenter, Vector3 gameObjectSize, Vector3 position) {
+
+			NavMesh2DNode newNode = new NavMesh2DNode();
+			newNode.position = position;
+			newNode.neighbours = new List<int> ();
+			// check if there is obstacles exist at the node
+			Collider2D center = Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y));
+			Collider2D top = Physics2D.OverlapPoint (new Vector2 (newNode.position.x, newNode.position.y + unitError));
+			Collider2D bottom = Physics2D.OverlapPoint (new Vector2 (newNode.position.x, newNode.position.y - unitError));
+			Collider2D left = Physics2D.OverlapPoint (new Vector2 (newNode.position.x - unitError, newNode.position.y));
+			Collider2D right = Physics2D.OverlapPoint (new Vector2 (newNode.position.x + unitError, newNode.position.y));
+			Collider2D topLeft = Physics2D.OverlapPoint (new Vector2 (newNode.position.x - unitError, newNode.position.y + unitError));
+			Collider2D topRight = Physics2D.OverlapPoint (new Vector2 (newNode.position.x + unitError, newNode.position.y + unitError));
+			Collider2D bottomLeft = Physics2D.OverlapPoint (new Vector2 (newNode.position.x - unitError, newNode.position.y - unitError));
+			Collider2D bottomRight = Physics2D.OverlapPoint (new Vector2 (newNode.position.x + unitError, newNode.position.y - unitError));
+			if ((center != null && center.gameObject.isStatic)
+			    || (top != null && top.gameObject.isStatic)
+			    || (bottom != null && bottom.gameObject.isStatic)
+			    || (left != null && left.gameObject.isStatic)
+				|| (right != null && right.gameObject.isStatic)
+				|| (topLeft != null && topLeft.gameObject.isStatic)
+				|| (topRight != null && topRight.gameObject.isStatic)
+				|| (bottomLeft != null && bottomLeft.gameObject.isStatic)
+				|| (bottomRight != null && bottomRight.gameObject.isStatic)
+			    || newNode.position.x < gameObjectCenter.x - gameObjectSize.x / 2 || newNode.position.x > gameObjectCenter.x + gameObjectSize.x / 2
+			    || newNode.position.y < gameObjectCenter.y - gameObjectSize.y / 2 || newNode.position.y > gameObjectCenter.y + gameObjectSize.y / 2) {
+				// there is obstacle or out of bound
+				newNode.id = obstacleNodes.nodes.Count;
+				obstacleNodes.nodes.Add (newNode);
+			} else if (!navMeshNodes.nodes.Contains (newNode) && !obstacleNodes.nodes.Contains (newNode)) {
+				newNode.id = navMeshNodes.nodes.Count;
+				navMeshNodes.nodes.Add (newNode);
+				// find neighbours
+				for (int k = 0; k < navMeshNodes.nodes.Count - 1; k++) {
+					float distance = Vector3.Distance (navMeshNodes.nodes [k].position, navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position);
+					if (navMeshNodes.nodes [k].neighbours.Count < 8 && distance <= unitLength) {
+						Vector2 origin = new Vector2 (navMeshNodes.nodes [k].position.x, navMeshNodes.nodes [k].position.y);
+						Vector2 dest = new Vector2 (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.x, navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.y);
+						RaycastHit2D hit = Physics2D.Linecast (origin, dest);
+						if (hit.transform == null || !hit.transform.gameObject.isStatic) {
+							navMeshNodes.nodes [k].neighbours.Add (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].id);
+							navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].neighbours.Add (navMeshNodes.nodes [k].id);
+						}
+					}
+				}
+			}
+
+		}
+
+		private void saveNodes() {
+
+			Debug.Log ("Finish Baking. [NavMesh Points: " + navMeshNodes.nodes.Count + " | Obstacle Points: " + obstacleNodes.nodes.Count + "]");
+			navMeshNodes.save (navMeshDataSavedPath, NAVMESH_NODES);
+			obstacleNodes.save (navMeshDataSavedPath, OBSTACLE_NODES);
+
+		}
 
         public void clear() {
 
@@ -139,23 +209,23 @@ namespace UnityTools.AI {
 				obstacleNodes = new NavMesh2DNodeList ();
 				obstacleNodes.nodes = new List<NavMesh2DNode> ();
 			}
-			if (File.Exists (Application.persistentDataPath + "/" + NAVMESH_NODES)) {
-				File.Delete (Application.persistentDataPath + "/" + NAVMESH_NODES);
+			if (File.Exists (Application.dataPath + "/Resources/" + navMeshDataSavedPath + "/" + NAVMESH_NODES)) {
+				File.Delete (Application.dataPath + "/Resources/" + navMeshDataSavedPath + "/" + NAVMESH_NODES);
 			}
-			if (File.Exists (Application.persistentDataPath + "/" + OBSTACLE_NODES)) {
-				File.Delete (Application.persistentDataPath + "/" + OBSTACLE_NODES);
+			if (File.Exists (Application.dataPath + "/Resources/" + navMeshDataSavedPath + "/" + OBSTACLE_NODES)) {
+				File.Delete (Application.dataPath + "/Resources/" + navMeshDataSavedPath + "/" + OBSTACLE_NODES);
 			}
+			AssetDatabase.Refresh();
 
         }
 
-        void OnDrawGizmosSelected()
-        {
+        void OnDrawGizmosSelected() {
 
 			//initialization
 			if (navMeshNodes == null || obstacleNodes == null) {
 				init ();
-				Debug.Log (navMeshNodes);
-				Debug.Log (obstacleNodes);
+				Debug.Log (navMeshNodes.nodes.Count);
+				Debug.Log (obstacleNodes.nodes.Count);
 			}
             // draw all nav mesh nodes on scene
 			if (navMeshNodes != null && navMeshNodes.nodes.Count > 0)
@@ -173,7 +243,6 @@ namespace UnityTools.AI {
 						}
 					}
                 }
-                // Debug.Log("Drawed " + navMeshNodes.Count + " Nodes.");
             }
 			if (showNode) {
 				// draw all obstacle nodes on scene
@@ -182,11 +251,11 @@ namespace UnityTools.AI {
 						Gizmos.color = Color.red;
 						Gizmos.DrawSphere (new Vector3 (obstacleNodes.nodes [i].position.x, obstacleNodes.nodes [i].position.y, 0), 0.1f);
 					}
-					// Debug.Log("Drawed " + obstacleNodes.Count + " Nodes.");
 				}
 			}
 
         }
+		#endif
 
     }
 
@@ -210,6 +279,7 @@ namespace UnityTools.AI {
             
 			// variables
 			GUILayout.Label("Settings", EditorStyles.boldLabel);
+			script.navMeshStyle = (TopDown2DNavMeshBaker.NavMeshStyle)EditorGUILayout.EnumPopup ("Nav Mesh Type", script.navMeshStyle);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Unit Length: ");
 			script.unitLength = EditorGUILayout.FloatField (script.unitLength);

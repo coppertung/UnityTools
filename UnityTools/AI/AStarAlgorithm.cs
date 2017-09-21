@@ -77,6 +77,7 @@ namespace UnityTools.AI {
 
 				if (current == goal) {
 					yield return reconstructPath<T> (map, cameFrom, current, pathHandler);
+					break;
 				}
 				openSet.Remove (current);
 				closeSet.Add (current);
