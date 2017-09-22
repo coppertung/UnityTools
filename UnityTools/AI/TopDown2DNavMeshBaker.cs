@@ -80,7 +80,7 @@ namespace UnityTools.AI {
 			GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
 
 			for (int n = 0; n < gameObjects.Length; n++) {
-				if (gameObjects[n].isStatic && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
+				if (gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
 				{
 					Vector3 gameObjectSize = gameObjects[n].GetComponent<SpriteRenderer>().bounds.size;
 					Vector3 gameObjectCenter = gameObjects[n].transform.position;
@@ -112,7 +112,7 @@ namespace UnityTools.AI {
 			GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
 
             for (int n = 0; n < gameObjects.Length; n++) {
-                if (gameObjects[n].isStatic && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
+				if (gameObjects[n].GetComponent<SpriteRenderer>() != null && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
                 {
                     Vector3 gameObjectSize = gameObjects[n].GetComponent<SpriteRenderer>().bounds.size;
                     Vector3 gameObjectCenter = gameObjects[n].transform.position;
@@ -153,15 +153,15 @@ namespace UnityTools.AI {
 			Collider2D topRight = Physics2D.OverlapPoint (new Vector2 (newNode.position.x + unitError, newNode.position.y + unitError));
 			Collider2D bottomLeft = Physics2D.OverlapPoint (new Vector2 (newNode.position.x - unitError, newNode.position.y - unitError));
 			Collider2D bottomRight = Physics2D.OverlapPoint (new Vector2 (newNode.position.x + unitError, newNode.position.y - unitError));
-			if ((center != null && center.gameObject.isStatic)
-			    || (top != null && top.gameObject.isStatic)
-			    || (bottom != null && bottom.gameObject.isStatic)
-			    || (left != null && left.gameObject.isStatic)
-				|| (right != null && right.gameObject.isStatic)
-				|| (topLeft != null && topLeft.gameObject.isStatic)
-				|| (topRight != null && topRight.gameObject.isStatic)
-				|| (bottomLeft != null && bottomLeft.gameObject.isStatic)
-				|| (bottomRight != null && bottomRight.gameObject.isStatic)
+			if ((center != null && center.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (top != null && top.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (bottom != null && bottom.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (left != null && left.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (right != null && right.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (topLeft != null && topLeft.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (topRight != null && topRight.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (bottomLeft != null && bottomLeft.gameObject.GetComponent<NavMesh2DObstacle>() != null)
+				|| (bottomRight != null && bottomRight.gameObject.GetComponent<NavMesh2DObstacle>() != null)
 			    || newNode.position.x < gameObjectCenter.x - gameObjectSize.x / 2 || newNode.position.x > gameObjectCenter.x + gameObjectSize.x / 2
 			    || newNode.position.y < gameObjectCenter.y - gameObjectSize.y / 2 || newNode.position.y > gameObjectCenter.y + gameObjectSize.y / 2) {
 				// there is obstacle or out of bound
@@ -177,7 +177,7 @@ namespace UnityTools.AI {
 						Vector2 origin = new Vector2 (navMeshNodes.nodes [k].position.x, navMeshNodes.nodes [k].position.y);
 						Vector2 dest = new Vector2 (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.x, navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].position.y);
 						RaycastHit2D hit = Physics2D.Linecast (origin, dest);
-						if (hit.transform == null || !hit.transform.gameObject.isStatic) {
+						if (hit.transform == null || hit.transform.gameObject.GetComponent<NavMesh2DObstacle>() == null) {
 							navMeshNodes.nodes [k].neighbours.Add (navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].id);
 							navMeshNodes.nodes [navMeshNodes.nodes.Count - 1].neighbours.Add (navMeshNodes.nodes [k].id);
 						}
@@ -259,6 +259,7 @@ namespace UnityTools.AI {
 
     }
 
+	#if UNITY_EDITOR
     [CustomEditor(typeof(TopDown2DNavMeshBaker))]
     public class TopDown2DNavMeshBakerEditor : Editor {
 
@@ -304,5 +305,5 @@ namespace UnityTools.AI {
 
         }
     }
-
+	#endif
 }

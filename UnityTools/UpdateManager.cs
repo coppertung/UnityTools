@@ -259,7 +259,7 @@ namespace UnityTools {
                 _lateUpdateablesList.Remove(lateUpdateable);
             }
 
-        }
+		}
 
 		/// <summary>
 		/// Determine if the specified updateable is being registered.

@@ -16,6 +16,8 @@ namespace UnityTools.AI {
 			
 		public float speed;
 		public float errorDistance;
+		public float customBoundOffset = 0;
+
 		[HideInInspector]
 		public Vector3 target {
 			get;
@@ -98,7 +100,7 @@ namespace UnityTools.AI {
 				}
 				Vector3 curPosition = transform.position;
 				curPosition.z = 0;
-				this.path.Add (curPosition);
+				path.Add (curPosition);
 				// do linear optimization to the path
 				Vector3 lastStartPoint = curPosition;
 				Vector3 lastEndPoint = newPath[0].position;
@@ -106,20 +108,24 @@ namespace UnityTools.AI {
 				for (int i = 1; i < newPath.Count; i++) {
 					canSkip = true;
 					RaycastHit2D[] targetPoint = Physics2D.LinecastAll (lastStartPoint, newPath [i].position);
-					for (int j = 0; j < targetPoint.Length; j++) {
-						if (targetPoint[j].transform != null && targetPoint[j].transform.gameObject.isStatic) {
+					int j = 0;
+					for (j = 0; j < targetPoint.Length; j++) {
+						if (targetPoint[j].transform != null && targetPoint[j].transform.gameObject.GetComponent<NavMesh2DObstacle>() != null) {
 							canSkip = false;
+							break;
 						}
 					}
 					if (canSkip) {
 						lastEndPoint = newPath [i].position;
 					} else {
-						this.path.Add (lastEndPoint);
+						path.Add (lastEndPoint);
 						lastStartPoint = newPath [i].position;
 					}
 					// Debug.Log ("Path point " + i + " is (" + newPath [i].position.x + ", " + newPath [i].position.y + ").");
 				}
-				this.path.Add (target);
+				if (!path.Contains (lastEndPoint))
+					path.Add (lastEndPoint);
+				path.Add (target);
 				if (!UpdateManager.IsRegistered (this)) {
 					UpdateManager.RegisterFixedUpdate (this);
 				}
@@ -145,6 +151,19 @@ namespace UnityTools.AI {
 					// move and rotate
 					// transform.LookAt (path [0]);
 					transform.Translate ((path [0] - curPosition).normalized * speed * Time.deltaTime);
+					if (customBoundOffset > 0) {
+						int angle = 0;
+						for (angle = 0; angle < 360; angle++) {
+							Vector3 checkPoint = new Vector3 (transform.position.x + customBoundOffset * Mathf.Cos (Mathf.Deg2Rad * angle), transform.position.y + customBoundOffset * Mathf.Sin (Mathf.Deg2Rad * angle), 0);
+							Collider2D[] col = Physics2D.OverlapPointAll (checkPoint);
+							for (int i = 0; i < col.Length; i++) {
+								if (col [i].gameObject != this.gameObject) {
+									transform.position += (transform.position - checkPoint).normalized * customBoundOffset;
+									break;
+								}
+							}
+						}
+					}
 				}
 			} else {
 				UpdateManager.UnregisterFixedUpdate (this);

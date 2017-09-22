@@ -69,7 +69,7 @@ namespace UnityTools.AI {
 
 		public List<NavMesh2DNode> nodes;
 
-		[Conditional("UNITY_EDITOR")]
+		#if UNITY_EDITOR
 		public void save(string path, string filename) {
 
 			string fileExtension = ".json";
@@ -93,6 +93,7 @@ namespace UnityTools.AI {
 			AssetDatabase.Refresh ();
 				
 		}
+		#endif
 
 		public static NavMesh2DNodeList read(string path, string filename) {
 
