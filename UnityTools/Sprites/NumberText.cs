@@ -46,7 +46,7 @@ namespace UnityTools.Sprites {
 		/// Show the sprites of the requested value in horizontal way started from the reference point.
 		/// Reminded that a reference object with image (not raw image) component is necessary to provide in order to instantiate it on screen.
 		/// </summary>
-		public static void showNumberInHorizontal(GameObject referenceObject, Transform referencePoint, float value, int toDecimalPoint, bool positive, bool isMoney, float scale, bool showPositiveSign = true) {
+		public static void showNumberInHorizontal(GameObject referenceObject, Transform referencePoint, float value, int toDecimalPoint, bool isMoney, float scale, bool showPositiveSign = true, bool positive = true) {
 				
 			Vector3 refPos = referencePoint.position;
 			Vector2 scaling = Utils.GetScreenScaleFromCanvasScaler (referencePoint.gameObject);
@@ -96,7 +96,9 @@ namespace UnityTools.Sprites {
 			}
 			// number till unit
 			if (placeValue == 0) {
-				refPos += new Vector3 (refSize.x * scale, 0, 0);
+				if (showPositiveSign || isMoney) {
+					refPos += new Vector3 (refSize.x * scale, 0, 0);
+				}
 				Sprite numberSprite;
 				_numTextDict.TryGetValue ("0", out numberSprite);
 				GameObject newNumber = GameObject.Instantiate (referenceObject);
@@ -106,7 +108,7 @@ namespace UnityTools.Sprites {
 				newNumber.transform.localScale = new Vector3 (scale, scale, scale);
 			} else {
 				for (int i = 0; i < placeValue; i++) {
-					if (showPositiveSign || i > 0) {
+					if (showPositiveSign || isMoney || i > 0) {
 						refPos += new Vector3 (refSize.x * scale, 0, 0);
 					}
 					int num = 0;
