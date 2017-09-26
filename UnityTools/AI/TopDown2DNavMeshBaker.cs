@@ -23,21 +23,45 @@ namespace UnityTools.AI {
 		public const string NAVMESH_NODES = "NavMeshNodes";
 		public const string OBSTACLE_NODES = "ObstacleNodes";
 		// basic setting
+		/// <summary>
+		/// The Navigation Mesh style.
+		/// Default is triangle.
+		/// </summary>
 		public NavMeshStyle navMeshStyle = NavMeshStyle.triangle;
+		/// <summary>
+		/// Acceptable error of the unit length, in order to find out the nodes that is very close (within the unit error distance) to obstacles.
+		/// This variable must prevent from having large value.
+		/// Recommanded to set a value that is smaller that 1/4 of the unit length.
+		/// </summary>
 		public float unitError;
+		/// <summary>
+		/// Unit length between the baked nodes.
+		/// </summary>
         public float unitLength;
 		// display setting
+		/// <summary>
+		/// Are the nodes showed on scene view in editor.
+		/// </summary>
 		public bool showNode;
 
+		/// <summary>
+		/// List of Navigation Mesh Nodes.
+		/// </summary>
 		public static NavMesh2DNodeList navMeshNodes {
 			get;
 			protected set;
 		}
+		/// <summary>
+		/// List of Obstacles Nodes.
+		/// </summary>
 		public static NavMesh2DNodeList obstacleNodes {
 			get;
 			protected set;
 		}
 
+		/// <summary>
+		/// Do initialization to the list of Navigation Mesh Nodes and the list of Obstacles Nodes.
+		/// </summary>
 		public static void init() {
 
 			if (navMeshNodes == null) {
@@ -48,7 +72,7 @@ namespace UnityTools.AI {
 				}
 			}
 			if (obstacleNodes == null) {
-				obstacleNodes =NavMesh2DNodeList.read (navMeshDataSavedPath, OBSTACLE_NODES);
+				obstacleNodes = NavMesh2DNodeList.read (navMeshDataSavedPath, OBSTACLE_NODES);
 				if (obstacleNodes == null) {
 					obstacleNodes = new NavMesh2DNodeList ();
 					obstacleNodes.nodes = new List<NavMesh2DNode> ();
@@ -58,6 +82,9 @@ namespace UnityTools.AI {
 		}
 
 		#if UNITY_EDITOR
+		/// <summary>
+		/// Bake the Navigation Mesh and store the nodes as json file under the Resource folder.
+		/// </summary>
         public void bake() {
 
             // initialization
@@ -80,7 +107,7 @@ namespace UnityTools.AI {
 			GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
 
 			for (int n = 0; n < gameObjects.Length; n++) {
-				if (gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
+				if (gameObjects[n].isStatic && gameObjects[n].GetComponent<SpriteRenderer>() != null && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
 				{
 					Vector3 gameObjectSize = gameObjects[n].GetComponent<SpriteRenderer>().bounds.size;
 					Vector3 gameObjectCenter = gameObjects[n].transform.position;
@@ -112,7 +139,7 @@ namespace UnityTools.AI {
 			GameObject[] gameObjects = (GameObject[])FindObjectsOfType(typeof(GameObject));
 
             for (int n = 0; n < gameObjects.Length; n++) {
-				if (gameObjects[n].GetComponent<SpriteRenderer>() != null && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
+				if (gameObjects[n].isStatic && gameObjects[n].GetComponent<SpriteRenderer>() != null && gameObjects[n].GetComponent<NavMesh2DObstacle>() == null)
                 {
                     Vector3 gameObjectSize = gameObjects[n].GetComponent<SpriteRenderer>().bounds.size;
                     Vector3 gameObjectCenter = gameObjects[n].transform.position;
@@ -143,7 +170,7 @@ namespace UnityTools.AI {
 			NavMesh2DNode newNode = new NavMesh2DNode();
 			newNode.position = position;
 			newNode.neighbours = new List<int> ();
-			// check if there is obstacles exist at the node
+			// check if there is obstacles exist at/near(within unit error) the node
 			Collider2D center = Physics2D.OverlapPoint(new Vector2(newNode.position.x, newNode.position.y));
 			Collider2D top = Physics2D.OverlapPoint (new Vector2 (newNode.position.x, newNode.position.y + unitError));
 			Collider2D bottom = Physics2D.OverlapPoint (new Vector2 (newNode.position.x, newNode.position.y - unitError));
@@ -190,11 +217,16 @@ namespace UnityTools.AI {
 		private void saveNodes() {
 
 			Debug.Log ("Finish Baking. [NavMesh Points: " + navMeshNodes.nodes.Count + " | Obstacle Points: " + obstacleNodes.nodes.Count + "]");
+			navMeshNodes.unitError = unitError;
 			navMeshNodes.save (navMeshDataSavedPath, NAVMESH_NODES);
+			obstacleNodes.unitError = unitError;
 			obstacleNodes.save (navMeshDataSavedPath, OBSTACLE_NODES);
 
 		}
 
+		/// <summary>
+		/// Clear the Navigation Mesh and the files which stored Navigation Mesh Nodes.
+		/// </summary>
         public void clear() {
 
 			if (navMeshNodes != null && navMeshNodes.nodes != null)

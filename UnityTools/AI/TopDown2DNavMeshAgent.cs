@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
 using UnityTools;
 
@@ -14,27 +17,42 @@ namespace UnityTools.AI {
 			set;
 		}
 			
+		/// <summary>
+		/// Speed of agent travel through the path.
+		/// </summary>
 		public float speed;
+		/// <summary>
+		/// Acceptable error distance between the nodes and the agent.
+		/// </summary>
 		public float errorDistance;
+		/// <summary>
+		/// The custom bound offset used to adjust its position.
+		/// Default is set as 0.
+		/// Noted that this custom bound is in circle shape.
+		/// </summary>
 		public float customBoundOffset = 0;
 
+		/// <summary>
+		/// Target position the agent want to travel.
+		/// </summary>
 		[HideInInspector]
 		public Vector3 target {
 			get;
 			private set;
 		}
+		/// <summary>
+		/// The path used to travel to the target position.
+		/// </summary>
 		[HideInInspector]
 		public List<Vector3> path {
 			get;
 			private set;
 		}
 
-		// private Vector3 speedInVec3;
 		private Collider2D col2D;
 
 		void Awake() {
 
-			// speedInVec3 = new Vector3 (speed, speed, 0);
 			col2D = GetComponent<Collider2D>();
 			if (col2D == null) {
 				throw new NullReferenceException ("The GameObject must be attached with at least one 2D collider!");
@@ -42,36 +60,19 @@ namespace UnityTools.AI {
 
 		}
 
+		/// <summary>
+		/// Set the target position of the agent.
+		/// </summary>
 		public void setTarget(Vector3 target) {
 
 			this.target = target;
 			target.z = 0;
 			// find the path
-			float minStartDistance = float.MaxValue;
-			NavMesh2DNode closestStart = null;
-			float minGoalDistance = float.MaxValue;
-			NavMesh2DNode closestGoal = null;
 			if (TopDown2DNavMeshBaker.navMeshNodes == null) {
 				TopDown2DNavMeshBaker.init ();
 			}
-			for (int i = 0; i < TopDown2DNavMeshBaker.navMeshNodes.nodes.Count; i++) {
-				// find start
-				if (transform.position != TopDown2DNavMeshBaker.navMeshNodes.nodes [i].position) {
-					float distance = Vector3.Distance (transform.position, TopDown2DNavMeshBaker.navMeshNodes.nodes [i].position);
-					if (distance < minStartDistance) {
-						minStartDistance = distance;
-						closestStart = TopDown2DNavMeshBaker.navMeshNodes.nodes [i];
-					}
-				}
-				// find goal
-				if (target != TopDown2DNavMeshBaker.navMeshNodes.nodes [i].position) {
-					float distance = Vector3.Distance (target, TopDown2DNavMeshBaker.navMeshNodes.nodes [i].position);
-					if (distance < minGoalDistance) {
-						minGoalDistance = distance;
-						closestGoal = TopDown2DNavMeshBaker.navMeshNodes.nodes [i];
-					}
-				}
-			}
+			NavMesh2DNode closestStart = TopDown2DNavMeshBaker.navMeshNodes.findNearestNode (transform.position);
+			NavMesh2DNode closestGoal = TopDown2DNavMeshBaker.navMeshNodes.findNearestNode (target);
 			List<IAStarable<Vector3>> map = new List<IAStarable<Vector3>> ();
 			for (int i = 0; i < TopDown2DNavMeshBaker.navMeshNodes.nodes.Count; i++) {
 				IAStarable<Vector3> newNode = (IAStarable<Vector3>)TopDown2DNavMeshBaker.navMeshNodes.nodes [i];
@@ -84,6 +85,9 @@ namespace UnityTools.AI {
 
 		}
 
+		/// <summary>
+		/// Handle the recieved path.
+		/// </summary>
 		public void pathHandler(List<IAStarable<Vector3>> result) {
 
 			if (result != null) {
@@ -107,12 +111,19 @@ namespace UnityTools.AI {
 				bool canSkip = true;
 				for (int i = 1; i < newPath.Count; i++) {
 					canSkip = true;
-					RaycastHit2D[] targetPoint = Physics2D.LinecastAll (lastStartPoint, newPath [i].position);
-					int j = 0;
-					for (j = 0; j < targetPoint.Length; j++) {
-						if (targetPoint[j].transform != null && targetPoint[j].transform.gameObject.GetComponent<NavMesh2DObstacle>() != null) {
+					RaycastHit2D hit = Physics2D.Linecast (lastStartPoint + (newPath [i].position - lastStartPoint).normalized * customBoundOffset, newPath [i].position);
+					if (hit.transform != null) {
+						if (hit.transform.gameObject == gameObject) {
+							RaycastHit2D[] targetPoint = Physics2D.LinecastAll (lastStartPoint + (newPath [i].position - lastStartPoint).normalized * customBoundOffset, newPath [i].position);
+							int j = 0;
+							for (j = 0; j < targetPoint.Length; j++) {
+								if (targetPoint [j].transform != null && targetPoint [j].transform.gameObject.GetComponent<NavMesh2DObstacle> () != null) {
+									canSkip = false;
+									break;
+								}
+							}
+						} else if (hit.transform.gameObject.GetComponent<NavMesh2DObstacle> () != null) {
 							canSkip = false;
-							break;
 						}
 					}
 					if (canSkip) {
@@ -134,7 +145,7 @@ namespace UnityTools.AI {
 		}
 
 		public void fixedUpdateEvent() {
-			// Used to replace the Update().
+			// Used to replace the FixedUpdate().
 			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
 			if (path.Count > 0) {
 				// showing line, delete soon
@@ -152,6 +163,7 @@ namespace UnityTools.AI {
 					// transform.LookAt (path [0]);
 					transform.Translate ((path [0] - curPosition).normalized * speed * Time.deltaTime);
 					if (customBoundOffset > 0) {
+						/*
 						int angle = 0;
 						for (angle = 0; angle < 360; angle++) {
 							Vector3 checkPoint = new Vector3 (transform.position.x + customBoundOffset * Mathf.Cos (Mathf.Deg2Rad * angle), transform.position.y + customBoundOffset * Mathf.Sin (Mathf.Deg2Rad * angle), 0);
@@ -163,12 +175,50 @@ namespace UnityTools.AI {
 								}
 							}
 						}
+						*/
+						Vector3 nearestObstaclePoint = TopDown2DNavMeshBaker.obstacleNodes.findNearestNode (transform.position).position;
+						Collider2D[] colliders = new Collider2D[9];
+						// center
+						colliders[0] = Physics2D.OverlapPoint(new Vector2(nearestObstaclePoint.x, nearestObstaclePoint.y));
+						// top
+						colliders[1] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						// bottom
+						colliders[2] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						// left
+						colliders[3] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y));
+						// right
+						colliders[4] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y));
+						// topLeft
+						colliders[5] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						// topRight
+						colliders[6] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						// bottomLeft
+						colliders[7] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						// bottomRight
+						colliders[8] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						// for(int i = 0; i < colliders.
+						GameObject nearestObstacle = Physics2D.OverlapPoint (nearestObstaclePoint).gameObject;
+						if (nearestObstacle.GetComponent<NavMesh2DObstacle> ().isCollided ((nearestObstacle.transform.position - transform.position).normalized * customBoundOffset)) {
+							transform.position += (transform.position - nearestObstacle.transform.position).normalized * customBoundOffset;
+						}
 					}
 				}
 			} else {
 				UpdateManager.UnregisterFixedUpdate (this);
 			}
 		}
+
+		#if UNITY_EDITOR
+		void OnDrawGizmosSelected() {
+
+			// view the custom bounding of the agent
+			if (customBoundOffset > 0) {
+				Gizmos.color = Color.green;
+				Gizmos.DrawWireSphere (transform.position, customBoundOffset);
+			}
+
+		}
+		#endif
 
 	}
 

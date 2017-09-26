@@ -4,28 +4,49 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityTools.AI {
-	
+
+	/// <summary>
+	/// Definition of the delegate heuristic function.
+	/// </summary>
 	public delegate float heuristicFunctionEvent ();
 
+	/// <summary>
+	/// Interface for the nodes that will use A* algorithm, define T as the type of the value variable.
+	/// </summary>
 	public interface IAStarable<T> {
 
+		/// <summary>
+		/// Identifier.
+		/// </summary>
 		int id {
 			get;
 			set;
 		}
+		/// <summary>
+		/// List of neighbours.
+		/// </summary>
 		List<int> neighbours {
 			get;
 			set;
 		}
+		/// <summary>
+		/// Some useful value.
+		/// </summary>
 		T value {
 			get;
 		}
 
+		/// <summary>
+		/// The heuristic function.
+		/// </summary>
 		heuristicFunctionEvent heuristicFunction {
 			get;
 			set;
 		}
 
+		/// <summary>
+		/// Cost of doing something with the specified target.
+		/// </summary>
 		float cost (T target);
 
 	}
@@ -35,7 +56,11 @@ namespace UnityTools.AI {
 	/// Referenced from https://en.wikipedia.org/wiki/A*_search_algorithm.
 	/// </summary>
 	public class AStarAlgorithm {
-		
+
+		/// <summary>
+		/// A Coroutine function that can be used to find the best path according the heuristic function of the nodes.
+		/// Noted that T is the type of the value variable of the node.
+		/// </summary>
 		public static IEnumerator findPath<T>(List<IAStarable<T>> map, IAStarable<T> start, IAStarable<T> goal, Action<List<IAStarable<T>>> pathHandler) {
 
 			// set of nodes already evaluated
@@ -107,7 +132,7 @@ namespace UnityTools.AI {
 
 		}
 
-		public static IEnumerator reconstructPath<T> (List<IAStarable<T>> map, Dictionary<int, int> cameFrom, IAStarable<T> current, Action<List<IAStarable<T>>> pathHandler) {
+		private static IEnumerator reconstructPath<T> (List<IAStarable<T>> map, Dictionary<int, int> cameFrom, IAStarable<T> current, Action<List<IAStarable<T>>> pathHandler) {
 
 			List<IAStarable<T>> totalPath = new List<IAStarable<T>> ();
 			totalPath.Add (current);
