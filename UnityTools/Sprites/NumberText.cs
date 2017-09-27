@@ -42,6 +42,12 @@ namespace UnityTools.Sprites {
 
 		}
 
+		public static void clearDict() {
+
+			_numTextDict.Clear ();
+
+		}
+
 		/// <summary>
 		/// Show the sprites of the requested value in horizontal way started from the reference point.
 		/// Reminded that a reference object with image (not raw image) component is necessary to provide in order to instantiate it on screen.

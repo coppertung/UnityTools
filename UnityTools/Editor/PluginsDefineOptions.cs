@@ -7,8 +7,8 @@ namespace UnityTools {
 
 	public class PluginsDefineOptions : MonoBehaviour {
 
-		public const string addPluginsDefineOptions = "UnityTools/Plugins/Add Plugins Define";
-		public const string clearPluginsDefineOptions = "UnityTools/Plugins/Clear Plugins Define";
+		public const string addPluginsDefineOptions = "UnityTools/Defines/Add Plugins Define";
+		public const string clearPluginsDefineOptions = "UnityTools/Defines/Clear Plugins Define";
 
 		private static string pluginsPath = Application.dataPath + "/Plugins/";
 		private static string[] includedFileExtension = { ".js", ".cs", ".dll", ".jslib" };
@@ -18,7 +18,7 @@ namespace UnityTools {
 		private static bool websocketsharpExists = false;
 		private static string websocketsharpDefine = "UNITYTOOLS_FOUND_WEBSOCKETSHARP";
 
-		[MenuItem(addPluginsDefineOptions, false, 20)]
+		[MenuItem(addPluginsDefineOptions, false, 21)]
 		public static void checkPluginsExists() {
 
 			// example
@@ -31,7 +31,7 @@ namespace UnityTools {
 
 		}
 
-		[MenuItem(clearPluginsDefineOptions, false, 21)]
+		[MenuItem(clearPluginsDefineOptions, false, 22)]
 		public static void clearPlayerDefine() {
 
 			string[] defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup (EditorUserBuildSettings.selectedBuildTargetGroup).Split (';');
