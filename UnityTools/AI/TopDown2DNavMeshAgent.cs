@@ -163,49 +163,52 @@ namespace UnityTools.AI {
 					// transform.LookAt (path [0]);
 					transform.Translate ((path [0] - curPosition).normalized * speed * Time.deltaTime);
 					if (customBoundOffset > 0) {
-						/*
-						int angle = 0;
-						for (angle = 0; angle < 360; angle++) {
-							Vector3 checkPoint = new Vector3 (transform.position.x + customBoundOffset * Mathf.Cos (Mathf.Deg2Rad * angle), transform.position.y + customBoundOffset * Mathf.Sin (Mathf.Deg2Rad * angle), 0);
-							Collider2D[] col = Physics2D.OverlapPointAll (checkPoint);
-							for (int i = 0; i < col.Length; i++) {
-								if (col [i].gameObject != this.gameObject) {
-									transform.position += (transform.position - checkPoint).normalized * customBoundOffset;
-									break;
-								}
-							}
-						}
-						*/
 						Vector3 nearestObstaclePoint = TopDown2DNavMeshBaker.obstacleNodes.findNearestNode (transform.position).position;
 						Collider2D[] colliders = new Collider2D[9];
 						// center
-						colliders[0] = Physics2D.OverlapPoint(new Vector2(nearestObstaclePoint.x, nearestObstaclePoint.y));
+						colliders[0] = getFirstNonSelfOverlapPoint(new Vector2(nearestObstaclePoint.x, nearestObstaclePoint.y));
 						// top
-						colliders[1] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						colliders[1] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
 						// bottom
-						colliders[2] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						colliders[2] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
 						// left
-						colliders[3] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y));
+						colliders[3] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y));
 						// right
-						colliders[4] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y));
+						colliders[4] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y));
 						// topLeft
-						colliders[5] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						colliders[5] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
 						// topRight
-						colliders[6] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						colliders[6] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y + TopDown2DNavMeshBaker.obstacleNodes.unitError));
 						// bottomLeft
-						colliders[7] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						colliders[7] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x - TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
 						// bottomRight
-						colliders[8] = Physics2D.OverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
-						// for(int i = 0; i < colliders.
-						GameObject nearestObstacle = Physics2D.OverlapPoint (nearestObstaclePoint).gameObject;
-						if (nearestObstacle.GetComponent<NavMesh2DObstacle> ().isCollided ((nearestObstacle.transform.position - transform.position).normalized * customBoundOffset)) {
-							transform.position += (transform.position - nearestObstacle.transform.position).normalized * customBoundOffset;
+						colliders[8] = getFirstNonSelfOverlapPoint (new Vector2 (nearestObstaclePoint.x + TopDown2DNavMeshBaker.obstacleNodes.unitError, nearestObstaclePoint.y - TopDown2DNavMeshBaker.obstacleNodes.unitError));
+						for (int i = 0; i < colliders.Length; i++) {
+							if (colliders[i] != null && colliders[i].gameObject.GetComponent<NavMesh2DObstacle> () != null) {
+								Vector3 closestPoint = colliders [i].bounds.ClosestPoint (transform.position);
+								if (Vector3.Distance (transform.position, closestPoint) <= customBoundOffset) {
+									transform.position += (transform.position - closestPoint).normalized * customBoundOffset;
+									break;
+								}
+							}
 						}
 					}
 				}
 			} else {
 				UpdateManager.UnregisterFixedUpdate (this);
 			}
+		}
+
+		private Collider2D getFirstNonSelfOverlapPoint(Vector2 position) {
+
+			Collider2D[] col = Physics2D.OverlapPointAll (position);
+			for (int i = 0; i < col.Length; i++) {
+				if (col [i].gameObject != gameObject) {
+					return col [i];
+				}
+			}
+			return null;
+
 		}
 
 		#if UNITY_EDITOR
