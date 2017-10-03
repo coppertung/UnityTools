@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityTools;
 
-namespace UnityTools.AI {
+namespace UnityTools.AI.NavMesh2D {
 
 	public class TopDown2DNavMeshAgent : MonoBehaviour, IFixedUpdateable {
 

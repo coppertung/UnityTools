@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityTools.AI {
+namespace UnityTools.AI.NavMesh2D {
 
     [ExecuteInEditMode]
     public class TopDown2DNavMeshBaker : MonoBehaviour {

@@ -5,7 +5,7 @@ using UnityEditor;
 #endif
 using UnityEngine;
 
-namespace UnityTools.AI {
+namespace UnityTools.AI.NavMesh2D {
 
 	/// <summary>
 	/// Used to define the gameobject as the obstacles in the Navigation Mesh 2D system.

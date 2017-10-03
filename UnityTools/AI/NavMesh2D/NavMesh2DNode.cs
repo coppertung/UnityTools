@@ -8,7 +8,7 @@ using UnityEditor;
 #endif
 using UnityEngine;
 
-namespace UnityTools.AI {
+namespace UnityTools.AI.NavMesh2D {
 
 	/// <summary>
 	/// Nodes that will be used in the Navigation Mesh 2D system, which inherited the IAstarable interface in order to use the A* Algorithm.

@@ -52,12 +52,12 @@ namespace UnityTools.Sprites {
 		/// Show the sprites of the requested value in horizontal way started from the reference point.
 		/// Reminded that a reference object with image (not raw image) component is necessary to provide in order to instantiate it on screen.
 		/// </summary>
-		public static void showNumberInHorizontal(GameObject referenceObject, Transform referencePoint, float value, int toDecimalPoint, bool isMoney, float scale, bool showPositiveSign = true, bool positive = true) {
+		public static void showNumberInHorizontal(GameObject referenceObject, Transform referencePoint, float value, int toDecimalPoint, bool isMoney, float scale, float spacing = 1f, bool showPositiveSign = true, bool positive = true) {
 				
 			Vector3 refPos = referencePoint.position;
 			Vector2 scaling = Utils.GetScreenScaleFromCanvasScaler (referencePoint.gameObject);
 			Vector2 refSize = referenceObject.GetComponent<Image> ().rectTransform.sizeDelta;
-			refSize = new Vector2 (refSize.x / scaling.x, refSize.y / scaling.y);
+			refSize = new Vector2 (refSize.x / scaling.x, refSize.y / scaling.y) * spacing;
 
 			int placeValue = 0;
 			for (placeValue = 0; placeValue < int.MaxValue; placeValue++) {
