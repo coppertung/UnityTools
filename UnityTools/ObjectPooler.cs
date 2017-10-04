@@ -32,16 +32,6 @@ namespace UnityTools {
 		/// Initialize the new instance.
 		/// </summary>
 		void init (int id, Vector3 position, Quaternion rotation);
-		/// <summary>
-		/// Enable call.
-		/// NOT being called automatically.
-		/// </summary>
-		void onEnable();
-		/// <summary>
-		/// Disable call.
-		/// NOT being called automatically.
-		/// </summary>
-		void onDisable();
 
 	}
 

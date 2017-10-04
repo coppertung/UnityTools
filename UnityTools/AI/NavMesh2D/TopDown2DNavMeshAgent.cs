@@ -9,6 +9,7 @@ using UnityTools;
 
 namespace UnityTools.AI.NavMesh2D {
 
+	[RequireComponent(typeof(Collider2D))]
 	public class TopDown2DNavMeshAgent : MonoBehaviour, IFixedUpdateable {
 
 		// The update call will be called in prior if the priority is larger.

@@ -42,6 +42,9 @@ namespace UnityTools.Sprites {
 
 		}
 
+		/// <summary>
+		/// Clear the dictionary.
+		/// </summary>
 		public static void clearDict() {
 
 			_numTextDict.Clear ();
@@ -53,38 +56,21 @@ namespace UnityTools.Sprites {
 		/// Reminded that a reference object with image (not raw image) component is necessary to provide in order to instantiate it on screen.
 		/// </summary>
 		public static void showNumberInHorizontal(GameObject referenceObject, Transform referencePoint, float value, int toDecimalPoint, bool isMoney, float scale, float spacing = 1f, bool showPositiveSign = true, bool positive = true) {
-				
+
 			Vector3 refPos = referencePoint.position;
 			Vector2 scaling = Utils.GetScreenScaleFromCanvasScaler (referencePoint.gameObject);
 			Vector2 refSize = referenceObject.GetComponent<Image> ().rectTransform.sizeDelta;
 			refSize = new Vector2 (refSize.x / scaling.x, refSize.y / scaling.y) * spacing;
 
-			int placeValue = 0;
-			for (placeValue = 0; placeValue < int.MaxValue; placeValue++) {
-				if ((int)(value / Mathf.Pow (10, placeValue)) > 0 || (value / Mathf.Pow (10, placeValue) == 0 && (int)(value % Mathf.Pow (10, placeValue)) > 0)) {
-					continue;
-				} else {
-					break;
-				}
-			}
+			string valueInString = value.ToString ("F" + toDecimalPoint.ToString ());
+			char[] valueInCharArr = valueInString.ToCharArray ();
+
 			// positive/negative sign
 			if (showPositiveSign) {
 				if (positive) {
-					Sprite positiveSprite;
-					_numTextDict.TryGetValue ("+", out positiveSprite);
-					GameObject positiveSign = GameObject.Instantiate (referenceObject);
-					positiveSign.GetComponent<Image> ().sprite = positiveSprite;
-					positiveSign.transform.SetParent (referencePoint);
-					positiveSign.transform.position = refPos;
-					positiveSign.transform.localScale = new Vector3 (scale, scale, scale);
+					createSpriteObject ("+", refPos, scale, referenceObject, referencePoint);
 				} else {
-					Sprite negativeSprite;
-					_numTextDict.TryGetValue ("-", out negativeSprite);
-					GameObject negativeSign = GameObject.Instantiate (referenceObject);
-					negativeSign.GetComponent<Image> ().sprite = negativeSprite;
-					negativeSign.transform.SetParent (referencePoint);
-					negativeSign.transform.position = refPos;
-					negativeSign.transform.localScale = new Vector3 (scale, scale, scale);
+					createSpriteObject ("-", refPos, scale, referenceObject, referencePoint);
 				}
 			}
 			// dollar sign
@@ -92,71 +78,35 @@ namespace UnityTools.Sprites {
 				if (showPositiveSign) {
 					refPos += new Vector3 (refSize.x * 0.8f * scale, 0, 0);
 				}
-				Sprite dollarSprite;
-				_numTextDict.TryGetValue ("$", out dollarSprite);
-				GameObject dollarSign = GameObject.Instantiate (referenceObject);
-				dollarSign.GetComponent<Image> ().sprite = dollarSprite;
-				dollarSign.transform.SetParent (referencePoint);
-				dollarSign.transform.position = refPos;
-				dollarSign.transform.localScale = new Vector3 (scale, scale, scale);
+				createSpriteObject ("$", refPos, scale, referenceObject, referencePoint);
 			}
-			// number till unit
-			if (placeValue == 0) {
-				if (showPositiveSign || isMoney) {
-					refPos += new Vector3 (refSize.x * scale, 0, 0);
-				}
-				Sprite numberSprite;
-				_numTextDict.TryGetValue ("0", out numberSprite);
-				GameObject newNumber = GameObject.Instantiate (referenceObject);
-				newNumber.GetComponent<Image> ().sprite = numberSprite;
-				newNumber.transform.SetParent (referencePoint);
-				newNumber.transform.position = refPos;
-				newNumber.transform.localScale = new Vector3 (scale, scale, scale);
-			} else {
-				for (int i = 0; i < placeValue; i++) {
-					if (showPositiveSign || isMoney || i > 0) {
-						refPos += new Vector3 (refSize.x * scale, 0, 0);
-					}
-					int num = 0;
-					num = (int)((value % Mathf.Pow (10, placeValue - i)) / Mathf.Pow (10, placeValue - i - 1));
-					Sprite numberSprite;
-					_numTextDict.TryGetValue (num.ToString (), out numberSprite);
-					GameObject newNumber = GameObject.Instantiate (referenceObject);
-					newNumber.GetComponent<Image> ().sprite = numberSprite;
-					newNumber.transform.SetParent (referencePoint);
-					newNumber.transform.position = refPos;
-					newNumber.transform.localScale = new Vector3 (scale, scale, scale);
-				}
+			if (showPositiveSign || isMoney) {
+				refPos += new Vector3 (refSize.x * scale, 0, 0);
 			}
-			// decimal point and decimal numbers part
-			if (toDecimalPoint > 0) {
-				refPos += new Vector3 (refSize.x * 0.6f * scale, 0, 0);
-				Sprite dotSprite;
-				_numTextDict.TryGetValue (".", out dotSprite);
-				GameObject dotObject = GameObject.Instantiate (referenceObject);
-				dotObject.transform.SetParent (referencePoint);
-				dotObject.GetComponent<Image> ().sprite = dotSprite;
-				dotObject.transform.position = refPos;
-				dotObject.transform.localScale = new Vector3 (scale, scale, scale);
-				refPos += new Vector3 (refSize.x * 0.6f * scale, 0, 0);
-				for (int i = 0; i < toDecimalPoint; i++) {
-					int num;
-					if (i == toDecimalPoint - 1) {
-						num = Mathf.RoundToInt (value * Mathf.Pow (10, i + 1)) % 10;
-					} else {
-						num = (int)((value * Mathf.Pow (10, i + 1)) % 10);
-					}
-					Sprite decimalNumberSprite;
-					_numTextDict.TryGetValue (num.ToString(), out decimalNumberSprite);
-					GameObject newDecimalNumber = GameObject.Instantiate (referenceObject);
-					newDecimalNumber.GetComponent<Image> ().sprite = decimalNumberSprite;
-					newDecimalNumber.transform.SetParent (referencePoint);
-					newDecimalNumber.transform.position = refPos;
-					newDecimalNumber.transform.localScale = new Vector3 (scale, scale, scale);
+			for (int i = 0; i < valueInString.Length; i++) {
+				string numChar = valueInCharArr [i].ToString ();
+				if (numChar.Equals (".")) {
+					refPos += new Vector3 (-refSize.x * 0.4f * scale, 0, 0);
+					createSpriteObject (numChar, refPos, scale, referenceObject, referencePoint);
+					refPos += new Vector3 (refSize.x * 0.6f * scale, 0, 0);
+				} else {
+					createSpriteObject (numChar, refPos, scale, referenceObject, referencePoint);
 					refPos += new Vector3 (refSize.x * scale, 0, 0);
 				}
 			}
-		
+
+		}
+
+		private static void createSpriteObject(string keyword, Vector3 position, float scale, GameObject model, Transform parent) {
+
+			Sprite spriteObject;
+			_numTextDict.TryGetValue (keyword, out spriteObject);
+			GameObject newNumber = GameObject.Instantiate (model);
+			newNumber.GetComponent<Image> ().sprite = spriteObject;
+			newNumber.transform.SetParent (parent);
+			newNumber.transform.position = position;
+			newNumber.transform.localScale = new Vector3 (scale, scale, scale);
+
 		}
 
 	}

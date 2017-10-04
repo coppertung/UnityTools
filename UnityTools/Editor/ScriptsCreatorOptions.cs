@@ -131,16 +131,6 @@ namespace UnityTools {
 						writer.WriteLine ("\t\t// Initialize the new instance.");
 						writer.WriteLine ("\t}");
 						writer.WriteLine ();
-						writer.WriteLine ("\tpublic void onEnable() {");
-						writer.WriteLine ("\t\t// Enable call.");
-						writer.WriteLine ("\t\t// NOT being called automatically.");
-						writer.WriteLine ("\t}");
-						writer.WriteLine ();
-						writer.WriteLine ("\tpublic void onDisable() {");
-						writer.WriteLine ("\t\t// Disable call.");
-						writer.WriteLine ("\t\t// NOT being called automatically.");
-						writer.WriteLine ("\t}");
-						writer.WriteLine ();
 					}
 					if (inheritIUpdateable) {
 						writer.WriteLine ("\tpublic void updateEvent() {");

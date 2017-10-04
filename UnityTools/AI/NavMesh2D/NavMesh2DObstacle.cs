@@ -10,6 +10,7 @@ namespace UnityTools.AI.NavMesh2D {
 	/// <summary>
 	/// Used to define the gameobject as the obstacles in the Navigation Mesh 2D system.
 	/// </summary>
+	[RequireComponent(typeof(Collider2D))]
     public class NavMesh2DObstacle : MonoBehaviour {
 
     }
