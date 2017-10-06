@@ -11,25 +11,92 @@ namespace UnityTools.AI {
 			get;
 			set;
 		}
-		private List<Boid> boidList;
-		private Dictionary<int, int> boidGroup;
+		[SerializeField]
+		private List<Boid> _boidList;
+		private Dictionary<int, int> _boidGroup;
 
-		public int updateGroupRate = 1;
+		/// <summary>
+		/// List of boids that is being controlled by the controller.
+		/// </summary>
+		public List<Boid> boidList {
+			get {
+				return _boidList;
+			}
+		}
+		/// <summary>
+		/// Dictionary to record the group that the boids belong to.
+		/// </summary>
+		public Dictionary<int, int> boidGroup {
+			get {
+				return _boidGroup;
+			}
+		}
 
+		/// <summary>
+		/// Update group rate, which means the group of the boids will be updated per how much frames.
+		/// Default is 10.
+		/// </summary>
+		public int updateGroupRate = 10;
+
+		/// <summary>
+		/// Register the specified boid.
+		/// </summary>
 		public void register(Boid boid) {
 
-			if (boidList == null) {
-				boidList = new List<Boid> ();
+			if (_boidList == null) {
+				_boidList = new List<Boid> ();
 			}
-			boidList.Add (boid);
+			_boidList.Add (boid);
 			addToDict (boid);
 
 		}
 
+		/// <summary>
+		/// Unregister the specified boid.
+		/// </summary>
 		public void unregister(Boid boid) {
 
-			boidList.Remove (boid);
-			boidGroup.Remove (boid.GetInstanceID ());
+			_boidList.Remove (boid);
+			_boidGroup.Remove (boid.GetInstanceID ());
+
+		}
+
+		/// <summary>
+		/// Get the neighbour boids of the specified boid.
+		/// </summary>
+		public List<Boid> foundNeighbours(Boid boid) {
+
+			List<Boid> neighbours = new List<Boid> ();
+			for (int i = 0; i < _boidList.Count; i++) {
+				if (_boidList [i].groupID == boid.groupID && _boidList [i] != boid && Vector3.Distance (_boidList [i].transform.position, boid.transform.position) < boid.neighbourRadius) {
+					neighbours.Add (boidList [i]);
+				}
+			}
+			return neighbours;
+
+		}
+
+		/// <summary>
+		/// Set direction position to all boids, this will initialize the velocity vector of the boids.
+		/// </summary>
+		public void setDirection(Vector3 position) {
+
+			for (int i = 0; i < _boidList.Count; i++) {
+				_boidList [i].velocity = (position - _boidList [i].transform.position).normalized * _boidList [i].speed;
+			}
+
+		}
+
+		/// <summary>
+		/// Set direction to all boids of the specified group, this will initialize the velocity vector of the boids.
+		/// </summary>
+		public void setDirection(Vector3 position, int groupID) {
+
+			for (int i = 0; i < _boidList.Count; i++) {
+				if (_boidList [i].groupID == groupID) {
+					_boidList [i].velocity = (position - _boidList [i].transform.position).normalized * _boidList [i].speed;
+				}
+			}
 
 		}
 
@@ -44,17 +111,17 @@ namespace UnityTools.AI {
 
 		private void addToDict(Boid boid) {
 
-			if (boidGroup == null) {
-				boidGroup = new Dictionary<int, int> ();
+			if (_boidGroup == null) {
+				_boidGroup = new Dictionary<int, int> ();
 			}
 			int groupID = -1;
 			int maxGroupID = -1;
-			for (int i = 0; i < boidList.Count; i++) {
-				if (boidList [i] != boid) {
+			for (int i = 0; i < _boidList.Count; i++) {
+				if (_boidList [i] != boid) {
 					int targetGroupID;
-					boidGroup.TryGetValue (boidList [i].GetInstanceID (), out targetGroupID);
-					if (Vector3.Distance (boid.transform.position, boidList [i].transform.position) < boid.neighbourRadius) {
-						if (groupID == -1 || Utils.Random (100) < boidList [i].moveToNeighbourGroupChance) {
+					_boidGroup.TryGetValue (_boidList [i].GetInstanceID (), out targetGroupID);
+					if (Vector3.Distance (boid.transform.position, _boidList [i].transform.position) < boid.neighbourRadius) {
+						if (groupID == -1 || Utils.Random (100) < _boidList [i].moveToNeighbourGroupChance) {
 							groupID = targetGroupID;
 						}
 					} else {
@@ -64,37 +131,42 @@ namespace UnityTools.AI {
 					}
 				}
 			}
-			boidGroup.Add (boid.GetInstanceID (), (groupID == -1 ? (maxGroupID + 1) : groupID));
+			boid.groupID = (groupID == -1 ? (maxGroupID + 1) : groupID);
+			boid.neighbours = foundNeighbours (boid);
+			_boidGroup.Add (boid.GetInstanceID (), boid.groupID);
 
 		}
 
+		// **REQUIRE ENHANCEMENT**
 		private void updateBoidGroups() {
 
-			for (int i = 0; i < boidList.Count; i++) {
+			for (int i = 0; i < _boidList.Count; i++) {
 				bool moveToNeighbour = false;
-				int selfID = boidList [i].GetInstanceID ();
+				int selfID = _boidList [i].GetInstanceID ();
 				int selfGroupID;
 				int maxGroupID = -1;
-				for (int j = 0; j < boidList.Count; j++) {
+				for (int j = 0; j < _boidList.Count; j++) {
 					if (i != j) {
-						int neighbourID = boidList [j].GetInstanceID ();
+						int neighbourID = _boidList [j].GetInstanceID ();
 						int neighbourGroupID;
-						boidGroup.TryGetValue (selfID, out selfGroupID);
-						boidGroup.TryGetValue (neighbourID, out neighbourGroupID);
+						_boidGroup.TryGetValue (selfID, out selfGroupID);
+						_boidGroup.TryGetValue (neighbourID, out neighbourGroupID);
 						if (neighbourGroupID > maxGroupID) {
 							maxGroupID = neighbourGroupID;
 						}
-						if (selfGroupID != neighbourGroupID && Vector3.Distance (boidList [i].transform.position, boidList [j].transform.position) < boidList [i].neighbourRadius
-						    && Utils.Random (100) < boidList [i].moveToNeighbourGroupChance) {
-							boidGroup [selfID] = neighbourGroupID;
+						if (selfGroupID != neighbourGroupID && Vector3.Distance (_boidList [i].transform.position, _boidList [j].transform.position) < _boidList [i].neighbourRadius
+							&& Utils.Random (100) < _boidList [i].moveToNeighbourGroupChance) {
+							_boidGroup [selfID] = neighbourGroupID;
 							moveToNeighbour = true;
 							break;
 						}
 					}
 				}
-				if (!moveToNeighbour && Utils.Random (100) < boidList [i].getOutFromOriginalGroupChance) {
-					boidGroup [selfID] = maxGroupID + 1;
+				if (!moveToNeighbour && Utils.Random (100) < _boidList [i].getOutFromOriginalGroupChance) {
+					_boidGroup [selfID] = maxGroupID + 1;
 				}
+				_boidGroup.TryGetValue (selfID, out _boidList [i].groupID);
+				_boidList [i].neighbours = foundNeighbours (_boidList [i]);
 			}
 
 		}
