@@ -18,17 +18,23 @@ namespace UnityTools.Network {
 			UnityWebRequest request = UnityWebRequest.Get (url);
 			yield return request.Send ();
 
-			#if UNITY_2017_1_OR_NEWER
-			if (request.isNetworkError) {
-			errorHandler (new Exception ("Network Error"));
-			} else if (request.isHttpError) {
-			errorHandler (new Exception ("HTTP Error"));
-			#else
-			if (request.isError) {
-				errorHandler (new Exception (request.error));
-			#endif
-			} else {
-				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+			try {
+				#if UNITY_2017_1_OR_NEWER
+				if (request.isNetworkError) {
+				errorHandler (new Exception ("Network Error"));
+				} else if (request.isHttpError) {
+				errorHandler (new Exception ("HTTP Error"));
+				#else
+				if (request.isError) {
+					errorHandler (new Exception (request.error));
+				#endif
+				} else {
+					responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+				}
+			}
+			catch(Exception ex) {
+				Debug.Log(ex.Message);
+				Debug.Log(request.downloadHandler.text);
 			}
 
 		}
@@ -46,17 +52,23 @@ namespace UnityTools.Network {
 			}
 			yield return request.Send ();
 
-			#if UNITY_2017_1_OR_NEWER
-			if (request.isNetworkError) {
-			errorHandler (new Exception ("Network Error"));
-			} else if (request.isHttpError) {
-			errorHandler (new Exception ("HTTP Error"));
-			#else
-			if (request.isError) {
-				errorHandler (new Exception (request.error));
-			#endif
-			} else {
-				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+			try {
+				#if UNITY_2017_1_OR_NEWER
+				if (request.isNetworkError) {
+				errorHandler (new Exception ("Network Error"));
+				} else if (request.isHttpError) {
+				errorHandler (new Exception ("HTTP Error"));
+				#else
+				if (request.isError) {
+					errorHandler (new Exception (request.error));
+				#endif
+				} else {
+					responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+				}
+			}
+			catch(Exception ex) {
+				Debug.Log(ex.Message);
+				Debug.Log(request.downloadHandler.text);
 			}
 
 		}
@@ -74,17 +86,23 @@ namespace UnityTools.Network {
 			request.SetRequestHeader ("Content-Type", "application/json");
 			yield return request.Send ();
 
-			#if UNITY_2017_1_OR_NEWER
-			if (request.isNetworkError) {
-			errorHandler (new Exception ("Network Error"));
-			} else if (request.isHttpError) {
-			errorHandler (new Exception ("HTTP Error"));
-			#else
-			if (request.isError) {
-				errorHandler (new Exception (request.error));
-			#endif
-			} else {
-				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+			try {
+				#if UNITY_2017_1_OR_NEWER
+				if (request.isNetworkError) {
+				errorHandler (new Exception ("Network Error"));
+				} else if (request.isHttpError) {
+				errorHandler (new Exception ("HTTP Error"));
+				#else
+				if (request.isError) {
+					errorHandler (new Exception (request.error));
+				#endif
+				} else {
+					responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+				}
+			}
+			catch(Exception ex) {
+				Debug.Log(ex.Message);
+				Debug.Log(request.downloadHandler.text);
 			}
 
 		}
@@ -102,30 +120,36 @@ namespace UnityTools.Network {
 			request.SetRequestHeader ("Content-Type", "application/json");
 			yield return request.Send ();
 
-			#if UNITY_2017_1_OR_NEWER
-			if (request.isNetworkError) {
-			errorHandler (new Exception ("Network Error"));
-			} else if (request.isHttpError) {
-			errorHandler (new Exception ("HTTP Error"));
-			#else
-			if (request.isError) {
-				errorHandler (new Exception (request.error));
-			#endif
-			} else {
-				Dictionary<String, String> headers = request.GetResponseHeaders ();
-				string cookies = null;
-				headers.TryGetValue ("SET-COOKIE", out cookies);
-				string[] frags = cookies.Split (';');
-				for (int i = 0; i < frags.Length; i++) {
-					string[] fragDetails = frags [i].Split (',');
-					for (int j = 0; j < fragDetails.Length; j++) {
-						string[] values = fragDetails [j].Split ('=');
-						if (values [0].Trim ().Equals (cookieName)) {
-							cookieHandler (values [1].Trim ());
+			try {
+				#if UNITY_2017_1_OR_NEWER
+				if (request.isNetworkError) {
+				errorHandler (new Exception ("Network Error"));
+				} else if (request.isHttpError) {
+				errorHandler (new Exception ("HTTP Error"));
+				#else
+				if (request.isError) {
+					errorHandler (new Exception (request.error));
+				#endif
+				} else {
+					Dictionary<String, String> headers = request.GetResponseHeaders ();
+					string cookies = null;
+					headers.TryGetValue ("SET-COOKIE", out cookies);
+					string[] frags = cookies.Split (';');
+					for (int i = 0; i < frags.Length; i++) {
+						string[] fragDetails = frags [i].Split (',');
+						for (int j = 0; j < fragDetails.Length; j++) {
+							string[] values = fragDetails [j].Split ('=');
+							if (values [0].Trim ().Equals (cookieName)) {
+								cookieHandler (values [1].Trim ());
+							}
 						}
 					}
+					responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
 				}
-				responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
+			}
+			catch(Exception ex) {
+				Debug.Log(ex.Message);
+				Debug.Log(request.downloadHandler.text);
 			}
 	
 		}
