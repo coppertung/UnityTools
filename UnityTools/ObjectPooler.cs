@@ -58,6 +58,11 @@ namespace UnityTools {
 		}
 
 		/// <summary>
+		/// The GameObject that store all the pooled objects in the hierarchy.
+		/// </summary>
+		public static GameObject pooledObjectsParent;
+
+		/// <summary>
 		/// count of pooled objects.
 		/// </summary>
 		public static int Count {
@@ -85,6 +90,10 @@ namespace UnityTools {
 			}
 			// cannot find a suitable object
 			GameObject newObject = GameObject.Instantiate (prefabModel);
+			if (pooledObjectsParent == null) {
+				pooledObjectsParent = new GameObject ("Object Pool");
+			}
+			newObject.transform.SetParent (pooledObjectsParent.transform);
 			newObject.name = name;
 			IPoolObject newScript = newObject.GetComponent<IPoolObject>();
 			if (newScript == null) {
