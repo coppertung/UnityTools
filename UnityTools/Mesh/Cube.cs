@@ -45,16 +45,14 @@ namespace UnityTools.Mesh {
 			mesh.name = "Procedural Cube";
 
 			// define vertices
-			generateVertices ();
-			yield return null;
+			yield return generateVertices ();
 
 			// draw the surface in triangles (by assigning the vertex index)
-			generateTriangles ();
-			yield return null;
+			yield return generateTriangles ();
 
 		}
 
-		private void generateVertices() {
+		private IEnumerator generateVertices() {
 
 			int cornerVertices = 8;
 			int edgeVertices = (width + height + length - 3) * 4;
@@ -94,10 +92,66 @@ namespace UnityTools.Mesh {
 					vertices [v++] = startPosition + new Vector3 (x * unitLength, 0, z * unitLength);
 				}
 			}
+			mesh.vertices = vertices;
+			yield return null;
 
 		}
 
-		private void generateTriangles() {
+		private IEnumerator generateTriangles() {
+
+			int quads = (width * height + width * length + length * height) * 2;
+			int[] triangles = new int[quads * 6];
+			int ring = (width + length) * 2;
+			int t = 0;		// triangle indices
+			int v = 0;		// vertices indices
+
+			for (int y = 0; y < height; y++, v++) {
+				// last quad has to generate seperately
+				for (int q = 0; q < ring - 1; q++, v++) {
+					t = setQuad (triangles, t, v, v + 1, v + ring, v + ring + 1);
+				}
+				t = setQuad (triangles, t, v, v - ring + 1, v + ring, v + 1);
+			}
+			// top and bottom
+			t = CreateTopFace (triangles, t, ring);
+
+			mesh.triangles = triangles;
+			yield return null;
+
+		}
+
+		private int CreateTopFace(int[] triangles, int t, int ring) {
+
+			int v = ring * height;
+
+			// first row
+			for (int x = 0; x < width - 1; x++, v++) {
+				t = setQuad (triangles, t, v, v + 1, v - ring + 1, v + ring);
+			}
+			t = setQuad (triangles, t, v, v + 1, v - ring + 1, v + 2);
+
+			// middle rows
+			int vMin = ring * (height + 1) - 1;
+			int vMid = vMin + 1;
+			int vMax = v + 2;
+			for (int z = 1; z < length - 1; z++, vMin--, vMid++, vMax++) {
+				t = setQuad (triangles, t, vMin, vMid, vMin - 1, vMid + width - 1);
+				for (int x = 1; x < width - 1; x++, vMid++) {
+					t = setQuad (triangles, t, vMid, vMid + 1, vMid + width - 1, vMid + width);
+				}
+				t = setQuad (triangles, t, vMid, vMax, vMid + width - 1, vMax + 1);
+			}
+
+			// last row
+			int vTop = vMin - 2;
+			t = setQuad (triangles, t, vMin, vMid, vTop + 1, vTop);
+			for (int x = 1; x < width - 1; x++, vTop--, vMid++) {
+				t = setQuad (triangles, t, vMid, vMid + 1, vTop, vTop - 1);
+			}
+			t = setQuad (triangles, t, vMid, vTop - 2, vTop, vTop - 1);
+
+			return t;
+
 		}
 
 		private int setQuad(int[] triangles, int startIndex, int leftBottom, int rightBottom, int leftTop, int rightTop) {
