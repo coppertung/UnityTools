@@ -39,7 +39,7 @@ namespace UnityTools.Languages {
 		public string getWord(string name) {
 
 			if (!wordsDict.ContainsKey (name)) {
-				throw new KeyNotFoundException ();
+				throw new KeyNotFoundException (name + " not found.");
 			} else {
 				string value = null;
 				wordsDict.TryGetValue (name, out value);

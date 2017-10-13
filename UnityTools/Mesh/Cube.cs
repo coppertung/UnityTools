@@ -114,6 +114,7 @@ namespace UnityTools.Mesh {
 			}
 			// top and bottom
 			t = CreateTopFace (triangles, t, ring);
+			// t = CreateBottomFace (triangles, t, ring);
 
 			mesh.triangles = triangles;
 			yield return null;
@@ -142,13 +143,49 @@ namespace UnityTools.Mesh {
 				t = setQuad (triangles, t, vMid, vMax, vMid + width - 1, vMax + 1);
 			}
 
-			// last row
+			// last row, got problems started from this row
 			int vTop = vMin - 2;
 			t = setQuad (triangles, t, vMin, vMid, vTop + 1, vTop);
 			for (int x = 1; x < width - 1; x++, vTop--, vMid++) {
 				t = setQuad (triangles, t, vMid, vMid + 1, vTop, vTop - 1);
 			}
 			t = setQuad (triangles, t, vMid, vTop - 2, vTop, vTop - 1);
+
+			return t;
+
+		}
+
+		private int CreateBottomFace(int[] triangles, int t, int ring) {
+
+			int v = 1;
+			int vMid = vertices.Length - (width - 1) * (length - 1);
+
+			// first row
+			t = setQuad (triangles, t, ring - 1, vMid, 0, 1);
+			for (int x = 0; x < width - 1; x++, v++, vMid++) {
+				t = setQuad (triangles, t, vMid, vMid + 1, v, v + 1);
+			}
+			t = setQuad (triangles, t, vMid, v + 2, v, v + 1);
+
+			// middle rows
+			int vMin = ring - 2;
+			vMid -= width - 2;
+			int vMax = v + 2;
+			for (int z = 1; z < length - 1; z++, vMin--, vMid++, vMax++) {
+				t = setQuad (triangles, t, vMin, vMid + width - 1, vMin + 1, vMid);
+				for (int x = 1; x < width - 1; x++, vMid++) {
+					t = setQuad (triangles, t, vMid + width - 1, vMid + width, vMid, vMid + 1);
+				}
+				t = setQuad (triangles, t, vMid + width - 1, vMax + 1, vMid, vMax);
+			}
+
+			// last row
+			int vTop = vMin - 1;
+			t = setQuad (triangles, t, vTop + 1, vTop, vTop + 2, vMid);
+			for (int x = 1; x < width - 1; x++, vTop--, vMid++) {
+				t = setQuad (triangles, t, vTop, vTop - 1, vMid, vMid + 1);
+			}
+			t = setQuad (triangles, t, vTop, vTop - 1, vMid, vTop - 2);
 
 			return t;
 
