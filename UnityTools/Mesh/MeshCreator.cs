@@ -34,7 +34,7 @@ namespace UnityTools.Mesh {
 		private List<Vector3> vertices;
 		private bool generated = false;
 
-		void OnGizmosDraw() {
+		void OnDrawGizmos() {
 
 			if (vertices == null || vertices.Count == 0) {
 				return;
@@ -93,7 +93,7 @@ namespace UnityTools.Mesh {
 				numOfVertices = 3;
 			}
 			levels [level].clear ();
-			// verticesInLevel [level].Add (transform.position);
+			levels [level].vertices.Add (transform.position);
 			for (int i = 0; i < numOfVertices; i++) {
 				Vector3 newVertex = transform.position + levels [level].radius * new Vector3 (Mathf.Sin (360f / numOfVertices * i * Mathf.Deg2Rad), Mathf.Cos (360f / numOfVertices * i * Mathf.Deg2Rad));
 				levels [level].vertices.Add (newVertex);
@@ -161,11 +161,11 @@ namespace UnityTools.Mesh {
 					GUILayout.BeginHorizontal ();
 					GUILayout.Label ("Verices Number ");
 					if (GUILayout.Button ("-")) {
-						script.updateLevel (i, script.levels [i].vertices.Count - 1);
+						script.updateLevel (i, script.levels [i].vertices.Count - 2);
 					}
 					GUILayout.Label (script.levels [i].vertices.Count.ToString ());
 					if (GUILayout.Button ("+")) {
-						script.updateLevel (i, script.levels [i].vertices.Count + 1);
+						script.updateLevel (i, script.levels [i].vertices.Count);
 					}
 					GUILayout.EndHorizontal ();
 				}

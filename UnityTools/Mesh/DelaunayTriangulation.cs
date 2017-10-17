@@ -53,18 +53,26 @@ namespace UnityTools.Mesh {
 				}
 			}
 			Debug.Log ("After Delaunay Conditioning: " + triangles.Count);
+			Vector3 normal = Vector3.zero;
 			result = new int[triangles.Count * 3];
 			for (i = 0; i < triangles.Count; i++) {
 				triangle = triangles [i];
-				if (i != triangles.Count - 1) {
+				if (i == 0) {
+					// finding the normal of the surface by finding the normal, take reference with the first triangle
+					normal = Vector3.Cross (vertices [triangle [1]] - vertices [triangle [0]], vertices [triangle [2]] - vertices [triangle [0]]).normalized;
+				}
+				if (Vector3.Cross (vertices [triangle [1]] - vertices [triangle [0]], vertices [triangle [2]] - vertices [triangle [0]]).normalized == normal) {
+					// clockwise
 					result [i * 3] = triangle [0];
 					result [i * 3 + 1] = triangle [1];
 					result [i * 3 + 2] = triangle [2];
 				} else {
-					result [i * 3] = triangle [1];
+					// anti-clockwise
+					result [i * 3] = triangle [0];
 					result [i * 3 + 1] = triangle [2];
-					result [i * 3 + 2] = triangle [0];
+					result [i * 3 + 2] = triangle [1];
 				}
+				Debug.Log (triangle [0] + ", " + triangle [1] + ", " + triangle [2]);
 			}
 
 			return result;
@@ -73,6 +81,7 @@ namespace UnityTools.Mesh {
 
 		private static bool delaunayCondition(int[] triangle, Vector3[] vertices) {
 
+			/*
 			// 3 points of the triangle
 			Vector3 a = vertices [triangle [0]];
 			Vector3 b = vertices [triangle [1]];
@@ -89,6 +98,32 @@ namespace UnityTools.Mesh {
 			// check if there is any vertices exists in the circumsphere, by definition, the circumsphere must not contains any vertices other than the defined three
 			for (int i = 0; i < vertices.Length; i++) {
 				if (i != triangle [0] && i != triangle [1] && i != triangle [2] && Vector3.Distance(circumsphereCenter, vertices[i]) <= circumsphereRadius) {
+					Debug.Log (triangle [0] + ", " + triangle [1] + ", " + triangle [2] + "[" + circumsphereRadius + "] : " + i + "[" + Vector3.Distance (circumsphereCenter, vertices [i]) + "]");
+					return false;
+				}
+			}
+			return true;
+			*/
+			// 3 points of the triangle
+			Vector3 ptA = vertices [triangle [0]];
+			Vector3 ptB = vertices [triangle [1]];
+			Vector3 ptC = vertices [triangle [2]];
+
+			// circumcenter in 3D
+			Vector3 a = ptC - ptB;
+			Vector3 b = ptC - ptA;
+			Vector3 c = ptB - ptA;
+			// vector from a to the circumcenter center
+			Vector3 circumsphereCenter = 
+				(a.sqrMagnitude * (b.sqrMagnitude + c.sqrMagnitude - a.sqrMagnitude) * ptA + b.sqrMagnitude * (c.sqrMagnitude + a.sqrMagnitude - b.sqrMagnitude) * ptB +
+				c.sqrMagnitude * (a.sqrMagnitude + b.sqrMagnitude - c.sqrMagnitude) * ptC) / (a.sqrMagnitude * (b.sqrMagnitude + c.sqrMagnitude - a.sqrMagnitude) +
+				b.sqrMagnitude * (c.sqrMagnitude + a.sqrMagnitude - b.sqrMagnitude) + c.sqrMagnitude * (a.sqrMagnitude + b.sqrMagnitude - c.sqrMagnitude));
+			// Vector3 toCircumsphereCenter = (Vector3.Cross (abXac, ab) * ac.sqrMagnitude + Vector3.Cross (abXac, ac) * ab.sqrMagnitude) / (2f * abXac.sqrMagnitude);
+			float circumsphereRadius = Vector3.Distance(circumsphereCenter, ptA);
+			// check if there is any vertices exists in the circumsphere, by definition, the circumsphere must not contains any vertices other than the defined three
+			for (int i = 0; i < vertices.Length; i++) {
+				if (i != triangle [0] && i != triangle [1] && i != triangle [2] && Vector3.Distance(circumsphereCenter, vertices[i]) <= circumsphereRadius) {
+					Debug.Log (triangle [0] + ", " + triangle [1] + ", " + triangle [2] + "[" + circumsphereRadius + "] : " + i + "[" + Vector3.Distance (circumsphereCenter, vertices [i]) + "]");
 					return false;
 				}
 			}
