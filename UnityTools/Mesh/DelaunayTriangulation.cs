@@ -14,6 +14,7 @@ namespace UnityTools.Mesh {
 
 		/// <summary>
 		/// Calculate the triangles which satisfied the rules of Delanunay Triangulation.
+		/// **ENHANCEMENT REQUIRE** currently O(n^3)
 		/// More information can be checked in:
 		/// https://en.wikipedia.org/wiki/Delaunay_triangulation
 		/// </summary>

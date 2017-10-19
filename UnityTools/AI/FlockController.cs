@@ -14,6 +14,7 @@ namespace UnityTools.AI {
 		[SerializeField]
 		private List<Boid> _boidList;
 		private Dictionary<int, int> _boidGroup;
+		private Dictionary<int, GameObject> _boidGroupTarget;
 
 		/// <summary>
 		/// List of boids that is being controlled by the controller.
@@ -32,11 +33,29 @@ namespace UnityTools.AI {
 			}
 		}
 
+		public Dictionary<int, GameObject> boidGroupTarget {
+			get {
+				return _boidGroupTarget;
+			}
+		}
+
 		/// <summary>
 		/// Update group rate, which means the group of the boids will be updated per how much frames.
 		/// Default is 10.
 		/// </summary>
 		public int updateGroupRate = 10;
+
+		void OnEnable() {
+
+			UpdateManager.RegisterUpdate (this);
+		
+		}
+
+		void OnDisable() {
+
+			UpdateManager.RegisterUpdate (this);
+
+		}
 
 		/// <summary>
 		/// Register the specified boid.
@@ -69,7 +88,7 @@ namespace UnityTools.AI {
 			List<Boid> neighbours = new List<Boid> ();
 			for (int i = 0; i < _boidList.Count; i++) {
 				if (_boidList [i].groupID == boid.groupID && _boidList [i] != boid && Vector3.Distance (_boidList [i].transform.position, boid.transform.position) < boid.neighbourRadius) {
-					neighbours.Add (boidList [i]);
+					neighbours.Add (_boidList [i]);
 				}
 			}
 			return neighbours;
@@ -82,7 +101,7 @@ namespace UnityTools.AI {
 		public void setDirection(Vector3 position) {
 
 			for (int i = 0; i < _boidList.Count; i++) {
-				_boidList [i].velocity = (position - _boidList [i].transform.position).normalized * _boidList [i].speed;
+				_boidList [i].velocity = (position - _boidList [i].transform.position).normalized * _boidList [i].speed * Time.deltaTime;
 			}
 
 		}
@@ -94,9 +113,40 @@ namespace UnityTools.AI {
 
 			for (int i = 0; i < _boidList.Count; i++) {
 				if (_boidList [i].groupID == groupID) {
-					_boidList [i].velocity = (position - _boidList [i].transform.position).normalized * _boidList [i].speed;
+					_boidList [i].velocity = (position - _boidList [i].transform.position).normalized * _boidList [i].speed * Time.deltaTime;
 				}
 			}
+
+		}
+
+		/// <summary>
+		/// Assign target position to all boids, this will initialize the velocity vector of the boids.
+		/// </summary>
+		public void setTarget(GameObject target) {
+
+			_boidGroupTarget.Clear ();
+			_boidGroupTarget.Add (-1, target);
+
+		}
+
+		/// <summary>
+		/// Assign target to all boids of the specified group, this will initialize the velocity vector of the boids.
+		/// </summary>
+		public void setTarget(GameObject target, int groupID) {
+
+			if (_boidGroupTarget.ContainsKey (-1)) {
+				_boidGroupTarget.Clear ();
+			}
+			_boidGroupTarget.Add (groupID, target);
+
+		}
+
+		/// <summary>
+		/// Clear all targets that has been assigned to boids.
+		/// </summary>
+		public void clearTarget() {
+
+			_boidGroupTarget.Clear ();
 
 		}
 
@@ -104,6 +154,7 @@ namespace UnityTools.AI {
 			// Used to replace the Update().
 			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
 			if (Time.frameCount % updateGroupRate == 0) {
+				updateBoidGroupsTarget ();
 				updateBoidGroups ();
 			}
 
@@ -121,7 +172,7 @@ namespace UnityTools.AI {
 					int targetGroupID;
 					_boidGroup.TryGetValue (_boidList [i].GetInstanceID (), out targetGroupID);
 					if (Vector3.Distance (boid.transform.position, _boidList [i].transform.position) < boid.neighbourRadius) {
-						if (groupID == -1 || Utils.Random (100) < _boidList [i].moveToNeighbourGroupChance) {
+						if (groupID == -1 && Utils.Random (100) < _boidList [i].moveToNeighbourGroupChance) {
 							groupID = targetGroupID;
 						}
 					} else {
@@ -137,7 +188,7 @@ namespace UnityTools.AI {
 
 		}
 
-		// **REQUIRE ENHANCEMENT**
+		// **REQUIRE ENHANCEMENT** currently O(n^2)
 		private void updateBoidGroups() {
 
 			for (int i = 0; i < _boidList.Count; i++) {
@@ -170,7 +221,26 @@ namespace UnityTools.AI {
 			}
 
 		}
-			
+
+		private void updateBoidGroupsTarget() {
+
+			if (_boidGroupTarget == null) {
+				_boidGroupTarget = new Dictionary<int, GameObject> ();
+			}
+			if (_boidGroupTarget.ContainsKey (-1)) {
+				setDirection (_boidGroupTarget [-1].transform.position);
+			} else {
+				foreach (int key in _boidGroupTarget.Keys) {
+					if (_boidGroupTarget [key] == null) {
+						_boidGroupTarget.Remove (key);
+					} else {
+						setDirection (_boidGroupTarget [key].transform.position, key);
+					}
+				}
+			}
+
+		}
+
 	}
 
 }

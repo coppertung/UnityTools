@@ -47,7 +47,20 @@ namespace UnityTools.AI {
 		/// <summary>
 		/// FlockController that is used to control this boid.
 		/// </summary>
-		public FlockController flockController;
+		public FlockController flockController {
+			get {
+				return _flockController;
+			}
+			set {
+				if (_flockController != null) {
+					_flockController.unregister (this);
+				}
+				_flockController = value;
+				_flockController.register (this);
+			}
+		}
+		[SerializeField]
+		private FlockController _flockController;
 
 		/// <summary>
 		/// Weight of alignment variable [0,1].
@@ -79,14 +92,18 @@ namespace UnityTools.AI {
 		protected virtual void OnEnable() {
 			
 			UpdateManager.RegisterFixedUpdate (this);
-			flockController.register (this);
+			if (_flockController != null) {
+				_flockController.register (this);
+			}
 
 		}
 
 		protected virtual void OnDisable() {
 
 			UpdateManager.UnregisterFixedUpdate (this);
-			flockController.unregister (this);
+			if (_flockController != null) {
+				_flockController.unregister (this);
+			}
 
 		}
 
@@ -144,7 +161,9 @@ namespace UnityTools.AI {
 				Vector3 alignmentDirection = alignment () * alignmentWeight;
 				Vector3 cohesionDirection = cohesion () * cohesionWeight;
 				Vector3 seperationDirection = seperation () * seperationWeight;
-				velocity = (alignmentDirection + cohesionDirection + seperationDirection).normalized * speed;
+				velocity = (alignmentDirection + cohesionDirection + seperationDirection).normalized * speed * Time.deltaTime;
+			}
+			if (velocity.magnitude > 0) {
 				transform.Translate (velocity);
 			}
 

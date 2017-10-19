@@ -4,41 +4,41 @@ using UnityEngine;
 
 namespace UnityTools {
 
+	/// <summary>
+	/// This is uesd for attaching into the Camera Component in order to do some adjustment or action on it.
+	/// </summary>
 	[RequireComponent(typeof(Camera))]
 	public class CameraAdjustment : MonoBehaviour {
 
-		public int targetAspectRatioWidth;
-		public int targetAspectRatioHeight;
-
-		private float targetAspectRatio;
-		private float windowAspect;
-		private float scaleHeight;
-
-		Camera cam;
+		/// <summary>
+		/// Camera fix aspect ratio action. Will be checked and executed at start.
+		/// </summary>
+		public CameraFixAspectRatio fixAspectRatio;
+		/// <summary>
+		/// The camera.
+		/// </summary>
+		private Camera cam;
 
 		void Awake() {
 
-			targetAspectRatio = (float)targetAspectRatioWidth / targetAspectRatioHeight;
-			windowAspect = (float)Screen.width / Screen.height;
-			scaleHeight = windowAspect / targetAspectRatio;
 			cam = GetComponent<Camera> ();
 
-			if (scaleHeight < 1f) {
-				Rect rect = cam.rect;
-				rect.width = 1f;
-				rect.height = scaleHeight;
-				rect.x = 0;
-				rect.y = (1f - scaleHeight) / 2f;
-				cam.rect = rect;
-			} else {
-				float scaleWidth = 1f / scaleHeight;
-				Rect rect = cam.rect;
-				rect.width = scaleWidth;
-				rect.height = 1f;
-				rect.x = (1f - scaleWidth) / 2f;
-				rect.y = 0;
-				cam.rect = rect;
+			if (fixAspectRatio.takeAction) {
+				fixAspectRatio.execute (cam);
 			}
+
+		}
+
+		/// <summary>
+		/// Invokes the action after t seconds.
+		/// </summary>
+		public IEnumerator invokeAction(ICameraAction action, float t = 0) {
+
+			if (t > 0) {
+				yield return new WaitForSeconds (t);
+			}
+			action.execute (cam);
+			yield return null;
 
 		}
 
