@@ -114,10 +114,14 @@ namespace UnityTools.AI {
 		protected virtual Vector3 alignment() {
 
 			Vector3 direction = new Vector3 ();
+			int count = 0;
 			for (int i = 0; i < neighbours.Count; i++) {
-				direction += neighbours [i].velocity;
+				if (neighbours [i].groupID == groupID) {
+					direction += neighbours [i].velocity;
+					count++;
+				}
 			}
-			direction /= neighbours.Count;
+			direction /= count;
 			return direction.normalized;
 
 		}
@@ -130,10 +134,13 @@ namespace UnityTools.AI {
 		protected virtual Vector3 cohesion() {
 
 			Vector3 direction = new Vector3 ();
+			float distance = 0;
 			for (int i = 0; i < neighbours.Count; i++) {
 				direction += neighbours [i].transform.position;
+				distance += Vector3.Distance (neighbours [i].transform.position, transform.position);
 			}
 			direction /= neighbours.Count;
+			distance /= neighbours.Count;
 			return (direction - transform.position).normalized;
 
 		}
@@ -162,8 +169,10 @@ namespace UnityTools.AI {
 				Vector3 cohesionDirection = cohesion () * cohesionWeight;
 				Vector3 seperationDirection = seperation () * seperationWeight;
 				velocity = (alignmentDirection + cohesionDirection + seperationDirection).normalized * speed * Time.deltaTime;
+				Debug.Log ("Alignment: " + alignmentDirection + "[" + alignmentWeight + "], Cohesion: " + cohesionDirection + "[" + cohesionWeight + "], Seperation: "
+				+ seperationDirection + "[" + seperationWeight + "] | velocity: (" + velocity.x + ", " + velocity.y + ", " + velocity.z + ")");
 			}
-			if (velocity.magnitude > 0) {
+			if (velocity.magnitude != 0) {
 				transform.Translate (velocity);
 			}
 
