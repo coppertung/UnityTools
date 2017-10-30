@@ -5,11 +5,14 @@ using UnityEngine;
 
 namespace UnityTools.AI {
 
+	#region Delegate_Functions
 	/// <summary>
 	/// Definition of the delegate heuristic function.
 	/// </summary>
 	public delegate float heuristicFunctionEvent ();
+	#endregion
 
+	#region Interfaces
 	/// <summary>
 	/// Interface for the nodes that will use A* algorithm, define T as the type of the value variable.
 	/// </summary>
@@ -50,6 +53,7 @@ namespace UnityTools.AI {
 		float cost (T target);
 
 	}
+	#endregion
 
 	/// <summary>
 	/// A* algorithm implemented with interface IAstarable.
@@ -57,6 +61,7 @@ namespace UnityTools.AI {
 	/// </summary>
 	public class AStarAlgorithm {
 
+		#region Functions
 		/// <summary>
 		/// A Coroutine function that can be used to find the best path according the heuristic function of the nodes.
 		/// Noted that T is the type of the value variable of the node.
@@ -147,6 +152,7 @@ namespace UnityTools.AI {
 			pathHandler (totalPath);
 
 		}
+		#endregion
 
 	}
 

@@ -6,12 +6,19 @@ namespace UnityTools {
 
     public class CalendarController {
 
+		#region Data_Class
 		/// <summary>
 		/// Class which used to store the data of day.
 		/// </summary>
 		public class DayData {
 
+			/// <summary>
+			/// Day number.
+			/// </summary>
 			public int day;
+			/// <summary>
+			/// Day of week.
+			/// </summary>
 			public DayOfWeek dayOfWeek;
 
 			/// <summary>
@@ -41,7 +48,9 @@ namespace UnityTools {
 			}
 
 		}
+		#endregion
 
+		#region Fields_And_Properties
 		private DateTime _date;
 		private Calendar calendar;
 
@@ -52,7 +61,9 @@ namespace UnityTools {
 			get;
 			private set;
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Initialize the calendar controller instance.
 		/// </summary>
@@ -189,6 +200,7 @@ namespace UnityTools {
 			}
 
 		}
+		#endregion
 
 	}
 

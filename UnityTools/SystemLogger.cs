@@ -6,6 +6,7 @@ namespace UnityTools {
 
     public class SystemLogger {
 
+		#region Fields_And_Properties
         /// <summary>
         /// The directory of the log file.
         /// By default, it will be "persistent data path + /Log/".
@@ -16,7 +17,9 @@ namespace UnityTools {
         /// By defualt, it will be "(product name)-systemLog-(year)-(month)-(day).log".
         /// </summary>
 		public static string logFile = Application.productName + "-systemLog-" + DateTime.Now.Year.ToString () + "-" + DateTime.Now.Month.ToString () + "-" + DateTime.Now.Day.ToString () + ".log";
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Log the specified message to a log file, which will be stored in persistent data path.
 		/// </summary>
@@ -34,6 +37,7 @@ namespace UnityTools {
 			sw.Close ();
 
 		}
+		#endregion
 
 	}
 

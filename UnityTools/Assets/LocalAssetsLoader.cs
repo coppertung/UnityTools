@@ -9,6 +9,7 @@ namespace UnityTools.Assets {
 
 	public class LocalAssetsLoader : UnityEngine.AsyncOperation {
 
+		#region Fields_And_Properties
 		public UnityEngine.Object asset;
 
 		public new bool isDone {
@@ -21,7 +22,9 @@ namespace UnityTools.Assets {
 				return asset == null ? 0 : 1;
 			}
 		}
+		#endregion
 
+		#region Functions
 		public LocalAssetsLoader(string assetPath, System.Type type) {
 
 			asset =  AssetDatabase.LoadAssetAtPath (assetPath, type);
@@ -33,6 +36,7 @@ namespace UnityTools.Assets {
 			return asset as T;
 
 		}
+		#endregion
 
 	}
 

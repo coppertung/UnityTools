@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace UnityTools {
 
+	#region Interfaces
     /// <summary>
     /// This is the interface for the pooled objects in Object Pooler.
     /// </summary>
@@ -34,6 +35,7 @@ namespace UnityTools {
 		void init (int id, Vector3 position, Quaternion rotation);
 
 	}
+	#endregion
 
 	/// <summary>
 	/// Object Pooler is used to manage the pooled objects where using activate and deactivate objects instead of instantiate and destroy in order to save the memory.
@@ -42,6 +44,7 @@ namespace UnityTools {
 	/// </summary>
 	public class ObjectPooler {
 
+		#region Fields_And_Properties
 		/// <summary>
 		/// List which store the pooled objects (script).
 		/// </summary>
@@ -69,7 +72,9 @@ namespace UnityTools {
 			get;
 			private set;
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Get a pooled object from the stored list.
 		/// If there is no suitable pooled object, new pool object will be instantiated and stored in the list.
@@ -143,6 +148,7 @@ namespace UnityTools {
 			Count = 0;
 
 		}
+		#endregion
 
 	}
 

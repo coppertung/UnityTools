@@ -10,6 +10,7 @@ namespace UnityTools.Languages {
 	/// </summary>
 	public abstract class WordDict {
 
+		#region Fields_And_Properties
 		protected Dictionary<string, string> wordsDict;
 		protected string language;
 
@@ -20,7 +21,9 @@ namespace UnityTools.Languages {
 			get;
 			protected set;
 		}
+		#endregion
 
+		#region Functions
 		protected abstract IEnumerator init();
 
 		/// <summary>
@@ -56,6 +59,7 @@ namespace UnityTools.Languages {
             wordsDict.Clear();
 
         }
+		#endregion
 
 	}
 

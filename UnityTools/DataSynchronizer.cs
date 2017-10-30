@@ -3,9 +3,12 @@
 namespace UnityTools {
 
     public class DataSynchronizer<T> {
-		
-		public delegate bool SynchronizationMethod();
 
+		#region Delegate_Functions_Declaration
+		public delegate bool SynchronizationMethod();
+		#endregion
+
+		#region Fields_And_Properties
 		/// <summary>
 		/// A Buffer used to store the expected respond of the requests.
 		/// </summary>
@@ -36,7 +39,9 @@ namespace UnityTools {
 			get;
 			private set;
 		}
+		#endregion
 
+		#region Constructor
 		/// <summary>
 		/// Initializes a new instance of the synchronizer.
 		/// </summary>
@@ -46,7 +51,9 @@ namespace UnityTools {
 			respondBuffer = new List<T> ();
 
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Add the sychronization function to the delegated function doSynchronization (Read-only).
 		/// </summary>
@@ -147,6 +154,7 @@ namespace UnityTools {
 			errorCount = 0;
 
 		}
+		#endregion
 
 	}
 

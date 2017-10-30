@@ -12,12 +12,7 @@ namespace UnityTools.AI.NavMesh2D {
 	[RequireComponent(typeof(Collider2D))]
 	public class TopDown2DNavMeshAgent : MonoBehaviour, IFixedUpdateable {
 
-		// The update call will be called in prior if the priority is larger.
-		public int priority {
-			get;
-			set;
-		}
-			
+		#region Fields_And_Properties
 		/// <summary>
 		/// Speed of agent travel through the path.
 		/// </summary>
@@ -51,7 +46,9 @@ namespace UnityTools.AI.NavMesh2D {
 		}
 
 		private Collider2D col2D;
+		#endregion
 
+		#region MonoBehaviour
 		void Awake() {
 
 			col2D = GetComponent<Collider2D>();
@@ -60,7 +57,9 @@ namespace UnityTools.AI.NavMesh2D {
 			}
 
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Set the target position of the agent.
 		/// </summary>
@@ -145,6 +144,38 @@ namespace UnityTools.AI.NavMesh2D {
 
 		}
 
+		private Collider2D getFirstNonSelfOverlapPoint(Vector2 position) {
+
+			Collider2D[] col = Physics2D.OverlapPointAll (position);
+			for (int i = 0; i < col.Length; i++) {
+				if (col [i].gameObject != gameObject) {
+					return col [i];
+				}
+			}
+			return null;
+
+		}
+
+		#if UNITY_EDITOR
+		void OnDrawGizmosSelected() {
+
+			// view the custom bounding of the agent
+			if (customBoundOffset > 0) {
+				Gizmos.color = Color.green;
+				Gizmos.DrawWireSphere (transform.position, customBoundOffset);
+			}
+
+		}
+		#endif
+		#endregion
+
+		#region IFixedUpdateable
+		// The update call will be called in prior if the priority is larger.
+		public int priority {
+			get;
+			set;
+		}
+
 		public void fixedUpdateEvent() {
 			// Used to replace the FixedUpdate().
 			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
@@ -199,30 +230,7 @@ namespace UnityTools.AI.NavMesh2D {
 				UpdateManager.UnregisterFixedUpdate (this);
 			}
 		}
-
-		private Collider2D getFirstNonSelfOverlapPoint(Vector2 position) {
-
-			Collider2D[] col = Physics2D.OverlapPointAll (position);
-			for (int i = 0; i < col.Length; i++) {
-				if (col [i].gameObject != gameObject) {
-					return col [i];
-				}
-			}
-			return null;
-
-		}
-
-		#if UNITY_EDITOR
-		void OnDrawGizmosSelected() {
-
-			// view the custom bounding of the agent
-			if (customBoundOffset > 0) {
-				Gizmos.color = Color.green;
-				Gizmos.DrawWireSphere (transform.position, customBoundOffset);
-			}
-
-		}
-		#endif
+		#endregion
 
 	}
 

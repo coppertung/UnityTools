@@ -20,8 +20,11 @@ namespace UnityTools.Languages {
 	/// </summary>
 	public class XmlWordDict : WordDict {
 
+		#region Fields_And_Properties
 		private XmlDocument xmlDoc;
+		#endregion
 
+		#region Constructors
 		/// <summary>
 		/// Import the dictionary using a xml file with a provided file path.
 		/// The file path should include the file name and extension also, e.g. Application.dataPath + "/test.xml".
@@ -67,7 +70,9 @@ namespace UnityTools.Languages {
 			obj.StartCoroutine (loadFromWeb (url, errorHandler));
 
 		}
+		#endregion
 
+		#region Functions
 		protected override IEnumerator init() {
 
 			if (wordsDict == null)
@@ -135,6 +140,7 @@ namespace UnityTools.Languages {
 			#endif
 
 		}
+		#endregion
 
 	}
 

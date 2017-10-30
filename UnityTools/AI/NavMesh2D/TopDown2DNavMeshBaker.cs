@@ -13,6 +13,7 @@ namespace UnityTools.AI.NavMesh2D {
     [ExecuteInEditMode]
     public class TopDown2DNavMeshBaker : MonoBehaviour {
 
+		#region Fields_And_Properties
 		public enum NavMeshStyle {
 			triangle,
 			square
@@ -58,7 +59,9 @@ namespace UnityTools.AI.NavMesh2D {
 			get;
 			protected set;
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Do initialization to the list of Navigation Mesh Nodes and the list of Obstacles Nodes.
 		/// </summary>
@@ -288,9 +291,11 @@ namespace UnityTools.AI.NavMesh2D {
 
         }
 		#endif
+		#endregion
 
     }
 
+	#region Editor_Only
 	#if UNITY_EDITOR
     [CustomEditor(typeof(TopDown2DNavMeshBaker))]
     public class TopDown2DNavMeshBakerEditor : Editor {
@@ -338,4 +343,6 @@ namespace UnityTools.AI.NavMesh2D {
         }
     }
 	#endif
+	#endregion
+
 }

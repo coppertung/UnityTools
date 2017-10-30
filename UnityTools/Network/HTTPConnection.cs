@@ -26,7 +26,7 @@ namespace UnityTools.Network {
 				errorHandler (new Exception ("HTTP Error"));
 				#else
 				if (request.isError) {
-					errorHandler (new Exception (request.error));
+					errorHandler (new Exception ("Network Error: " + request.error));
 				#endif
 				} else {
 					responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
@@ -60,7 +60,7 @@ namespace UnityTools.Network {
 				errorHandler (new Exception ("HTTP Error"));
 				#else
 				if (request.isError) {
-					errorHandler (new Exception (request.error));
+					errorHandler (new Exception ("Network Error: " + request.error));
 				#endif
 				} else {
 					responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
@@ -94,7 +94,7 @@ namespace UnityTools.Network {
 				errorHandler (new Exception ("HTTP Error"));
 				#else
 				if (request.isError) {
-					errorHandler (new Exception (request.error));
+					errorHandler (new Exception ("Network Error: " + request.error));
 				#endif
 				} else {
 					responseCallback (JsonUtility.FromJson<T> (request.downloadHandler.text));
@@ -128,7 +128,7 @@ namespace UnityTools.Network {
 				errorHandler (new Exception ("HTTP Error"));
 				#else
 				if (request.isError) {
-					errorHandler (new Exception (request.error));
+					errorHandler (new Exception ("Network Error: " + request.error));
 				#endif
 				} else {
 					Dictionary<String, String> headers = request.GetResponseHeaders ();

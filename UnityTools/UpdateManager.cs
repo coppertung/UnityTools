@@ -4,6 +4,7 @@ using UnityTools.Patterns;
 
 namespace UnityTools {
 
+	#region Interfaces
     /// <summary>
     /// This is the interface to use for register the Update Manager.
     /// Update calls must implemented in updateEvent().
@@ -73,6 +74,7 @@ namespace UnityTools {
         void lateUpdateEvent();
 
     }
+	#endregion
 
     /// <summary>
     /// Update Manager is used to manage the update calls.
@@ -82,6 +84,7 @@ namespace UnityTools {
     /// </summary>
     public class UpdateManager : Singleton<UpdateManager> {
 
+		#region Fields_And_Properties
 		private static List<IUpdateable> _updateablesList = new List<IUpdateable>();
         private static List<IFixedUpdateable> _fixedUpdateablesList = new List<IFixedUpdateable>();
         private static List<ILateUpdateable> _lateUpdateablesList = new List<ILateUpdateable>();
@@ -113,7 +116,9 @@ namespace UnityTools {
                 return _lateUpdateablesList;
             }
         }
+		#endregion
 
+		#region Call_Unity_Update_Functions
         void Update () {
 
 			if (_updateablesList.Count > 0) {
@@ -157,7 +162,9 @@ namespace UnityTools {
             }
 
         }
+		#endregion
 
+		#region Register_Issues
         /// <summary>
         /// Register the specified Update Call.
         /// Can invoke the sort by setting the autoSort as true (default is false).
@@ -344,6 +351,7 @@ namespace UnityTools {
             }
 
         }
+		#endregion
 
 	}
 

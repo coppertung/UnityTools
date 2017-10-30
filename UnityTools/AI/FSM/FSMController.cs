@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace UnityTools.AI.FSM {
 
+	#region Interfaces
 	/// <summary>
 	/// Interface to define the states used in FSM.
 	/// </summary>
@@ -34,18 +35,14 @@ namespace UnityTools.AI.FSM {
 		void exitState();
 
 	}
+	#endregion
 
 	/// <summary>
 	/// This is the controller of the Finite State Machine, which use IFSMState as its state.
 	/// </summary>
 	public class FSMController : IUpdateable, IDisposable {
 
-		// The update call will be called in prior if the priority is larger.
-		public int priority {
-			get;
-			set;
-		}
-
+		#region Fields_And_Properties
 		private Dictionary<string, IFSMState> states = null;
 
 		/// <summary>
@@ -69,7 +66,9 @@ namespace UnityTools.AI.FSM {
 		/// The current state.
 		/// </summary>
 		public IFSMState currentState = null;
+		#endregion
 
+		#region Constructors
 		/// <summary>
 		/// Constructor.
 		/// Name of start state or default state must be inputed here.
@@ -81,7 +80,9 @@ namespace UnityTools.AI.FSM {
 			defaultState = startStateName;
 
 		}
+		#endregion
 
+		#region IDisposeable
 		/// <summary>
 		/// Releases all resources.
 		/// Must be called before the object is deleted or set to null.
@@ -93,7 +94,9 @@ namespace UnityTools.AI.FSM {
 			}
 
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Add an integer variable.
 		/// </summary>
@@ -268,6 +271,14 @@ namespace UnityTools.AI.FSM {
 			}
 
 		}
+		#endregion
+
+		#region IUpdateable
+		// The update call will be called in prior if the priority is larger.
+		public int priority {
+			get;
+			set;
+		}
 
 		public void updateEvent() {
 			// Used to replace the FixedUpdate().
@@ -284,6 +295,7 @@ namespace UnityTools.AI.FSM {
 			}
 
 		}
+		#endregion
 
 	}
 

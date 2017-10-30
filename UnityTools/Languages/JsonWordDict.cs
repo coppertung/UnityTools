@@ -8,6 +8,7 @@ using UnityEngine.Networking;
 
 namespace UnityTools.Languages {
 
+	#region Data_Classes
     /// <summary>
     /// The outer part of the dictionary, which holds elements.
     /// </summary>
@@ -39,6 +40,7 @@ namespace UnityTools.Languages {
 		public string value;
 
 	}
+	#endregion
 
 	/// <summary>
 	/// This class is used to store the dictionary of the words in json form in order to achieve multi-languages.
@@ -62,8 +64,11 @@ namespace UnityTools.Languages {
 	/// </summary>
 	public class JsonWordDict : WordDict {
 
+		#region Fields_And_Properties
 		private JsonWordDictDocument jsonDoc;
+		#endregion
 
+		#region Constructors
 		/// <summary>
 		/// Import the dictionary using a json file with a provided file path.
 		/// The file path should include the file name and extension also, e.g. Application.dataPath + "/test.json".
@@ -107,7 +112,9 @@ namespace UnityTools.Languages {
 			obj.StartCoroutine (loadFromWeb (url, errorHandler));
 
 		}
+		#endregion
 
+		#region Functions
 		protected override IEnumerator init() {
 			
 			if (wordsDict == null)
@@ -192,6 +199,7 @@ namespace UnityTools.Languages {
 			#endif
 
 		}
+		#endregion
 
 	}
 

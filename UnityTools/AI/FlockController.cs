@@ -6,11 +6,7 @@ namespace UnityTools.AI {
 
 	public class FlockController : MonoBehaviour, IUpdateable {
 
-		// The update call will be called in prior if the priority is larger.
-		public int priority {
-			get;
-			set;
-		}
+		#region Fields_And_Properties
 		[SerializeField]
 		private List<Boid> _boidList;
 		private Dictionary<int, int> _boidGroup;
@@ -44,7 +40,9 @@ namespace UnityTools.AI {
 		/// Default is 10.
 		/// </summary>
 		public int updateGroupRate = 10;
+		#endregion
 
+		#region MonoBehaviour
 		void OnEnable() {
 
 			UpdateManager.RegisterUpdate (this);
@@ -56,7 +54,9 @@ namespace UnityTools.AI {
 			UpdateManager.RegisterUpdate (this);
 
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Register the specified boid.
 		/// </summary>
@@ -150,16 +150,6 @@ namespace UnityTools.AI {
 
 		}
 
-		public void updateEvent() {
-			// Used to replace the Update().
-			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
-			if (Time.frameCount % updateGroupRate == 0) {
-				updateBoidGroupsTarget ();
-				updateBoidGroups ();
-			}
-
-		}
-
 		private void addToDict(Boid boid) {
 
 			if (_boidGroup == null) {
@@ -240,6 +230,25 @@ namespace UnityTools.AI {
 			}
 
 		}
+		#endregion
+
+		#region IUpdateable
+		// The update call will be called in prior if the priority is larger.
+		public int priority {
+			get;
+			set;
+		}
+
+		public void updateEvent() {
+			// Used to replace the Update().
+			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
+			if (Time.frameCount % updateGroupRate == 0) {
+				updateBoidGroupsTarget ();
+				updateBoidGroups ();
+			}
+
+		}
+		#endregion
 
 	}
 

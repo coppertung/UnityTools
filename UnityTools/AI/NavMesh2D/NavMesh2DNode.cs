@@ -10,12 +10,13 @@ using UnityEngine;
 
 namespace UnityTools.AI.NavMesh2D {
 
+	#region Node
 	/// <summary>
 	/// Nodes that will be used in the Navigation Mesh 2D system, which inherited the IAstarable interface in order to use the A* Algorithm.
 	/// </summary>
 	[System.Serializable]
     public class NavMesh2DNode : IAStarable<Vector3> {
-		
+
 		[SerializeField]
 		private int _id;
 		[SerializeField]
@@ -84,13 +85,15 @@ namespace UnityTools.AI.NavMesh2D {
 		}
 
     }
+	#endregion
 
 	/// <summary>
 	/// The class stored the nodes of the Navigation Mesh 2D system.
 	/// </summary>
 	[System.Serializable]
 	public class NavMesh2DNodeList {
-		
+
+		#region Fields_And_Properties
 		/// <summary>
 		/// Acceptable error of the unit length, in order to find out the nodes that is very close (within the unit error distance) to obstacles.
 		/// This variable must prevent from having large value.
@@ -102,7 +105,9 @@ namespace UnityTools.AI.NavMesh2D {
 		/// The list of the nodes.
 		/// </summary>
 		public List<NavMesh2DNode> nodes;
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Find the nearest node from the specified position.
 		/// </summary>
@@ -179,6 +184,7 @@ namespace UnityTools.AI.NavMesh2D {
 			}
 
 		}
+		#endregion
 
 	}
 

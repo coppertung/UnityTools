@@ -7,6 +7,7 @@ namespace UnityTools.AI.FSM {
 
 	public class StateTransition {
 
+		#region Fields_And_Properties
 		private Dictionary<string, int> intConditions = null;
 		private Dictionary<string, float> floatConditions = null;
 		private Dictionary<string, bool> boolConditions = null;
@@ -15,7 +16,9 @@ namespace UnityTools.AI.FSM {
 		/// The name of next state.
 		/// </summary>
 		public string nextState = null;
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Add an integer condition.
 		/// </summary>
@@ -171,6 +174,7 @@ namespace UnityTools.AI.FSM {
 			return true;
 
 		}
+		#endregion
 
 	}
 

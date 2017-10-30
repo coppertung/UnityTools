@@ -7,6 +7,7 @@ namespace UnityTools.Sprites {
 
     public class NumberText {
 
+		#region Fields_And_Properties
 		private static Dictionary<string, Sprite> _numTextDict = new Dictionary<string, Sprite> ();
 
 		/// <summary>
@@ -18,7 +19,9 @@ namespace UnityTools.Sprites {
 				return _numTextDict;
 			}
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Add the sprite to the dictionary.
 		/// Noted that it only supports for the number, dot, dollar sign, positive and negative sign.
@@ -108,6 +111,7 @@ namespace UnityTools.Sprites {
 			newNumber.transform.localScale = new Vector3 (scale, scale, scale);
 
 		}
+		#endregion
 
 	}
 

@@ -10,6 +10,7 @@ namespace UnityTools {
 
     public class Utils {
 
+		#region Platform_dependency
 		#if UNITY_EDITOR
 		/// <summary>
 		/// Gets the build platform.
@@ -36,12 +37,9 @@ namespace UnityTools {
 			}
 		}
 		#endif
-        
-        /// <summary>
-        /// The default start date time of the unix time stamp.
-        /// </summary>
-        public static DateTime UnixStartDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+		#endregion
 
+		#region Secure_Random_Number_Generator
 		///	<summary>
 		///	Generated an integer number randomly in range [0, max).
 		///	</summary>
@@ -75,7 +73,9 @@ namespace UnityTools {
 			return rngNum;
 
 		}
+		#endregion
 
+		#region Screen_Scale_Issue
 		/// <summary>
 		/// Gets the screen scale from the canvas scaler of the parent of the input gameobject (assumed that it is a canvas).
 		/// </summary>
@@ -89,6 +89,13 @@ namespace UnityTools {
 			}
 
 		}
+		#endregion
+
+		#region Unix_Time
+		/// <summary>
+		/// The default start date time of the unix time stamp.
+		/// </summary>
+		public static DateTime UnixStartDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
 
         /// <summary>
         /// Convert unix time stamp to DateTime object.
@@ -111,6 +118,7 @@ namespace UnityTools {
             return (double)unixTimestampInTicks / TimeSpan.TicksPerSecond;
 
         }
+		#endregion
 
 	}
 

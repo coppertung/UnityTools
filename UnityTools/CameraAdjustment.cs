@@ -10,25 +10,35 @@ namespace UnityTools {
 	[RequireComponent(typeof(Camera))]
 	public class CameraAdjustment : MonoBehaviour {
 
+		#region Fields_And_Properties
 		/// <summary>
 		/// Camera fix aspect ratio action. Will be checked and executed at start.
 		/// </summary>
 		public CameraFixAspectRatio fixAspectRatio;
 		/// <summary>
+		/// Camera zoom action. Need to update its FOV (Field Of View) before be executed.
+		/// </summary>
+		public CameraZoom zoom;
+		/// <summary>
 		/// The camera.
 		/// </summary>
 		private Camera cam;
+		#endregion
 
+		#region Unity_Functions
 		void Awake() {
 
 			cam = GetComponent<Camera> ();
 
-			if (fixAspectRatio.takeAction) {
-				fixAspectRatio.execute (cam);
-			}
+			// initial the aspect ratio of the game
+			fixAspectRatio.execute (cam);
+			// initialize zoom action class
+			zoom.execute (cam);
 
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// Invokes the action after t seconds.
 		/// </summary>
@@ -41,6 +51,7 @@ namespace UnityTools {
 			yield return null;
 
 		}
+		#endregion
 
 	}
 

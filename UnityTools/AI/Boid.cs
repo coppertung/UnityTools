@@ -16,12 +16,7 @@ namespace UnityTools.AI {
 	/// </summary>
 	public abstract class Boid : MonoBehaviour, IFixedUpdateable {
 
-		// The update call will be called in prior if the priority is larger.
-		public int priority {
-			get;
-			set;
-		}
-
+		#region Fields_And_Properties
 		/// <summary>
 		/// Group ID of the boid.
 		/// </summary>
@@ -88,7 +83,9 @@ namespace UnityTools.AI {
 		/// Velocity of the boid.
 		/// </summary>
 		public Vector3 velocity;
+		#endregion
 
+		#region MonoBehaviour
 		protected virtual void OnEnable() {
 			
 			UpdateManager.RegisterFixedUpdate (this);
@@ -106,7 +103,9 @@ namespace UnityTools.AI {
 			}
 
 		}
+		#endregion
 
+		#region Functions
 		/// <summary>
 		/// This function is used to find out the alignment vector.
 		/// By definition, alignment is the behaviour that causes a particular agent to line up with agents close by.
@@ -160,6 +159,14 @@ namespace UnityTools.AI {
 			return direction.normalized;
 
 		}
+		#endregion
+
+		#region IFixedUpdateable
+		// The update call will be called in prior if the priority is larger.
+		public int priority {
+			get;
+			set;
+		}
 
 		public virtual void fixedUpdateEvent() {
 			// Used to replace the FixedUpdate().
@@ -177,6 +184,7 @@ namespace UnityTools.AI {
 			}
 
 		}
+		#endregion
 
 	}
 

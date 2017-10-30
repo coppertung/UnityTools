@@ -12,6 +12,7 @@ namespace UnityTools.Network {
 	/// </summary>
 	public class JsonParser : MonoBehaviour {
 
+		#region Functions
 		/// <summary>
 		/// Parse the object to json string.
 		/// </summary>
@@ -81,6 +82,7 @@ namespace UnityTools.Network {
 			return newString;
 
 		}
+		#endregion
 
 	}
 

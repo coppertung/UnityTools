@@ -14,6 +14,7 @@ namespace UnityTools.Assets {
 
 	public class AssetsLoader {
 
+		#region Fields_And_Properties
 		private static AssetBundle _assetBundle;
 		private static bool _loadingAssetBundle = false;
 
@@ -33,7 +34,9 @@ namespace UnityTools.Assets {
 				return _loadingAssetBundle;
 			}
 		}
+		#endregion
 
+		#region Editor_Only
 		#if UNITY_EDITOR
 		/// <summary>
 		/// Are the assets loaded from the folder?
@@ -61,6 +64,9 @@ namespace UnityTools.Assets {
 
 		}
 		#endif
+		#endregion
+
+		#region Functions
 		/// <summary>
 		/// Check whether the asset exists.
 		/// </summary>
@@ -202,6 +208,7 @@ namespace UnityTools.Assets {
 			_assetBundle = null;
 
 		}
+		#endregion
 
 	}
 
