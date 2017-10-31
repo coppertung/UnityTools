@@ -20,6 +20,10 @@ namespace UnityTools {
 		/// </summary>
 		public CameraZoom zoom;
 		/// <summary>
+		/// Camera transition action. Need to assign its destination before be executed.
+		/// </summary>
+		public CameraTransition transition;
+		/// <summary>
 		/// The camera.
 		/// </summary>
 		private Camera cam;

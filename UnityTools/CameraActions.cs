@@ -83,7 +83,7 @@ namespace UnityTools {
 
 		#region Fields_And_Properties
 		/// <summary>
-		/// Is the action be actived?
+		/// Is the action be activated?
 		/// </summary>
 		public bool isActive;
 		/// <summary>
@@ -176,6 +176,95 @@ namespace UnityTools {
 			if (targetCam != null) {
 				targetCam.fieldOfView = Mathf.Lerp (targetCam.fieldOfView, currentFieldOfView, Time.deltaTime * smoothTime);
 				if (Mathf.Approximately (targetCam.fieldOfView, currentFieldOfView)) {
+					targetCam.fieldOfView = currentFieldOfView;
+					targetCam = null;
+					UpdateManager.UnregisterUpdate (this);
+				}
+			}
+		}
+		#endregion
+
+	}
+
+	/// <summary>
+	/// Camera transition action.
+	/// Set up the destination, then call the execute function.
+	/// </summary>	
+	[System.Serializable]
+	public class CameraTransition : ICameraAction, IUpdateable {
+
+		#region Fields_And_Properties
+		/// <summary>
+		/// Is the action be activated?
+		/// </summary>
+		public bool isActive;
+		/// <summary>
+		/// The speed of the transition action.
+		/// </summary>
+		public float speed;
+		/// <summary>
+		/// The smooth time of the transition action.
+		/// Default is 0.1 second.
+		/// </summary>
+		public float smoothTime = 0.1f;
+		/// <summary>
+		/// The error distance of the transition action.
+		/// Default is 0.1 unit.
+		/// </summary>
+		public float errorDistance = 0.1f;
+		/// <summary>
+		/// The destination of the transition action.
+		/// </summary>
+		public Vector3 destination {
+			get;
+			protected set;
+		}
+
+		private Vector3 refSpeed = Vector3.one;
+		private Camera targetCam = null;
+		#endregion
+
+		#region Functions
+		/// <summary>
+		/// Set the destination of the transition action.
+		/// However, execute function must be called in order to apply transition action.
+		/// </summary>
+		public void setDestination(Vector3 position) {
+
+			destination = position;
+
+		}
+
+		/// <summary>
+		/// Function to apply transition action on the specified camera.
+		/// </summary>
+		public void execute(Camera cam) {
+
+			if (isActive) {
+				if (refSpeed == Vector3.one) {
+					refSpeed *= speed;
+				}
+				targetCam = cam;
+				UpdateManager.RegisterUpdate (this);
+			}
+
+		}
+		#endregion
+
+		#region IUpdateable
+		// The update call will be called in prior if the priority is larger.
+		public int priority {
+			get;
+			set;
+		}
+
+		public void updateEvent() {
+			// Used to replace the Update().
+			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
+			if (targetCam != null) {
+				targetCam.transform.position = Vector3.SmoothDamp (targetCam.transform.position, destination, ref refSpeed, smoothTime);
+				if (Vector3.Distance(targetCam.transform.position, destination) <= errorDistance) {
+					targetCam.transform.position = destination;
 					targetCam = null;
 					UpdateManager.UnregisterUpdate (this);
 				}
