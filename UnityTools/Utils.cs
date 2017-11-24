@@ -120,6 +120,18 @@ namespace UnityTools {
         }
 		#endregion
 
+		#region Animator
+		/// <summary>
+		/// The current animation of specified animator is ended or not?
+		/// </summary>
+		public static bool AnimatorCurrentAnimationIsEnded(Animator anim, int layerIndex = 0) {
+
+			AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo (layerIndex);
+			return state.normalizedTime > state.length / 2;
+
+		}
+		#endregion
+
 	}
 
 }
