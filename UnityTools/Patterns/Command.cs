@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +7,16 @@ namespace UnityTools.Patterns {
 
 	#region Interfaces
 	/// <summary>
-	/// Interface used for command pattern.
+	/// Interface used for command pattern, T is the command class.
 	/// </summary>
-	public interface ICommand {
+	public interface ICommand<T> {
+
+		/// <summary>
+		/// Get the command class.
+		/// </summary>
+		T commandClass {
+			get;
+		}
 
 		/// <summary>
 		/// Execute the command.
@@ -26,7 +34,7 @@ namespace UnityTools.Patterns {
 	/// <summary>
 	/// Command element, which stores command id and the command class.
 	/// </summary>
-	public class CommandElement {
+	public class CommandElement<T> {
 
 		/// <summary>
 		/// The identifier of the command.
@@ -35,7 +43,7 @@ namespace UnityTools.Patterns {
 		/// <summary>
 		/// Command class.
 		/// </summary>
-		public ICommand command;
+		public ICommand<T> command;
 
 	}
 	#endregion
@@ -48,7 +56,7 @@ namespace UnityTools.Patterns {
 	/// http://www.habrador.com/tutorials/programming-patterns/1-command-pattern/
 	/// http://gameprogrammingpatterns.com/command.html
 	/// </summary>
-	public class CommandController {
+	public class CommandController<T> {
 
 		#region Fields_And_Properties
 		private int commandCount;
@@ -64,7 +72,7 @@ namespace UnityTools.Patterns {
 		/// <summary>
 		/// The command list, which stores the full history of the commands.
 		/// </summary>
-		public List<CommandElement> commandList {
+		public List<CommandElement<T>> commandList {
 			get;
 			protected set;
 		}
@@ -77,7 +85,7 @@ namespace UnityTools.Patterns {
 		public CommandController() {
 
 			currentCommandID = -1;
-			commandList = new List<CommandElement> ();
+			commandList = new List<CommandElement<T>> ();
 
 		}
 		#endregion
@@ -86,9 +94,9 @@ namespace UnityTools.Patterns {
 		/// <summary>
 		/// Add a new command.
 		/// </summary>
-		public void newCommand(ICommand command) {
+		public void newCommand(ICommand<T> command) {
 
-			CommandElement newCommandElement = new CommandElement ();
+			CommandElement<T> newCommandElement = new CommandElement<T> ();
 			newCommandElement.id = commandCount;
 			newCommandElement.command = command;
 			commandList.Add (newCommandElement);
@@ -99,7 +107,7 @@ namespace UnityTools.Patterns {
 		/// <summary>
 		/// Remove the specified command.
 		/// </summary>
-		public void removeCommand (ICommand command) {
+		public void removeCommand (ICommand<T> command) {
 
 			for (int i = 0; i < commandList.Count; i++) {
 				if (commandList [i].command == command) {
@@ -115,7 +123,11 @@ namespace UnityTools.Patterns {
 		/// </summary>
 		public void removeCommandAt(int commandID) {
 
-			commandList.RemoveAt (commandID);
+			for (int i = commandList.Count - 1; i >= 0; i--) {
+				if (commandList [i].id == commandID) {
+					commandList.RemoveAt (i);
+				}
+			}
 
 		}
 
@@ -124,7 +136,7 @@ namespace UnityTools.Patterns {
 		/// </summary>
 		public void removeCommandBefore(int commandID) {
 
-			for (int i = commandList.Count; i > 0; i--) {
+			for (int i = commandList.Count - 1; i >= 0; i--) {
 				if (commandList [i].id < commandID) {
 					commandList.RemoveAt (i);
 				}
@@ -137,7 +149,7 @@ namespace UnityTools.Patterns {
 		/// </summary>
 		public void removeCommandAfter(int commandID) {
 
-			for (int i = commandList.Count; i > 0; i--) {
+			for (int i = commandList.Count - 1; i >= 0; i--) {
 				if (commandList [i].id > commandID) {
 					commandList.RemoveAt (i);
 				}
@@ -170,7 +182,28 @@ namespace UnityTools.Patterns {
 		public void executeCommand(int commandID) {
 
 			currentCommandID = commandID;
-			commandList [commandID].command.execute ();
+			CommandElement<T> targetCommand = commandList.Find (x => x.id == commandID);
+			if (targetCommand != null) {
+				targetCommand.command.execute ();
+			} else {
+				throw new NullReferenceException ("Command not found!");
+			}
+
+		}
+
+		/// <summary>
+		/// Execute the newest command.
+		/// </summary>
+		public void executeNewestCommand() {
+
+			for (int i = commandCount - 1; i >= 0; i--) {
+				CommandElement<T> targetCommand = commandList.Find (x => x.id == i);
+				if (targetCommand != null) {
+					currentCommandID = i;
+					targetCommand.command.execute ();
+				}
+			}
+
 
 		}
 
@@ -179,7 +212,7 @@ namespace UnityTools.Patterns {
 		/// </summary>
 		public void undoCommandsTill(int commandID) {
 
-			for (int i = commandList.Count; i > 0; i--) {
+			for (int i = commandList.Count - 1; i >= 0; i--) {
 				if (commandList [i].id > commandID) {
 					commandList [i].command.undo ();
 				} else {
