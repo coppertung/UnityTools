@@ -64,6 +64,8 @@ namespace UnityTools.Map {
 			cellMesh.triangles = triangles.ToArray ();
 			cellMesh.RecalculateNormals ();
 
+			// initialize material color
+			cellRenderer.material.color = Color.white;
 			cellCollider.sharedMesh = cellMesh;
 
 		}
