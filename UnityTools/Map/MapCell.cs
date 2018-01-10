@@ -9,11 +9,16 @@ namespace UnityTools.Map {
 		FourTrianglesSquare = 2
 	}
 
+	public enum CellDirection {
+		BottomLeft = 0, Left = 1, TopLeft = 2, Top = 3,
+		TopRight = 4, Right = 5, BottomRight = 6, Bottom = 7
+	}
+
 	[RequireComponent(typeof(MeshFilter)), RequireComponent(typeof(MeshRenderer))]
 	public class MapCell : MonoBehaviour {
 
 		public int id;
-		public List<int> neighbours;
+		public int[] neighbours;
 		public Vector3 coordinate;
 		public Vector3 position;
 		public Color color;
@@ -41,7 +46,10 @@ namespace UnityTools.Map {
 			triangles = new List<int> ();
 			colors = new List<Color> ();
 
-			neighbours = new List<int> ();
+			neighbours = new int[8];
+			for (int i = 0; i < neighbours.Length; i++) {
+				neighbours [i] = -1;
+			}
 
 		}
 
@@ -119,6 +127,25 @@ namespace UnityTools.Map {
 			colors.Add (color);
 			colors.Add (color);
 			colors.Add (color);
+
+		}
+
+		private void addTriangleColor(Color c1, Color c2, Color c3) {
+
+			colors.Add (c1);
+			colors.Add (c2);
+			colors.Add (c3);
+
+		}
+
+		public static CellDirection OppositeDirection(CellDirection direction) {
+
+			int dir = (int)direction;
+			if (dir > 3)
+				dir -= 4;
+			else
+				dir += 4;
+			return (CellDirection)dir;
 
 		}
 
