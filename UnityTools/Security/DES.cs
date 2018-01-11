@@ -171,7 +171,7 @@ namespace UnityTools.Security {
 		}
 
 		/// <summary>
-		/// DES Decryption output in specific encoding format from basic 64 string.
+		/// DES Decryption output in specific encoding format from base 64 string.
 		/// </summary>
 		public string decrypt(string toDecrypt, Encoding byteEncode, Encoding keyEncode, Encoding textEncode) {
 

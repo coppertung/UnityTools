@@ -4,7 +4,7 @@ namespace UnityTools.Security {
 
 	/// <summary>
 	/// Caesar cipher.
-	/// Reference:
+	/// Reference from:
 	/// https://en.wikipedia.org/wiki/Caesar_cipher
 	/// </summary>
 	public class CaesarCipher {

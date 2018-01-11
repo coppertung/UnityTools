@@ -14,8 +14,8 @@ namespace UnityTools.Map {
 		TopRight = 4, Right = 5, BottomRight = 6, Bottom = 7
 	}
 
-	[RequireComponent(typeof(MeshFilter)), RequireComponent(typeof(MeshRenderer))]
-	public class MapCell : MonoBehaviour {
+	[System.Serializable]
+	public class MapCell {
 
 		public int id;
 		public int[] neighbours;
@@ -26,6 +26,9 @@ namespace UnityTools.Map {
 		public CellType cellType;
 		public float size;
 
+		public MapChunk currentChunk;
+
+		/*
 		[HideInInspector]
 		public UnityEngine.Mesh cellMesh;
 		[HideInInspector]
@@ -35,7 +38,9 @@ namespace UnityTools.Map {
 		private List<Vector3> vertices;
 		private List<int> triangles;
 		private List<Color> colors;
+		*/
 
+		/*
 		void Awake() {
 
 			GetComponent<MeshFilter> ().mesh = cellMesh = new UnityEngine.Mesh ();
@@ -46,12 +51,8 @@ namespace UnityTools.Map {
 			triangles = new List<int> ();
 			colors = new List<Color> ();
 
-			neighbours = new int[8];
-			for (int i = 0; i < neighbours.Length; i++) {
-				neighbours [i] = -1;
-			}
-
 		}
+		*/
 
 		public void init(int _id, Vector3 _coordinate, Vector3 _position, float _size, Color _color) {
 
@@ -61,8 +62,14 @@ namespace UnityTools.Map {
 			size = _size;
 			color = _color;
 
+			neighbours = new int[8];
+			for (int i = 0; i < neighbours.Length; i++) {
+				neighbours [i] = -1;
+			}
+
 		}
 
+		/*
 		public void createMesh() {
 
 			triangulate ();
@@ -137,6 +144,7 @@ namespace UnityTools.Map {
 			colors.Add (c3);
 
 		}
+		*/
 
 		public static CellDirection OppositeDirection(CellDirection direction) {
 

@@ -7,14 +7,13 @@ namespace UnityTools.Security {
 		/// <summary>
 		/// Using Simple XOR Encryption to encrypt or decrypt the specified text with provided key.
 		/// </summary>
-		public static string EncryptDecrypt(string text, string key) {
+		public static byte[] EncryptDecrypt(byte[] text, byte[] key) {
 
-			StringBuilder builder = new StringBuilder ();
+			byte[] result = new byte[text.Length];
 			for (int i = 0; i < text.Length; i++) {
-				char temp = (char)(text [i] ^ key [i % key.Length]);
-				builder.Append (temp);
+				result[i] = (byte)(text [i] ^ key [i % key.Length]);
 			}
-			return builder.ToString ();
+			return result;
 
 		}
 

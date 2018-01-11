@@ -39,6 +39,16 @@ namespace UnityTools {
 		#endif
 		#endregion
 
+		#region Built_In_UI_Resources
+		public const string defaultSpritePath = "UI/Skin/UISprite.psd";
+		public const string defaultBackgroundSpritePath = "UI/Skin/Background.psd";
+		public const string defaultInputFieldBackgroundPath = "UI/Skin/InputFieldBackground.psd";
+		public const string defaultKnobPath = "UI/Skin/Knob.psd";
+		public const string defaultCheckmarkPath = "UI/Skin/Checkmark.psd";
+		public const string defaultDropdownArrowPath = "UI/Skin/DropdownArrow.psd";
+		public const string defaultMaskPath = "UI/Skin/UIMask.psd";
+		#endregion
+
 		#region Secure_Random_Number_Generator
 		///	<summary>
 		///	Generated an integer number randomly in range [0, max).

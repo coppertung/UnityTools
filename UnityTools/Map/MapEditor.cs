@@ -58,74 +58,8 @@ namespace UnityTools.Map {
 
 			DefaultControls.Resources uiResources = new DefaultControls.Resources ();
 			Sprite buttonSprite = AssetDatabase.GetBuiltinExtraResource<Sprite> (Utils.defaultSpritePath);
-			// Sprite inputFieldSprite = AssetDatabase.GetBuiltinExtraResource<Sprite> (Utils.defaultInputFieldBackgroundPath);
 			Sprite backGroundSprite = AssetDatabase.GetBuiltinExtraResource<Sprite> (Utils.defaultBackgroundSpritePath);
 			Sprite checkMarkSprite = AssetDatabase.GetBuiltinExtraResource<Sprite> (Utils.defaultCheckmarkPath);
-
-			/*
-			// Size Title
-			GameObject sizeTitle = DefaultControls.CreateText (uiResources);
-			sizeTitle.name = "Size Title";
-			sizeTitle.transform.SetParent (panelBG.transform);
-			RectTransform sizeTitleRectTransform = sizeTitle.GetComponent<RectTransform> ();
-			sizeTitleRectTransform.sizeDelta = new Vector2 ((panelBGSize.x - 30) / 2, 40);
-			Text sizeTitleText = sizeTitle.GetComponent<Text> ();
-			sizeTitleText.text = "Size";
-			sizeTitleText.fontSize = 30;
-			sizeTitleText.alignment = TextAnchor.MiddleLeft;
-			panelBGSize += new Vector2 (0, sizeTitleRectTransform.sizeDelta.y + 10);
-
-			float sizeComponentSizeX = ((panelBGSize.x - 30) / 2 - 10) / 2;
-			GameObject xSizeLabel = DefaultControls.CreateText (uiResources);
-			xSizeLabel.name = "X Size Label";
-			xSizeLabel.transform.SetParent (panelBG.transform);
-			RectTransform xSizeLabelRectTransform = xSizeLabel.GetComponent<RectTransform> ();
-			xSizeLabelRectTransform.sizeDelta = new Vector2 (sizeComponentSizeX, 30);
-			Text xSizeLabelText = xSizeLabel.GetComponent<Text> ();
-			xSizeLabelText.text = "X";
-			xSizeLabelText.fontSize = 24;
-			xSizeLabelText.alignment = TextAnchor.MiddleLeft;
-			GameObject xSizeInputField = DefaultControls.CreateInputField (uiResources);
-			xSizeInputField.name = "X Size InputField";
-			xSizeInputField.transform.SetParent (panelBG.transform);
-			RectTransform xSizeInputFieldRectTransform = xSizeInputField.GetComponent<RectTransform> ();
-			xSizeInputFieldRectTransform.sizeDelta = new Vector2 (sizeComponentSizeX, 30);
-			InputField xSizeInputFieldText = xSizeInputField.GetComponent<InputField> ();
-			xSizeInputFieldText.GetComponent<Image> ().sprite = inputFieldSprite;
-			xSizeInputFieldText.textComponent.text = MapGenerator.Instance.maxGridSize.x.ToString ();
-			xSizeInputFieldText.textComponent.fontSize = 24;
-			xSizeInputFieldText.textComponent.alignment = TextAnchor.MiddleRight;
-			xSizeInputFieldText.onValueChanged.AddListener (
-				(string value) => {
-					MapGenerator.Instance.maxGridSize.x = float.Parse(value);
-				}
-			);
-			GameObject ySizeLabel = DefaultControls.CreateText (uiResources);
-			ySizeLabel.name = "Y Size Label";
-			ySizeLabel.transform.SetParent (panelBG.transform);
-			RectTransform ySizeLabelRectTransform = ySizeLabel.GetComponent<RectTransform> ();
-			ySizeLabelRectTransform.sizeDelta = new Vector2 (sizeComponentSizeX, 30);
-			Text ySizeLabelText = ySizeLabel.GetComponent<Text> ();
-			ySizeLabelText.text = "Y";
-			ySizeLabelText.fontSize = 24;
-			ySizeLabelText.alignment = TextAnchor.MiddleLeft;
-			GameObject ySizeInputField = DefaultControls.CreateInputField (uiResources);
-			ySizeInputField.name = "Y Size InputField";
-			ySizeInputField.transform.SetParent (panelBG.transform);
-			RectTransform ySizeInputFieldRectTransform = ySizeInputField.GetComponent<RectTransform> ();
-			ySizeInputFieldRectTransform.sizeDelta = new Vector2 (sizeComponentSizeX, 30);
-			InputField ySizeInputFieldText = ySizeInputField.GetComponent<InputField> ();
-			ySizeInputFieldText.GetComponent<Image> ().sprite = inputFieldSprite;
-			ySizeInputFieldText.text = MapGenerator.Instance.maxGridSize.y.ToString ();
-			ySizeInputFieldText.textComponent.fontSize = 24;
-			ySizeInputFieldText.textComponent.alignment = TextAnchor.MiddleRight;
-			ySizeInputFieldText.onValueChanged.AddListener (
-				(string value) => {
-					MapGenerator.Instance.maxGridSize.y = float.Parse(value);
-				}
-			);
-			panelBGSize += new Vector2 (0, xSizeLabelRectTransform.sizeDelta.y + 10);
-			*/
 
 			// Color Title
 			GameObject colorTitle = DefaultControls.CreateText (uiResources);
@@ -217,19 +151,6 @@ namespace UnityTools.Map {
 			// positioning
 			float itemY = panelBGSize.y / 2;
 			float itemX = -panelBGSize.x / 2 + 10;
-			/*
-			itemY -= (sizeTitleRectTransform.sizeDelta.y + 10);
-			sizeTitleRectTransform.localPosition = new Vector3 (itemX + sizeTitleRectTransform.sizeDelta.x / 2, itemY + sizeTitleRectTransform.sizeDelta.y / 2, 0);
-			itemY -= (xSizeLabelRectTransform.sizeDelta.y + 10);
-			xSizeLabelRectTransform.localPosition = new Vector3 (itemX + xSizeLabelRectTransform.sizeDelta.x / 2, itemY + xSizeLabelRectTransform.sizeDelta.y / 2, 0);
-			itemX += (xSizeLabelRectTransform.sizeDelta.x + 10);
-			xSizeLabelRectTransform.localPosition = new Vector3 (itemX + xSizeInputFieldRectTransform.sizeDelta.x / 2, itemY + xSizeLabelRectTransform.sizeDelta.y / 2, 0);
-			itemX += (xSizeInputFieldRectTransform.sizeDelta.x + 10);
-			xSizeLabelRectTransform.localPosition = new Vector3 (itemX + ySizeLabelRectTransform.sizeDelta.x / 2, itemY + ySizeLabelRectTransform.sizeDelta.y / 2, 0);
-			itemX += (ySizeLabelRectTransform.sizeDelta.x + 10);
-			xSizeLabelRectTransform.localPosition = new Vector3 (itemX + ySizeInputFieldRectTransform.sizeDelta.x / 2, itemY + ySizeInputFieldRectTransform.sizeDelta.y / 2, 0);
-			itemX = -panelBGSize.x / 2 + 10;
-			*/
 			itemY -= (colorTitleRectTransform.sizeDelta.y + 10);
 			colorTitleRectTransform.localPosition = new Vector3 (itemX + colorTitleRectTransform.sizeDelta.x / 2, itemY + colorTitleRectTransform.sizeDelta.y / 2, 0);
 			for (int i = 0; i < MapGenerator.Instance.colorList.Length; i++) {
@@ -256,7 +177,7 @@ namespace UnityTools.Map {
 				MapCell cell = hit.collider.gameObject.GetComponent<MapCell> ();
 				if (cell != null) {
 					cell.color = MapGenerator.Instance.colorList [colorIndex].color;
-					cell.createMesh ();
+					cell.currentChunk.updateMesh ();
 				} else {
 					Debug.Log ("Can't touch any cell!");
 				}

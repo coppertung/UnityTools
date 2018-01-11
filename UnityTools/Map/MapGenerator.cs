@@ -18,10 +18,18 @@ namespace UnityTools.Map {
 		public int generateCellAmountPerFrame;
 		public Vector2 maxGridSize;
 		public float squareSize;
-		public CellType cellType;
-		public bool smoothColor;
+		public int maxLOD;
 		[HideInInspector]
-		public bool generatedMesh = false;
+		public CellType cellType = CellType.FourTrianglesSquare;
+		public bool smoothColor;
+		[Range(1, 8)]
+		public int maxNeighbourToSmoothColor = 4;
+		[Range(1, 100)]
+		public int smoothColorChance = 50;
+		[HideInInspector]
+		public bool generatedCell = false;
+		[HideInInspector]
+		public bool generatedColor = false;
 		[HideInInspector]
 		public bool generateFinish = false;
 
@@ -35,10 +43,14 @@ namespace UnityTools.Map {
 
 		// Datas
 		public List<MapCell> cells;
+		public List<MapChunk> chunks;
 
 		void Start () {
 
 			// generateMap ();
+			if (maxLOD == 0) {
+				maxLOD = 1;
+			}
 
 		}
 
@@ -52,6 +64,9 @@ namespace UnityTools.Map {
 			if (cells == null) {
 				cells = new List<MapCell> ();
 			}
+			if (chunks == null) {
+				chunks = new List<MapChunk> ();
+			}
 			StartCoroutine (createMapCells ());
 
 		}
@@ -59,7 +74,8 @@ namespace UnityTools.Map {
 		public void clearMap () {
 
 			StartCoroutine (deleteMapCells ());
-			generatedMesh = false;
+			generatedCell = false;
+			generatedColor = false;
 			generateFinish = false;
 
 		}
@@ -71,30 +87,23 @@ namespace UnityTools.Map {
 			float mapWidth = (countX + 1) * squareSize;
 			float mapLength = (countY + 1) * squareSize;
 
-			int countGeneratedCells = 0;
-
 			// create all map cells
 			for (int x = 0; x < countX; x++) {
 				for (int y = 0; y < countY; y++) {
 					Vector3 coord = new Vector3 (-maxGridSize.x / 2 + x + 1, -maxGridSize.y / 2 + y + 1, 0);
 					Vector3 pos = new Vector3 (-mapWidth / 2 + x * squareSize + squareSize / 2, -mapLength / 2 + y * squareSize + squareSize / 2, 0);
-					GameObject newCellObject = new GameObject ("Cell_" + coord.x + "_" + coord.y + "_" + coord.z);
-					newCellObject.transform.SetParent (transform);
-					MapCell newCell = newCellObject.AddComponent<MapCell> ();
+					// GameObject newCellObject = new GameObject ("Cell_" + coord.x + "_" + coord.y + "_" + coord.z);
+					// newCellObject.transform.SetParent (transform);
+					// MapCell newCell = newCellObject.AddComponent<MapCell> ();
+					MapCell newCell = new MapCell();
 					newCell.init (x * countY + y, coord, pos, squareSize, colorList [UnityEngine.Random.Range (0, colorList.Length)].color);
-					newCell.cellRenderer.material = defaultMaterial;
+					// newCell.cellRenderer.material = defaultMaterial;
 					newCell.cellType = cellType;
-					newCell.createMesh ();
+					// newCell.createMesh ();
 					cells.Add (newCell);
-					countGeneratedCells += 1;
-					if (countGeneratedCells >= generateCellAmountPerFrame) {
-						countGeneratedCells = 0;
-						yield return null;
-					}
 				}
 			}
 
-			countGeneratedCells = 0;
 			// find all neighbours
 			for (int x = 0; x < countX; x++) {
 				for (int y = 0; y < countY; y++) {
@@ -123,13 +132,14 @@ namespace UnityTools.Map {
 				}
 			}
 
-			generatedMesh = true;
+			generatedCell = true;
 			yield return smoothingColor ();
 
 		}
 
 		public IEnumerator smoothingColor() {
 
+			yield return null;
 			if (smoothColor) {
 				int countSmoothedCells = 0;
 				for (int i = 0; i < cells.Count; i++) {
@@ -145,7 +155,7 @@ namespace UnityTools.Map {
 						for (int k = 0; k < colorList.Length; k++) {
 							if (colorList [k].color == cells [cells [i].neighbours [j]].color) {
 								colorCount [k] += 1;
-								if (colorCount [k] > cells [i].neighbours.Length / 2) {
+								if (colorCount [k] > maxNeighbourToSmoothColor) {
 									maxColor = k;
 								}
 								break;
@@ -160,35 +170,71 @@ namespace UnityTools.Map {
 							}
 						}
 					}
-					if (colorList [maxColor].color != cells [i].color) {
+					if (colorList [maxColor].color != cells [i].color && UnityEngine.Random.Range (1, 101) <= smoothColorChance) {
 						cells [i].color = colorList [maxColor].color;
-						cells [i].createMesh ();
-					}
-					countSmoothedCells += 1;
-					if (countSmoothedCells >= generateCellAmountPerFrame) {
-						countSmoothedCells = 0;
-						yield return null;
 					}
 				}
 			}
+
+			generatedColor = true;
+			yield return createChunks ();
+
+		}
+
+		public IEnumerator createChunks() {
+
+			yield return null;
+
+			int countX = (int)maxGridSize.x;
+			int countY = (int)maxGridSize.y;
+
+			int numOfChunkX = countX / (int)Mathf.Pow (2, maxLOD - 1);
+			int numOfChunkY = countY / (int)Mathf.Pow (2, maxLOD - 1);
+
+			List<MapCell>[,] cellsForChunks = new List<MapCell>[numOfChunkX + 1, numOfChunkY + 1];
+
+			for (int i = 0; i < numOfChunkX + 1; i++) {
+				for (int j = 0; j < numOfChunkY + 1; j++) {
+					cellsForChunks [i, j] = new List<MapCell> ();
+				}
+			}
+			for (int x = 0; x < countX; x++) {
+				int chunkNumX = x / (int)Mathf.Pow (2, maxLOD - 1);
+				for (int y = 0; y < countY; y++) {
+					int chunkNumY = y / (int)Mathf.Pow (2, maxLOD - 1);
+					cellsForChunks [chunkNumX, chunkNumY].Add (cells [x * countY + y]);
+				}
+			}
+			for (int i = 0; i < numOfChunkX + 1; i++) {
+				for (int j = 0; j < numOfChunkY + 1; j++) {
+					if (cellsForChunks [i, j].Count > 0) {
+						GameObject newChunkObject = new GameObject ("Cell Chunk Level " + maxLOD);
+						newChunkObject.transform.SetParent (transform);
+						MapChunk newChunk = newChunkObject.AddComponent<MapChunk> ();
+						int numOfChunk = (int)Mathf.Pow (2, maxLOD - 1);
+						newChunk.init (maxLOD, cellsForChunks [i, j], numOfChunk, numOfChunk);
+						newChunk.cellRenderer.material = defaultMaterial;
+						newChunk.updateMesh ();
+						chunks.Add (newChunk);
+					}
+				}
+			}
+
 			generateFinish = true;
+			yield return null;
 
 		}
 
 		public IEnumerator deleteMapCells() {
 
-			int countDestroyCells = 0;
-			MapCell deletedCell;
+			MapChunk deletedChunk;
 			// delete all cells
-			for (int i = cells.Count - 1; i >= 0; i--) {
-				deletedCell = cells [i];
-				cells.Remove (deletedCell);
-				Destroy (deletedCell.gameObject);
-				if (countDestroyCells >= generateCellAmountPerFrame) {
-					countDestroyCells = 0;
-					yield return null;
-				}
+			for (int i = chunks.Count - 1; i >= 0; i--) {
+				deletedChunk = chunks [i];
+				chunks.Remove (deletedChunk);
+				Destroy (deletedChunk.gameObject);
 			}
+			yield return null;
 
 		}
 
