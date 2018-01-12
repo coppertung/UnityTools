@@ -4,11 +4,6 @@ using UnityEngine;
 
 namespace UnityTools.Map {
 
-	public enum CellType {
-		TwoTrianglesSquare = 1,
-		FourTrianglesSquare = 2
-	}
-
 	public enum CellDirection {
 		BottomLeft = 0, Left = 1, TopLeft = 2, Top = 3,
 		TopRight = 4, Right = 5, BottomRight = 6, Bottom = 7
@@ -23,7 +18,6 @@ namespace UnityTools.Map {
 		public Vector3 position;
 		public Color color;
 
-		public CellType cellType;
 		public float size;
 
 		public MapChunk currentChunk;

@@ -4,12 +4,13 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityTools;
 
 namespace UnityTools.Map {
 
 	public class MapEditor : MonoBehaviour, IUpdateable {
 
-		public Camera mainCamera;
+		public CameraAdjustment mainCamera;
 
 		[HideInInspector]
 		public int colorIndex;
@@ -171,11 +172,12 @@ namespace UnityTools.Map {
 
 		public void handleInput() {
 
-			Ray ray = mainCamera.ScreenPointToRay (Input.mousePosition);
+			Ray ray = mainCamera.cam.ScreenPointToRay (Input.mousePosition);
 			RaycastHit hit;
 			if (Physics.Raycast (ray, out hit)) {
-				MapCell cell = hit.collider.gameObject.GetComponent<MapCell> ();
-				if (cell != null) {
+				MapChunk chunk = hit.collider.gameObject.GetComponent<MapChunk> ();
+				if (chunk != null) {
+					MapCell cell = chunk.getCellByPosition (hit.point);
 					cell.color = MapGenerator.Instance.colorList [colorIndex].color;
 					cell.currentChunk.updateMesh ();
 				} else {

@@ -19,13 +19,12 @@ namespace UnityTools.Map {
 		public Vector2 maxGridSize;
 		public float squareSize;
 		public int maxLOD;
-		[HideInInspector]
-		public CellType cellType = CellType.FourTrianglesSquare;
 		public bool smoothColor;
 		[Range(1, 8)]
 		public int maxNeighbourToSmoothColor = 4;
 		[Range(1, 100)]
 		public int smoothColorChance = 50;
+		public bool reduceMeshByChunk;
 		[HideInInspector]
 		public bool generatedCell = false;
 		[HideInInspector]
@@ -41,6 +40,10 @@ namespace UnityTools.Map {
 		public Material defaultMaterial;
 		public NamedColor[] colorList;
 
+		// chunk control
+		public GameObject LODReferenceObject;
+		public float LODReferenceDistance;
+
 		// Datas
 		public List<MapCell> cells;
 		public List<MapChunk> chunks;
@@ -51,6 +54,7 @@ namespace UnityTools.Map {
 			if (maxLOD == 0) {
 				maxLOD = 1;
 			}
+			LODReferenceDistance = Mathf.Max (LODReferenceDistance, squareSize * Mathf.Pow (2, maxLOD - 1));
 
 		}
 
@@ -98,7 +102,6 @@ namespace UnityTools.Map {
 					MapCell newCell = new MapCell();
 					newCell.init (x * countY + y, coord, pos, squareSize, colorList [UnityEngine.Random.Range (0, colorList.Length)].color);
 					// newCell.cellRenderer.material = defaultMaterial;
-					newCell.cellType = cellType;
 					// newCell.createMesh ();
 					cells.Add (newCell);
 				}
@@ -141,7 +144,6 @@ namespace UnityTools.Map {
 
 			yield return null;
 			if (smoothColor) {
-				int countSmoothedCells = 0;
 				for (int i = 0; i < cells.Count; i++) {
 					int maxColor = -1;
 					int[] colorCount = new int[colorList.Length];

@@ -95,22 +95,22 @@ namespace UnityTools {
 		/// Maximum field of view of the camera.
 		/// </summary>
 		[Range(1f, 360f)]
-		public float maxFieldOfView;
+		public float maxFieldOfView = 150;
 		/// <summary>
 		/// Minimum field of view of the camera.
 		/// </summary>
 		[Range(1f, 360f)]
-		public float minFieldOfView;
+		public float minFieldOfView = 20;
+		private float _currentFieldOfView;
 		/// <summary>
 		/// Current field of view of the camera.
 		/// </summary>
-		[HideInInspector]
 		public float currentFieldOfView {
 			get {
-				return currentFieldOfView;
+				return _currentFieldOfView;
 			}
 			set {
-				currentFieldOfView = Mathf.Clamp (value, minFieldOfView, maxFieldOfView);
+				_currentFieldOfView = Mathf.Clamp (value, minFieldOfView, maxFieldOfView);
 			}
 		}
 		private Camera targetCam = null;
@@ -199,10 +199,6 @@ namespace UnityTools {
 		/// </summary>
 		public bool isActive;
 		/// <summary>
-		/// The speed of the transition action.
-		/// </summary>
-		public float speed;
-		/// <summary>
 		/// The smooth time of the transition action.
 		/// Default is 0.1 second.
 		/// </summary>
@@ -241,9 +237,6 @@ namespace UnityTools {
 		public void execute(Camera cam) {
 
 			if (isActive) {
-				if (refSpeed == Vector3.one) {
-					refSpeed *= speed;
-				}
 				targetCam = cam;
 				UpdateManager.RegisterUpdate (this);
 			}

@@ -26,7 +26,10 @@ namespace UnityTools {
 		/// <summary>
 		/// The camera.
 		/// </summary>
-		private Camera cam;
+		public Camera cam {
+			get;
+			protected set;
+		}
 		#endregion
 
 		#region Unity_Functions

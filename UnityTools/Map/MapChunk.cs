@@ -5,10 +5,10 @@ using UnityEngine;
 namespace UnityTools.Map {
 
 	[RequireComponent(typeof(MeshFilter)), RequireComponent(typeof(MeshRenderer))]
-	public class MapChunk : MonoBehaviour {
+	public class MapChunk : MonoBehaviour, IUpdateable {
 
 		public int lod;
-		public bool split = true;
+		public bool split = false;
 		public int countX;
 		public int countY;
 
@@ -27,6 +27,42 @@ namespace UnityTools.Map {
 		private List<int> triangles;
 		private List<Color> colors;
 
+		public Vector3 center {
+			get;
+			protected set;
+		}
+
+		public int priority {
+			get;
+			set;
+		}
+
+		public void updateEvent() {
+
+			// split control
+			if (MapGenerator.Instance.LODReferenceObject != null) {
+				if (split) {
+					if (lod <= 1 || countX * countY == 1
+					    || Vector3.Distance (center, MapGenerator.Instance.LODReferenceObject.transform.position) > Mathf.Pow (MapGenerator.Instance.LODReferenceDistance, lod - 1)) {
+						split = false;
+						updateMesh ();
+					}
+				} else {
+					if (lod > 1 && countX * countY != 1 &&
+					    Vector3.Distance (center, MapGenerator.Instance.LODReferenceObject.transform.position) <= Mathf.Pow (MapGenerator.Instance.LODReferenceDistance, lod - 1)) {
+						split = true;
+						updateMesh ();
+					}
+				}
+			} else {
+				if (lod <= 1 || countX * countY == 1) {
+					split = false;
+				}
+			}
+
+
+		}
+
 		void Awake() {
 
 			GetComponent<MeshFilter> ().mesh = cellMesh = new UnityEngine.Mesh ();
@@ -38,6 +74,13 @@ namespace UnityTools.Map {
 			colors = new List<Color> ();
 
 			childChunks = new MapChunk[4];
+			UpdateManager.RegisterUpdate (this);
+
+		}
+
+		void OnDestroy() {
+
+			UpdateManager.UnregisterUpdate (this);
 
 		}
 
@@ -47,13 +90,44 @@ namespace UnityTools.Map {
 			cells = _cells;
 			countX = _countX;
 			countY = _countY;
-			if (lod <= 1) {
-				split = false;
+			// adjust count x and count y
+			if (cells.Count != countX * countY) {
+				Vector2 refPos = cells [0].position;
+				countX = cells.FindAll (x => x.position.y == refPos.y).Count;
+				countY = cells.FindAll (x => x.position.x == refPos.x).Count;
+			}
+			if (cells.Count == 1) {
+				center = cells [0].position;
+			} else {
+				Vector3 topLeft = cells [countY - 1].position + new Vector3 (-cells [countY - 1].size / 2, cells [countY - 1].size / 2, 0);
+				Vector3 topRight = cells [countX * countY - 1].position + new Vector3 (cells [countX * countY - 1].size / 2, cells [countX * countY - 1].size / 2, 0);
+				Vector3 bottomLeft = cells [0].position + new Vector3 (-cells [0].size / 2, -cells [0].size / 2, 0);
+				Vector3 bottomRight = cells [countY * (countX - 1)].position + new Vector3 (cells [countY * (countX - 1)].size / 2, -cells [countY * (countX - 1)].size / 2, 0);
+				center = (topLeft + topRight + bottomLeft + bottomRight) / 4;
 			}
 
 		}
 
+		public MapCell getCellByPosition(Vector3 position) {
+
+			for (int i = 0; i < cells.Count; i++) {
+				if ((position.x >= cells [i].position.x - cells [i].size / 2 && position.x <= cells [i].position.x + cells [i].size / 2)
+				   && (position.y >= cells [i].position.y - cells [i].size / 2 && position.y <= cells [i].position.y + cells [i].size / 2)) {
+					return cells [i];
+				}
+			}
+			return null;
+
+		}
+
 		public void updateMesh() {
+
+			vertices.Clear ();
+			triangles.Clear ();
+			colors.Clear ();
+			cellMesh.triangles = triangles.ToArray ();
+			cellMesh.colors = colors.ToArray ();
+			cellMesh.vertices = vertices.ToArray ();
 
 			if (split) {
 				splitChildChunk ();
@@ -64,10 +138,6 @@ namespace UnityTools.Map {
 		}
 
 		public void splitChildChunk() {
-
-			vertices.Clear ();
-			triangles.Clear ();
-			colors.Clear ();
 
 			List<MapCell>[] cellLists = new List<MapCell>[4];
 			for (int i = 0; i < cellLists.Length; i++) {
@@ -111,13 +181,21 @@ namespace UnityTools.Map {
 
 		public void createMesh() {
 
-			vertices.Clear ();
-			triangles.Clear ();
-			colors.Clear ();
+			if (transform.childCount > 0) {
+				// remove all childChunk
+				for (int i = transform.childCount - 1; i >= 0; i--) {
+					Destroy (transform.GetChild (i).gameObject);
+					childChunks [i] = null;
+				}
+			}
 
-			for (int i = 0; i < cells.Count; i++) {
-				triangulate (cells[i]);
-				cells [i].currentChunk = this;
+			if (MapGenerator.Instance.reduceMeshByChunk) {
+				triangulate (cells);
+			} else {
+				for (int i = 0; i < cells.Count; i++) {
+					triangulate (cells [i]);
+					cells [i].currentChunk = this;
+				}
 			}
 
 			cellMesh.vertices = vertices.ToArray ();
@@ -131,6 +209,39 @@ namespace UnityTools.Map {
 
 		}
 
+		public void triangulate(List<MapCell> cells) {
+
+			if (cells.Count == 1) {
+				triangulate (cells [0]);
+			} else {
+				for (int i = 0; i < cells.Count; i++) {
+					cells [i].currentChunk = this;
+				}
+
+				Vector3 topLeft = cells [countY - 1].position + new Vector3 (-cells [countY - 1].size / 2, cells [countY - 1].size / 2, 0);
+				Vector3 topRight = cells [countX * countY - 1].position + new Vector3 (cells [countX * countY - 1].size / 2, cells [countX * countY - 1].size / 2, 0);
+				Vector3 bottomLeft = cells [0].position + new Vector3 (-cells [0].size / 2, -cells [0].size / 2, 0);
+				Vector3 bottomRight = cells [countY * (countX - 1)].position + new Vector3 (cells [countY * (countX - 1)].size / 2, -cells [countY * (countX - 1)].size / 2, 0);
+
+				Vector4 avgColorVector = new Vector4 ();
+				for (int i = 0; i < cells.Count; i++) {
+					avgColorVector += (Vector4)cells [i].color;
+				}
+				avgColorVector /= cells.Count;
+				Color avgColor = (Color)avgColorVector;
+
+				addTriangle (bottomLeft, topLeft, center);
+				addTriangleColor (avgColor, avgColor, avgColor);
+				addTriangle (center, topLeft, topRight);
+				addTriangleColor (avgColor, avgColor, avgColor);
+				addTriangle (topRight, bottomRight, center);
+				addTriangleColor (avgColor, avgColor, avgColor);
+				addTriangle (center, bottomRight, bottomLeft);
+				addTriangleColor (avgColor, avgColor, avgColor);
+			}
+
+		}
+
 		public void triangulate(MapCell cell) {
 
 			Vector3 topLeft = cell.position + new Vector3 (-cell.size / 2, cell.size / 2, 0);
@@ -138,24 +249,14 @@ namespace UnityTools.Map {
 			Vector3 bottomLeft = cell.position + new Vector3 (-cell.size / 2, -cell.size / 2, 0);
 			Vector3 bottomRight = cell.position + new Vector3 (cell.size / 2, -cell.size / 2, 0);
 
-			switch (cell.cellType) {
-			case CellType.TwoTrianglesSquare:
-				addTriangle (bottomLeft, topLeft, bottomRight);
-				addTriangleColor (cell.color, cell.color, cell.color);
-				addTriangle (bottomRight, topLeft, topRight);
-				addTriangleColor (cell.color, cell.color, cell.color);
-				break;
-			case CellType.FourTrianglesSquare:
-				addTriangle (bottomLeft, topLeft, cell.position);
-				addTriangleColor (cell.color, cell.color, cell.color);
-				addTriangle (cell.position, topLeft, topRight);
-				addTriangleColor (cell.color, cell.color, cell.color);
-				addTriangle (topRight, bottomRight, cell.position);
-				addTriangleColor (cell.color, cell.color, cell.color);
-				addTriangle (cell.position, bottomRight, bottomLeft);
-				addTriangleColor (cell.color, cell.color, cell.color);
-				break;
-			}
+			addTriangle (bottomLeft, topLeft, cell.position);
+			addTriangleColor (cell.color, cell.color, cell.color);
+			addTriangle (cell.position, topLeft, topRight);
+			addTriangleColor (cell.color, cell.color, cell.color);
+			addTriangle (topRight, bottomRight, cell.position);
+			addTriangleColor (cell.color, cell.color, cell.color);
+			addTriangle (cell.position, bottomRight, bottomLeft);
+			addTriangleColor (cell.color, cell.color, cell.color);
 
 		}
 
