@@ -19,6 +19,8 @@ namespace UnityTools.Map {
 		public Vector2 maxGridSize;
 		public float squareSize;
 		public int maxLOD;
+		[Range(0, 1)]
+		public float solidColorFactor = 0.75f;
 		public bool smoothColor;
 		[Range(1, 8)]
 		public int maxNeighbourToSmoothColor = 4;
@@ -54,7 +56,7 @@ namespace UnityTools.Map {
 			if (maxLOD == 0) {
 				maxLOD = 1;
 			}
-			LODReferenceDistance = Mathf.Max (LODReferenceDistance, squareSize * Mathf.Pow (2, maxLOD - 1));
+			LODReferenceDistance = Mathf.Max (LODReferenceDistance, 2);
 
 		}
 
@@ -124,8 +126,8 @@ namespace UnityTools.Map {
 					}
 					if (y > 0) {
 						neighbour = x * countY + (y - 1);
-						cells [i].neighbours [(int)CellDirection.Top] = cells [neighbour].id;
-						cells [neighbour].neighbours [(int)MapCell.OppositeDirection (CellDirection.Top)] = i;
+						cells [i].neighbours [(int)CellDirection.Bottom] = cells [neighbour].id;
+						cells [neighbour].neighbours [(int)MapCell.OppositeDirection (CellDirection.Bottom)] = i;
 						if (x < countX - 1) {
 							neighbour = (x + 1) * countY + (y - 1);
 							cells [i].neighbours [(int)CellDirection.BottomRight] = cells [neighbour].id;

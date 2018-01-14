@@ -172,7 +172,8 @@ namespace UnityTools.Map {
 
 		public void handleInput() {
 
-			Ray ray = mainCamera.cam.ScreenPointToRay (Input.mousePosition);
+			Vector3 mousePos = Input.mousePosition;
+			Ray ray = mainCamera.cam.ScreenPointToRay (mousePos);
 			RaycastHit hit;
 			if (Physics.Raycast (ray, out hit)) {
 				MapChunk chunk = hit.collider.gameObject.GetComponent<MapChunk> ();
@@ -180,6 +181,11 @@ namespace UnityTools.Map {
 					MapCell cell = chunk.getCellByPosition (hit.point);
 					cell.color = MapGenerator.Instance.colorList [colorIndex].color;
 					cell.currentChunk.updateMesh ();
+					for (int i = 0; i < 8; i++) {
+						if (cell.neighbours [i] >= 0 && MapGenerator.Instance.cells [cell.neighbours [i]].currentChunk != cell.currentChunk) {
+							MapGenerator.Instance.cells [cell.neighbours [i]].currentChunk.updateMesh ();
+						}
+					}
 				} else {
 					Debug.Log ("Can't touch any cell!");
 				}

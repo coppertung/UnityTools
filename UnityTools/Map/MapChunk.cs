@@ -41,15 +41,17 @@ namespace UnityTools.Map {
 
 			// split control
 			if (MapGenerator.Instance.LODReferenceObject != null) {
+				Vector2 refPos = new Vector2 (MapGenerator.Instance.LODReferenceObject.transform.position.x, MapGenerator.Instance.LODReferenceObject.transform.position.y);
+				Vector2 centerPos = new Vector2 (center.x, center.y);
 				if (split) {
 					if (lod <= 1 || countX * countY == 1
-					    || Vector3.Distance (center, MapGenerator.Instance.LODReferenceObject.transform.position) > Mathf.Pow (MapGenerator.Instance.LODReferenceDistance, lod - 1)) {
+						|| Vector2.Distance (centerPos, refPos) > Mathf.Pow (MapGenerator.Instance.LODReferenceDistance, lod - 1)) {
 						split = false;
 						updateMesh ();
 					}
 				} else {
 					if (lod > 1 && countX * countY != 1 &&
-					    Vector3.Distance (center, MapGenerator.Instance.LODReferenceObject.transform.position) <= Mathf.Pow (MapGenerator.Instance.LODReferenceDistance, lod - 1)) {
+						Vector3.Distance (centerPos, refPos) <= Mathf.Pow (MapGenerator.Instance.LODReferenceDistance, lod - 1)) {
 						split = true;
 						updateMesh ();
 					}
@@ -57,6 +59,7 @@ namespace UnityTools.Map {
 			} else {
 				if (lod <= 1 || countX * countY == 1) {
 					split = false;
+					updateMesh ();
 				}
 			}
 
@@ -122,12 +125,14 @@ namespace UnityTools.Map {
 
 		public void updateMesh() {
 
+			cellCollider.enabled = false;
+
 			vertices.Clear ();
 			triangles.Clear ();
 			colors.Clear ();
-			cellMesh.triangles = triangles.ToArray ();
-			cellMesh.colors = colors.ToArray ();
-			cellMesh.vertices = vertices.ToArray ();
+			cellMesh.triangles = null;
+			cellMesh.colors = null;
+			cellMesh.vertices = null;
 
 			if (split) {
 				splitChildChunk ();
@@ -181,6 +186,11 @@ namespace UnityTools.Map {
 
 		public void createMesh() {
 
+			// update cells' current chunk variable
+			for (int i = 0; i < cells.Count; i++) {
+				cells [i].currentChunk = this;
+			}
+
 			if (transform.childCount > 0) {
 				// remove all childChunk
 				for (int i = transform.childCount - 1; i >= 0; i--) {
@@ -194,7 +204,6 @@ namespace UnityTools.Map {
 			} else {
 				for (int i = 0; i < cells.Count; i++) {
 					triangulate (cells [i]);
-					cells [i].currentChunk = this;
 				}
 			}
 
@@ -206,6 +215,7 @@ namespace UnityTools.Map {
 			// initialize material color
 			cellRenderer.material.color = Color.white;
 			cellCollider.sharedMesh = cellMesh;
+			cellCollider.enabled = true;
 
 		}
 
@@ -214,10 +224,6 @@ namespace UnityTools.Map {
 			if (cells.Count == 1) {
 				triangulate (cells [0]);
 			} else {
-				for (int i = 0; i < cells.Count; i++) {
-					cells [i].currentChunk = this;
-				}
-
 				Vector3 topLeft = cells [countY - 1].position + new Vector3 (-cells [countY - 1].size / 2, cells [countY - 1].size / 2, 0);
 				Vector3 topRight = cells [countX * countY - 1].position + new Vector3 (cells [countX * countY - 1].size / 2, cells [countX * countY - 1].size / 2, 0);
 				Vector3 bottomLeft = cells [0].position + new Vector3 (-cells [0].size / 2, -cells [0].size / 2, 0);
@@ -230,33 +236,81 @@ namespace UnityTools.Map {
 				avgColorVector /= cells.Count;
 				Color avgColor = (Color)avgColorVector;
 
-				addTriangle (bottomLeft, topLeft, center);
-				addTriangleColor (avgColor, avgColor, avgColor);
-				addTriangle (center, topLeft, topRight);
-				addTriangleColor (avgColor, avgColor, avgColor);
-				addTriangle (topRight, bottomRight, center);
-				addTriangleColor (avgColor, avgColor, avgColor);
-				addTriangle (center, bottomRight, bottomLeft);
-				addTriangleColor (avgColor, avgColor, avgColor);
+				// base squares
+				addComplexQuad (center, bottomLeft, topLeft, topRight, bottomRight);
+				addComplexQuadColor (avgColor, avgColor, avgColor, avgColor, avgColor);
+
 			}
 
 		}
 
 		public void triangulate(MapCell cell) {
 
-			Vector3 topLeft = cell.position + new Vector3 (-cell.size / 2, cell.size / 2, 0);
-			Vector3 topRight = cell.position + new Vector3 (cell.size / 2, cell.size / 2, 0);
-			Vector3 bottomLeft = cell.position + new Vector3 (-cell.size / 2, -cell.size / 2, 0);
-			Vector3 bottomRight = cell.position + new Vector3 (cell.size / 2, -cell.size / 2, 0);
+			// solid square vertices
+			Vector3 topLeft = cell.position + new Vector3 (-cell.size / 2, cell.size / 2, 0) * MapGenerator.Instance.solidColorFactor;
+			Vector3 topRight = cell.position + new Vector3 (cell.size / 2, cell.size / 2, 0) * MapGenerator.Instance.solidColorFactor;
+			Vector3 bottomLeft = cell.position + new Vector3 (-cell.size / 2, -cell.size / 2, 0) * MapGenerator.Instance.solidColorFactor;
+			Vector3 bottomRight = cell.position + new Vector3 (cell.size / 2, -cell.size / 2, 0) * MapGenerator.Instance.solidColorFactor;
 
-			addTriangle (bottomLeft, topLeft, cell.position);
-			addTriangleColor (cell.color, cell.color, cell.color);
-			addTriangle (cell.position, topLeft, topRight);
-			addTriangleColor (cell.color, cell.color, cell.color);
-			addTriangle (topRight, bottomRight, cell.position);
-			addTriangleColor (cell.color, cell.color, cell.color);
-			addTriangle (cell.position, bottomRight, bottomLeft);
-			addTriangleColor (cell.color, cell.color, cell.color);
+			// blend color part vertices
+			Vector3 outerTopLeft = cell.position + new Vector3 (-cell.size / 2, cell.size / 2, 0);
+			Vector3 outerTopRight = cell.position + new Vector3 (cell.size / 2, cell.size / 2, 0);
+			Vector3 outerBottomLeft = cell.position + new Vector3 (-cell.size / 2, -cell.size / 2, 0);
+			Vector3 outerBottomRight = cell.position + new Vector3 (cell.size / 2, -cell.size / 2, 0);
+
+			// colors
+			Color topLeftColor = cell.neighbours [(int)CellDirection.TopLeft] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.TopLeft]].color : cell.color;
+			Color topRightColor = cell.neighbours [(int)CellDirection.TopRight] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.TopRight]].color : cell.color;
+			Color bottomLeftColor = cell.neighbours [(int)CellDirection.BottomLeft] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.BottomLeft]].color : cell.color;
+			Color bottomRightColor = cell.neighbours [(int)CellDirection.BottomRight] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.BottomRight]].color : cell.color;
+			Color leftColor = cell.neighbours [(int)CellDirection.Left] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Left]].color : cell.color;
+			Color rightColor = cell.neighbours [(int)CellDirection.Right] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Right]].color : cell.color;
+			Color topColor = cell.neighbours [(int)CellDirection.Top] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Top]].color : cell.color;
+			Color bottomColor = cell.neighbours [(int)CellDirection.Bottom] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Bottom]].color : cell.color;
+
+			// base square
+			addComplexQuad (cell.position, bottomLeft, topLeft, topRight, bottomRight);
+			addComplexQuadColor (cell.color, cell.color, cell.color, cell.color, cell.color);
+
+			// blend color part
+			addBlendRegionSide (CellDirection.Left, outerBottomLeft, outerTopLeft, topLeft, bottomLeft, cell.color, bottomColor, bottomLeftColor, leftColor, topLeftColor, topColor);
+			addBlendRegionSide (CellDirection.Top, outerTopLeft, outerTopRight, topRight, topLeft, cell.color, leftColor, topLeftColor, topColor, topRightColor, rightColor);
+			addBlendRegionSide (CellDirection.Right, outerTopRight, outerBottomRight, bottomRight, topRight, cell.color, topColor, topRightColor, rightColor, bottomRightColor, bottomColor);
+			addBlendRegionSide (CellDirection.Bottom, outerBottomRight, outerBottomLeft, bottomLeft, bottomRight, cell.color, rightColor, bottomRightColor, bottomColor, bottomLeftColor, leftColor);
+
+		}
+
+		private void addBlendRegionSide(CellDirection direction, Vector3 outerLeft, Vector3 outerRight, Vector3 innerRight, Vector3 innerLeft, Color self, Color neighbourLeft, Color neighbourLeftCorner, Color neighbour, Color neighbourRightCorner, Color neighbourRight) {
+
+			Vector3 cornerLeft = Vector3.zero;
+			Vector3 cornerRight = Vector3.zero;
+
+			switch (direction) {
+			case CellDirection.Left:
+				cornerLeft = new Vector3 (outerLeft.x, innerLeft.y, outerLeft.z);
+				cornerRight = new Vector3 (outerRight.x, innerRight.y, innerRight.z);
+				break;
+			case CellDirection.Top:
+				cornerLeft = new Vector3 (innerLeft.x, outerLeft.y, outerLeft.z);
+				cornerRight = new Vector3 (innerRight.x, outerRight.y, innerRight.z);
+				break;
+			case CellDirection.Right:
+				cornerLeft = new Vector3 (outerLeft.x, innerLeft.y, outerLeft.z);
+				cornerRight = new Vector3 (outerRight.x, innerRight.y, outerLeft.z);
+				break;
+			case CellDirection.Bottom:
+				cornerLeft = new Vector3 (innerLeft.x, outerLeft.y, outerLeft.z);
+				cornerRight = new Vector3 (innerRight.x, outerRight.y, innerRight.z);
+				break;
+			default:
+				break;
+			}
+			addTriangle (outerLeft, cornerLeft, innerLeft);
+			addTriangleColor ((neighbour + neighbourLeft + neighbourLeftCorner + self) / 4, (neighbour + self) / 2, self);
+			addSimpleQuad (innerLeft, cornerLeft, cornerRight, innerRight);
+			addSimpleQuadColor (self, (neighbour + self) / 2, (neighbour + self) / 2, self); 
+			addTriangle (innerRight, cornerRight, outerRight);
+			addTriangleColor (self, (neighbour + self) / 2, (neighbour + neighbourRight + neighbourRightCorner + self) / 4);
 
 		}
 
@@ -280,6 +334,37 @@ namespace UnityTools.Map {
 
 		}
 
+		private void addSimpleQuad(Vector3 bottomLeft, Vector3 topLeft, Vector3 topRight, Vector3 bottomRight) {
+
+			addTriangle (bottomLeft, topLeft, bottomRight);
+			addTriangle (bottomRight, topLeft, topRight);
+
+		}
+
+		private void addSimpleQuadColor(Color bottomLeft, Color topLeft, Color topRight, Color bottomRight) {
+
+			addTriangleColor (bottomLeft, topLeft, bottomRight);
+			addTriangleColor (bottomRight, topLeft, topRight);
+
+		}
+
+		private void addComplexQuad(Vector3 center, Vector3 bottomLeft, Vector3 topLeft, Vector3 topRight, Vector3 bottomRight) {
+
+			addTriangle (bottomLeft, topLeft, center);
+			addTriangle (center, topLeft, topRight);
+			addTriangle (topRight, bottomRight, center);
+			addTriangle (center, bottomRight, bottomLeft);
+
+		}
+
+		private void addComplexQuadColor(Color center, Color bottomLeft, Color topLeft, Color topRight, Color bottomRight) {
+
+			addTriangleColor (bottomLeft, topLeft, center);
+			addTriangleColor (center, topLeft, topRight);
+			addTriangleColor (topRight, bottomRight, center);
+			addTriangleColor (center, bottomRight, bottomLeft);
+
+		}
 
 	}
 
