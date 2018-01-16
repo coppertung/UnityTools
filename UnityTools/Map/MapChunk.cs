@@ -31,6 +31,10 @@ namespace UnityTools.Map {
 			get;
 			protected set;
 		}
+		public Color avgColor {
+			get;
+			protected set;
+		}
 
 		public int priority {
 			get;
@@ -127,6 +131,7 @@ namespace UnityTools.Map {
 
 			cellCollider.enabled = false;
 
+			// clear original memory
 			vertices.Clear ();
 			triangles.Clear ();
 			colors.Clear ();
@@ -134,6 +139,15 @@ namespace UnityTools.Map {
 			cellMesh.colors = null;
 			cellMesh.vertices = null;
 
+			// update color of chunk
+			Vector4 avgColorVector = new Vector4 ();
+			for (int i = 0; i < cells.Count; i++) {
+				avgColorVector += (Vector4)cells [i].color;
+			}
+			avgColorVector /= cells.Count;
+			avgColor = (Color)avgColorVector;
+
+			// generate chunk by spliting chunk or create mesh
 			if (split) {
 				splitChildChunk ();
 			} else {
@@ -229,12 +243,10 @@ namespace UnityTools.Map {
 				Vector3 bottomLeft = cells [0].position + new Vector3 (-cells [0].size / 2, -cells [0].size / 2, 0);
 				Vector3 bottomRight = cells [countY * (countX - 1)].position + new Vector3 (cells [countY * (countX - 1)].size / 2, -cells [countY * (countX - 1)].size / 2, 0);
 
-				Vector4 avgColorVector = new Vector4 ();
-				for (int i = 0; i < cells.Count; i++) {
-					avgColorVector += (Vector4)cells [i].color;
-				}
-				avgColorVector /= cells.Count;
-				Color avgColor = (Color)avgColorVector;
+				List<Vector3> outerTop = getChunkOuterVertices (cells, CellDirection.Top);
+				List<Vector3> outerBottom = getChunkOuterVertices (cells, CellDirection.Bottom);
+				List<Vector3> outerLeft = getChunkOuterVertices (cells, CellDirection.Left);
+				List<Vector3> outerRight = getChunkOuterVertices (cells, CellDirection.Right);
 
 				// base squares
 				addComplexQuad (center, bottomLeft, topLeft, topRight, bottomRight);
@@ -259,14 +271,14 @@ namespace UnityTools.Map {
 			Vector3 outerBottomRight = cell.position + new Vector3 (cell.size / 2, -cell.size / 2, 0);
 
 			// colors
-			Color topLeftColor = cell.neighbours [(int)CellDirection.TopLeft] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.TopLeft]].color : cell.color;
-			Color topRightColor = cell.neighbours [(int)CellDirection.TopRight] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.TopRight]].color : cell.color;
-			Color bottomLeftColor = cell.neighbours [(int)CellDirection.BottomLeft] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.BottomLeft]].color : cell.color;
-			Color bottomRightColor = cell.neighbours [(int)CellDirection.BottomRight] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.BottomRight]].color : cell.color;
-			Color leftColor = cell.neighbours [(int)CellDirection.Left] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Left]].color : cell.color;
-			Color rightColor = cell.neighbours [(int)CellDirection.Right] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Right]].color : cell.color;
-			Color topColor = cell.neighbours [(int)CellDirection.Top] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Top]].color : cell.color;
-			Color bottomColor = cell.neighbours [(int)CellDirection.Bottom] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Bottom]].color : cell.color;
+			Color topLeftColor = cell.neighbours [(int)CellDirection.TopLeft] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.TopLeft]].currentChunk.avgColor : cell.color;
+			Color topRightColor = cell.neighbours [(int)CellDirection.TopRight] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.TopRight]].currentChunk.avgColor : cell.color;
+			Color bottomLeftColor = cell.neighbours [(int)CellDirection.BottomLeft] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.BottomLeft]].currentChunk.avgColor : cell.color;
+			Color bottomRightColor = cell.neighbours [(int)CellDirection.BottomRight] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.BottomRight]].currentChunk.avgColor : cell.color;
+			Color leftColor = cell.neighbours [(int)CellDirection.Left] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Left]].currentChunk.avgColor : cell.color;
+			Color rightColor = cell.neighbours [(int)CellDirection.Right] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Right]].currentChunk.avgColor : cell.color;
+			Color topColor = cell.neighbours [(int)CellDirection.Top] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Top]].currentChunk.avgColor : cell.color;
+			Color bottomColor = cell.neighbours [(int)CellDirection.Bottom] >= 0 ? MapGenerator.Instance.cells [cell.neighbours [(int)CellDirection.Bottom]].currentChunk.avgColor : cell.color;
 
 			// base square
 			addComplexQuad (cell.position, bottomLeft, topLeft, topRight, bottomRight);
@@ -277,6 +289,67 @@ namespace UnityTools.Map {
 			addBlendRegionSide (CellDirection.Top, outerTopLeft, outerTopRight, topRight, topLeft, cell.color, leftColor, topLeftColor, topColor, topRightColor, rightColor);
 			addBlendRegionSide (CellDirection.Right, outerTopRight, outerBottomRight, bottomRight, topRight, cell.color, topColor, topRightColor, rightColor, bottomRightColor, bottomColor);
 			addBlendRegionSide (CellDirection.Bottom, outerBottomRight, outerBottomLeft, bottomLeft, bottomRight, cell.color, rightColor, bottomRightColor, bottomColor, bottomLeftColor, leftColor);
+
+		}
+
+		private List<Vector3> getChunkOuterVertices(List<MapCell> cells, CellDirection direction) {
+
+			List<Vector3> outerVertices = new List<Vector3> ();
+
+			Vector3 topRightCell = cells [countX * countY - 1].position;
+			Vector3 bottomLeftCell = cells [0].position;
+
+			for (int i = 0; i < cells.Count; i++) {
+				if (direction == CellDirection.Left && Mathf.Approximately (cells [i].position.y, bottomLeftCell.y)) {
+					// left
+					Vector3 bottomLeft = cells [i].position + new Vector3 (-cells [i].size / 2, -cells [i].size / 2, 0);
+					Vector3 topLeft = cells [i].position + new Vector3 (-cells [i].size / 2, cells [i].size / 2, 0);
+					if (!outerVertices.Contains (bottomLeft)) {
+						outerVertices.Add (bottomLeft);
+					}
+					if (!outerVertices.Contains (topLeft)) {
+						outerVertices.Add (topLeft);
+					}
+				} else if (direction == CellDirection.Top && Mathf.Approximately (cells [i].position.x, topRightCell.x)) {
+					// top
+					Vector3 topLeft = cells [i].position + new Vector3 (-cells [i].size / 2, cells [i].size / 2, 0);
+					Vector3 topRight = cells [i].position + new Vector3 (cells [i].size / 2, cells [i].size / 2, 0);
+					if (!outerVertices.Contains (topLeft)) {
+						outerVertices.Add (topLeft);
+					}
+					if (!outerVertices.Contains (topRight)) {
+						outerVertices.Add (topRight);
+					}
+				} else if (direction == CellDirection.Right && Mathf.Approximately (cells [i].position.y, topRightCell.y)) {
+					// right
+					Vector3 topRight = cells [i].position + new Vector3 (cells [i].size / 2, cells [i].size / 2, 0);
+					Vector3 bottomRight = cells [i].position + new Vector3 (cells [i].size / 2, -cells [i].size / 2, 0);
+					if (!outerVertices.Contains (topRight)) {
+						outerVertices.Add (topRight);
+					}
+					if (!outerVertices.Contains (bottomRight)) {
+						outerVertices.Add (bottomRight);
+					}
+				} else if (direction == CellDirection.Bottom && Mathf.Approximately (cells [i].position.x, bottomLeftCell.x)) {
+					// bottom
+					Vector3 bottomLeft = cells [i].position + new Vector3 (-cells [i].size / 2, -cells [i].size / 2, 0);
+					Vector3 bottomRight = cells [i].position + new Vector3 (cells [i].size / 2, -cells [i].size / 2, 0);
+					if (!outerVertices.Contains (bottomLeft)) {
+						outerVertices.Add (bottomLeft);
+					}
+					if (!outerVertices.Contains (bottomRight)) {
+						outerVertices.Add (bottomRight);
+					}
+				}
+			}
+
+			return outerVertices;
+
+		}
+
+		private List<Color> getChunkNeighbourColor(List<MapCell> cells, CellDirection direction) {
+
+
 
 		}
 

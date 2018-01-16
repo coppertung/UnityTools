@@ -15,6 +15,10 @@ namespace UnityTools.Map {
 		[HideInInspector]
 		public int colorIndex;
 		[HideInInspector]
+		public GameObject panelBG;
+		[HideInInspector]
+		public List<Toggle> colorToggles;
+		[HideInInspector]
 		public Button btnGenerate;
 		[HideInInspector]
 		public Button btnClear;
@@ -23,6 +27,7 @@ namespace UnityTools.Map {
 		void Awake() {
 
 			generateEditorUI ();
+			colorToggles = new List<Toggle> ();
 			btnGenerate.interactable = true;
 			btnClear.interactable = false;
 
@@ -51,7 +56,7 @@ namespace UnityTools.Map {
 			}
 
 			// Basic Information of the editor panel bg
-			GameObject panelBG = new GameObject ("Editor Panel");
+			panelBG = new GameObject ("Editor Panel");
 			Image panelBGImage = panelBG.AddComponent<Image> ();
 			Vector2 panelBGSize = new Vector2 (430f, 0f);
 			panelBG.transform.SetParent (transform);
@@ -110,6 +115,7 @@ namespace UnityTools.Map {
 						}
 					}
 				);
+				colorToggles.Add (colorToggleComponent);
 				panelBGSize += new Vector2 (0, colorToggleRectTransform [i].sizeDelta.y + 10);
 			}
 
@@ -170,24 +176,28 @@ namespace UnityTools.Map {
 
 		}
 
-		public void handleInput() {
+		public void handleMouseLeftClick() {
 
 			Vector3 mousePos = Input.mousePosition;
-			Ray ray = mainCamera.cam.ScreenPointToRay (mousePos);
-			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit)) {
-				MapChunk chunk = hit.collider.gameObject.GetComponent<MapChunk> ();
-				if (chunk != null) {
-					MapCell cell = chunk.getCellByPosition (hit.point);
-					cell.color = MapGenerator.Instance.colorList [colorIndex].color;
-					cell.currentChunk.updateMesh ();
-					for (int i = 0; i < 8; i++) {
-						if (cell.neighbours [i] >= 0 && MapGenerator.Instance.cells [cell.neighbours [i]].currentChunk != cell.currentChunk) {
-							MapGenerator.Instance.cells [cell.neighbours [i]].currentChunk.updateMesh ();
+			RectTransform panelBGRectTransform = panelBG.GetComponent<RectTransform> ();
+			if ((mousePos.x < panelBGRectTransform.position.x - panelBGRectTransform.sizeDelta.x || mousePos.x > panelBGRectTransform.position.x + panelBGRectTransform.sizeDelta.x)
+			   || (mousePos.y < panelBGRectTransform.position.y - panelBGRectTransform.sizeDelta.y || mousePos.y > panelBGRectTransform.position.y + panelBGRectTransform.sizeDelta.y)) {
+				Ray ray = mainCamera.cam.ScreenPointToRay (mousePos);
+				RaycastHit hit;
+				if (Physics.Raycast (ray, out hit)) {
+					MapChunk chunk = hit.collider.gameObject.GetComponent<MapChunk> ();
+					if (chunk != null) {
+						MapCell cell = chunk.getCellByPosition (hit.point);
+						cell.color = MapGenerator.Instance.colorList [colorIndex].color;
+						cell.currentChunk.updateMesh ();
+						for (int i = 0; i < 8; i++) {
+							if (cell.neighbours [i] >= 0 && MapGenerator.Instance.cells [cell.neighbours [i]].currentChunk != cell.currentChunk) {
+								MapGenerator.Instance.cells [cell.neighbours [i]].currentChunk.updateMesh ();
+							}
 						}
+					} else {
+						Debug.Log ("Can't touch any cell!");
 					}
-				} else {
-					Debug.Log ("Can't touch any cell!");
 				}
 			}
 
@@ -204,7 +214,7 @@ namespace UnityTools.Map {
 			// Used to replace the Update().
 			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
 			if (Input.GetMouseButton (0)) {
-				handleInput ();
+				handleMouseLeftClick ();
 			}
 			if (MapGenerator.Instance.generateFinish) {
 				btnClear.interactable = true;
