@@ -180,8 +180,8 @@ namespace UnityTools.Map {
 
 			Vector3 mousePos = Input.mousePosition;
 			RectTransform panelBGRectTransform = panelBG.GetComponent<RectTransform> ();
-			if ((mousePos.x < panelBGRectTransform.position.x - panelBGRectTransform.sizeDelta.x || mousePos.x > panelBGRectTransform.position.x + panelBGRectTransform.sizeDelta.x)
-			   || (mousePos.y < panelBGRectTransform.position.y - panelBGRectTransform.sizeDelta.y || mousePos.y > panelBGRectTransform.position.y + panelBGRectTransform.sizeDelta.y)) {
+			if ((mousePos.x <= panelBGRectTransform.position.x - panelBGRectTransform.sizeDelta.x || mousePos.x >= panelBGRectTransform.position.x + panelBGRectTransform.sizeDelta.x)
+			   || (mousePos.y <= panelBGRectTransform.position.y - panelBGRectTransform.sizeDelta.y || mousePos.y >= panelBGRectTransform.position.y + panelBGRectTransform.sizeDelta.y)) {
 				Ray ray = mainCamera.cam.ScreenPointToRay (mousePos);
 				RaycastHit hit;
 				if (Physics.Raycast (ray, out hit)) {

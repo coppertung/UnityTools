@@ -32,6 +32,8 @@ namespace UnityTools.Map {
 		[HideInInspector]
 		public bool generatedColor = false;
 		[HideInInspector]
+		public bool generatedChunk = false;
+		[HideInInspector]
 		public bool generateFinish = false;
 
 		// Random seed
@@ -82,7 +84,10 @@ namespace UnityTools.Map {
 			StartCoroutine (deleteMapCells ());
 			generatedCell = false;
 			generatedColor = false;
+			generatedChunk = false;
 			generateFinish = false;
+			cells.Clear ();
+			chunks.Clear ();
 
 		}
 
@@ -221,6 +226,21 @@ namespace UnityTools.Map {
 						newChunk.updateMesh ();
 						chunks.Add (newChunk);
 					}
+				}
+			}
+
+			generatedChunk = true;
+			yield return updateWholeMap ();
+
+		}
+
+		public IEnumerator updateWholeMap() {
+
+			yield return new WaitForSeconds (0.1f);
+
+			for (int i = 0; i < cells.Count; i++) {
+				if (i == 0 || cells [i].currentChunk != cells [i - 1].currentChunk) {
+					cells [i].currentChunk.updateMesh ();
 				}
 			}
 
