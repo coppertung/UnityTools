@@ -13,7 +13,7 @@ namespace UnityTools {
 		#region Platform_dependency
 		#if UNITY_EDITOR
 		/// <summary>
-		/// Gets the build platform.
+		/// Get the build platform.
 		/// </summary>
 		public static string buildPlatform {
 			get {
@@ -39,14 +39,106 @@ namespace UnityTools {
 		#endif
 		#endregion
 
-		#region Built_In_UI_Resources
-		public const string defaultSpritePath = "UI/Skin/UISprite.psd";
-		public const string defaultBackgroundSpritePath = "UI/Skin/Background.psd";
-		public const string defaultInputFieldBackgroundPath = "UI/Skin/InputFieldBackground.psd";
-		public const string defaultKnobPath = "UI/Skin/Knob.psd";
-		public const string defaultCheckmarkPath = "UI/Skin/Checkmark.psd";
-		public const string defaultDropdownArrowPath = "UI/Skin/DropdownArrow.psd";
-		public const string defaultMaskPath = "UI/Skin/UIMask.psd";
+		#region System_language
+		/// <summary>
+		/// Get the system language in string, more detail can be found at:
+		/// https://docs.unity3d.com/ScriptReference/SystemLanguage.html
+		/// Noted that space will be shown in "_" instead, for instance, "Traditional_Chinese".
+		/// </summary>
+		public static string systemLanguage {
+			get {
+				switch (Application.systemLanguage) {
+				case SystemLanguage.Afrikaans:
+					return "Afrikaans";
+				case SystemLanguage.Arabic:
+					return "Arabic";
+				case SystemLanguage.Basque:
+					return "Basque";
+				case SystemLanguage.Belarusian:
+					return "Belarusian";
+				case SystemLanguage.Bulgarian:
+					return "Bulgarian";
+				case SystemLanguage.Catalan:
+					return "Catalan";
+				case SystemLanguage.Chinese:
+					return "Chinese";
+				case SystemLanguage.ChineseSimplified:
+					return "Simplified_Chinese";
+				case SystemLanguage.ChineseTraditional:
+					return "Traditional_Chinese";
+				case SystemLanguage.Czech:
+					return "Czech";
+				case SystemLanguage.Danish:
+					return "Danish";
+				case SystemLanguage.Dutch:
+					return "Dutch";
+				case SystemLanguage.English:
+					return "English";
+				case SystemLanguage.Estonian:
+					return "Estonian";
+				case SystemLanguage.Faroese:
+					return "Faroese";
+				case SystemLanguage.Finnish:
+					return "Finnish";
+				case SystemLanguage.French:
+					return "French";
+				case SystemLanguage.German:
+					return "German";
+				case SystemLanguage.Greek:
+					return "Greek";
+				case SystemLanguage.Hebrew:
+					return "Hebrew";
+				case SystemLanguage.Hungarian:
+					return "Hungarian";
+				case SystemLanguage.Icelandic:
+					return "Icelandic";
+				case SystemLanguage.Indonesian:
+					return "Indonesian";
+				case SystemLanguage.Italian:
+					return "Italian";
+				case SystemLanguage.Japanese:
+					return "Japanese";
+				case SystemLanguage.Korean:
+					return "Korean";
+				case SystemLanguage.Latvian:
+					return "Latvian";
+				case SystemLanguage.Lithuanian:
+					return "Lithuanian";
+				case SystemLanguage.Norwegian:
+					return "Norwegian";
+				case SystemLanguage.Polish:
+					return "Polish";
+				case SystemLanguage.Portuguese:
+					return "Portuguese";
+				case SystemLanguage.Romanian:
+					return "Romanian";
+				case SystemLanguage.Russian:
+					return "Russian";
+				case SystemLanguage.SerboCroatian:
+					return "SerboCroatian";
+				case SystemLanguage.Slovak:
+					return "Slovak";
+				case SystemLanguage.Slovenian:
+					return "Slovenian";
+				case SystemLanguage.Spanish:
+					return "Spanish";
+				case SystemLanguage.Swedish:
+					return "Swedish";
+				case SystemLanguage.Thai:
+					return "Thai";
+				case SystemLanguage.Turkish:
+					return "Turkish";
+				case SystemLanguage.Ukrainian:
+					return "Ukrainian";
+				case SystemLanguage.Unknown:
+					return "Unknown";
+				case SystemLanguage.Vietnamese:
+					return "Vietnamese";
+				default:
+					return null;
+				}
+			}
+		}
 		#endregion
 
 		#region Secure_Random_Number_Generator
