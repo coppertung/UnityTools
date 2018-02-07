@@ -1,15 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityTools;
 
 namespace UnityTools.Build {
 
 	public class ApplicationBuildOptions : EditorWindow {
 
 		public const string buildApplicationOptions = "UnityTools/Build/Application Builder";
+		public const string applicationBuildDragIdentifier = "Application Build Drag";
 
 		public string applicationName = "Application";
 		public string savePath;
@@ -37,7 +40,7 @@ namespace UnityTools.Build {
 			GUILayout.Label ("Save Position");
 			GUILayout.Label (savePath, GUILayout.MaxWidth (position.width * 0.6f));
 			if (GUILayout.Button ("Choose", GUILayout.MaxWidth (100f), GUILayout.MinWidth (60f))) {
-				savePath = EditorUtility.SaveFolderPanel ("Choose Save Path", "", "");
+				savePath = EditorUtility.SaveFolderPanel ("Choose Save Location", "", "");
 			}
 			EditorGUILayout.EndHorizontal ();
 
@@ -85,6 +88,7 @@ namespace UnityTools.Build {
 			}
 			EditorGUILayout.EndScrollView ();
 			EditorGUILayout.EndVertical ();
+			dragEvent (GUILayoutUtility.GetLastRect ());
 
 			GUILayout.Label ("Settings", EditorStyles.boldLabel);
 			isDevelopmentBuild = EditorGUILayout.Toggle ("Development Mode", isDevelopmentBuild, GUILayout.ExpandWidth (true));
@@ -151,42 +155,111 @@ namespace UnityTools.Build {
 
 		}
 
+		public void dragEvent(Rect dropArea) {
+
+			Event currentEvent = Event.current;
+			EventType currentEventType = currentEvent.type;
+			List<string> scenes;
+
+			if (currentEventType == EventType.DragExited) {
+				DragAndDrop.PrepareStartDrag ();
+			}
+			if (!dropArea.Contains (currentEvent.mousePosition)) {
+				return;
+			}
+
+			switch (currentEventType) {
+			case EventType.MouseDown:
+				DragAndDrop.PrepareStartDrag ();
+				DragAndDrop.SetGenericData (applicationBuildDragIdentifier, sceneList);
+				currentEvent.Use ();
+				break;
+			case EventType.MouseDrag:
+				scenes = DragAndDrop.GetGenericData (applicationBuildDragIdentifier) as List<string>;
+				if (sceneList != null) {
+					DragAndDrop.StartDrag ("Start dragging");
+					currentEvent.Use ();
+				}
+				break;
+			case EventType.DragUpdated:
+				try {
+					for (int i = 0; i < DragAndDrop.objectReferences.Length; i++) {
+						SceneAsset temp = (SceneAsset)DragAndDrop.objectReferences [i];
+						if (temp != null) {
+							DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+						} else {
+							DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+						}
+					}
+				}
+				catch(Exception ex) {
+					DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+				}
+				break;
+			case EventType.DragPerform:
+				DragAndDrop.AcceptDrag ();
+				for (int i = 0; i < DragAndDrop.objectReferences.Length; i++) {
+					SceneAsset temp = (SceneAsset)DragAndDrop.objectReferences [i];
+					if (temp != null) {
+						addScene (DragAndDrop.paths [i]);
+					}
+				}
+				currentEvent.Use ();
+				break;
+			case EventType.mouseUp:
+				DragAndDrop.PrepareStartDrag ();
+				break;
+			}
+
+		}
+
 		public void buildApplication(BuildTarget targetPlatform) {
 
-//			string[] levels = new string[sceneToggles.FindAll (x => x == true).Count];
-//			int levelCount = 0;
-//			for (int i = 0; i < sceneToggles.Count; i++) {
-//				if (sceneToggles [i]) {
-//					levels [levelCount++] = scenesPath + "/" + sceneList [i];
-//					Debug.Log (levels [levelCount - 1]);
-//				}
-//			}
-//
-//			BuildOptions options = BuildOptions.ShowBuiltPlayer;
-//			if (isDevelopmentBuild) {
-//				options |= BuildOptions.Development;
-//			}
-//			if (isOutputScript && (targetPlatform == BuildTarget.Android || targetPlatform == BuildTarget.iOS)) {
-//				options |= BuildOptions.AcceptExternalModificationsToPlayer;
-//			}
-//
-//			string outputname = savePath + "/" + applicationName;
-//			switch (targetPlatform) {
-//			case BuildTarget.Android:
-//				outputname += ".apk";
-//				break;
-//			case BuildTarget.StandaloneWindows:
-//			case BuildTarget.StandaloneWindows64:
-//				outputname += ".exe";
-//				break;
-//			}
-//
-//			BuildPipeline.BuildPlayer(
-//				levels,
-//				outputname,
-//				targetPlatform,
-//				options
-//			);
+
+			BuildOptions options = BuildOptions.ShowBuiltPlayer;
+			if (isDevelopmentBuild) {
+				options |= BuildOptions.Development;
+			}
+			if (isOutputScript && (targetPlatform == BuildTarget.Android || targetPlatform == BuildTarget.iOS)) {
+				options |= BuildOptions.AcceptExternalModificationsToPlayer;
+			}
+
+			// NOT SURE START FROM THIS PART
+			// TODO: Test and Improve and codes below
+			string outputname = savePath + "/" + Utils.buildPlatform + "/" + applicationName;
+			switch (targetPlatform) {
+			case BuildTarget.Android:
+				outputname += ".apk";
+				break;
+			case BuildTarget.iOS:
+				// outputname += ".xcodeproj";
+				break;
+			case BuildTarget.StandaloneWindows:
+			case BuildTarget.StandaloneWindows64:
+				outputname += ".exe";
+				break;
+			case BuildTarget.StandaloneOSXIntel:
+			case BuildTarget.StandaloneOSXIntel64:
+			case BuildTarget.StandaloneOSXUniversal:
+				outputname += ".app";
+				break;
+			}
+
+			BuildTarget currentPlatform = EditorUserBuildSettings.activeBuildTarget;
+			if (currentPlatform != targetPlatform) {
+				EditorUserBuildSettings.SwitchActiveBuildTarget (targetPlatform);
+			}
+
+			BuildPipeline.BuildPlayer (
+				sceneList.ToArray (),
+				outputname,
+				targetPlatform,
+				options
+			);
+
+			if (EditorUserBuildSettings.activeBuildTarget != currentPlatform) {
+				EditorUserBuildSettings.SwitchActiveBuildTarget (currentPlatform);
+			}
 
 		}
 
