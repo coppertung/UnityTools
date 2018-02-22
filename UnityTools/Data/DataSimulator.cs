@@ -82,8 +82,23 @@ namespace UnityTools.Data {
 			case DSNodeType.Start:
 				_nodes.Add (new DSNode (idCount, position, this));
 				break;
-			case DSNodeType.MathAction:
-				_nodes.Add (new DSMathActionNode (idCount, position, this));
+			case DSNodeType.IntCal:
+				_nodes.Add (new DSIntCalNode (idCount, position, this));
+				break;
+			case DSNodeType.FloatCal:
+				_nodes.Add (new DSFloatCalNode (idCount, position, this));
+				break;
+			case DSNodeType.FloatToInt:
+				_nodes.Add (new DSFloatToIntNode (idCount, position, this));
+				break;
+			case DSNodeType.IntToFloat:
+				_nodes.Add (new DSIntToFloatNode (idCount, position, this));
+				break;
+			case DSNodeType.SetValue:
+				_nodes.Add (new DSSetValueNode (idCount, position, this));
+				break;
+			case DSNodeType.Output:
+				_nodes.Add (new DSOutputNode (idCount, position, this));
 				break;
 			}
 			idCount += 1;
@@ -159,6 +174,23 @@ namespace UnityTools.Data {
 					createConnection ();
 				}
 				clearSelectedPoints ();
+			}
+
+		}
+
+		public void simulate() {
+
+			DSNode currentNode = _nodes.Find (x => x.title.Equals ("Start"));
+			while (currentNode != null) {
+				currentNode.execute ();
+				if (currentNode.outPoint == null) {
+					break;
+				}
+				DSConnection next = _connections.Find (x => x.outPoint == currentNode.outPoint);
+				if (next == null) {
+					break;
+				}
+				currentNode = _nodes.Find (x => x.id == next.inPoint.nodeID);
 			}
 
 		}

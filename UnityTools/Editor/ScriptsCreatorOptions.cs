@@ -19,7 +19,7 @@ namespace UnityTools {
         public bool inheritILateUpdateable = false;
         public bool inheritIPoolObject = false;
 
-		[MenuItem(scriptCreatorOptions, false, 30)]
+		[MenuItem(scriptCreatorOptions, false, 40)]
 		public static void showWindow() {
 
 			EditorWindow.GetWindow (typeof(ScriptsCreatorOptions), false, "Script Creator");

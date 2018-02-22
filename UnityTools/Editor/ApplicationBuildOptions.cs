@@ -140,9 +140,6 @@ namespace UnityTools.Build {
 			if (sceneList == null) {
 				sceneList = new List<string> ();
 			}
-			if (scenePanelScroll == null) {
-				scenePanelScroll = Vector2.zero;
-			}
 
 		}
 
@@ -176,7 +173,7 @@ namespace UnityTools.Build {
 				break;
 			case EventType.MouseDrag:
 				scenes = DragAndDrop.GetGenericData (applicationBuildDragIdentifier) as List<string>;
-				if (sceneList != null) {
+				if (scenes != null) {
 					DragAndDrop.StartDrag ("Start dragging");
 					currentEvent.Use ();
 				}

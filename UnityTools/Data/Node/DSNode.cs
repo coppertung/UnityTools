@@ -6,7 +6,9 @@ using UnityEngine;
 namespace UnityTools.Data.Node {
 
 	public enum DSNodeType {
-		Start = 0, MathAction = 1
+		Start = 0,
+		SetValue = 6, Output = 5,
+		IntCal = 1, FloatCal = 2, FloatToInt = 3, IntToFloat = 4		// Math functions
 	}
 
 	public class DSNode {
@@ -20,8 +22,11 @@ namespace UnityTools.Data.Node {
 		public DSConnectionPoint inPoint;
 		public DSConnectionPoint outPoint;
 
+		protected DataSimulator ds;
+
 		public DSNode(int id, Vector2 position, DataSimulator ds) {
 
+			this.ds = ds;
 			this.id = id;
 			rect = new Rect (position.x, position.y, 50, 25);
 			title = "Start";
@@ -90,6 +95,9 @@ namespace UnityTools.Data.Node {
 			customMenu.AddItem (new GUIContent ("Remove"), false, () => ds.removeNode (this));
 			customMenu.ShowAsContext ();
 
+		}
+
+		public virtual void execute() {
 		}
 
 	}
