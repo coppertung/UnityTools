@@ -19,6 +19,9 @@ namespace UnityTools.Data.DataType {
 			set;
 		}
 
+		string save ();
+		void load(string saveString);
+
 	}
 
 	public interface IDSNumericData : IDSData {

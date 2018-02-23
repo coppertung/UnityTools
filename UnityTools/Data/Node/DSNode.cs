@@ -8,7 +8,8 @@ namespace UnityTools.Data.Node {
 	public enum DSNodeType {
 		Start = 0,
 		SetValue = 6, Output = 5,
-		IntCal = 1, FloatCal = 2, FloatToInt = 3, IntToFloat = 4		// Math functions
+		IntCal = 1, FloatCal = 2, FloatToInt = 3, IntToFloat = 4,		// Math functions
+		IfStatement = 7
 	}
 
 	public class DSNode {
@@ -22,7 +23,11 @@ namespace UnityTools.Data.Node {
 		public DSConnectionPoint inPoint;
 		public DSConnectionPoint outPoint;
 
+		public bool isSelectionNode = false;
+
 		protected DataSimulator ds;
+
+		public DSNode() {}
 
 		public DSNode(int id, Vector2 position, DataSimulator ds) {
 
@@ -48,7 +53,7 @@ namespace UnityTools.Data.Node {
 
 		}
 
-		public void drawInOutPoint() {
+		public virtual void drawInOutPoint() {
 
 			if (inPoint != null) {
 				inPoint.draw ();

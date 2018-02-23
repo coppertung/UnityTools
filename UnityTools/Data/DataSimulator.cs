@@ -1,12 +1,18 @@
-﻿using System.IO;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityTools.Data.Node;
 
 namespace UnityTools.Data {
 
 	public class DataSimulator {
+
+		public const string DS_SAVELOAD_PART_SEPERATOR = ";";
+		public const string DS_SAVELOAD_SEPERATOR = ",";
+		public const string DS_SAVELOAD_CHILD_START = "{";
+		public const string DS_SAVELOAD_CHILD_END = "}";
 
 		protected List<DSDataField> _datas;
 		protected List<DSNode> _nodes;
@@ -100,6 +106,9 @@ namespace UnityTools.Data {
 			case DSNodeType.Output:
 				_nodes.Add (new DSOutputNode (idCount, position, this));
 				break;
+			case DSNodeType.IfStatement:
+				_nodes.Add (new DSIfNode (idCount, position, this));
+				break;
 			}
 			idCount += 1;
 
@@ -108,9 +117,18 @@ namespace UnityTools.Data {
 		public void removeNode(DSNode node) {
 
 			List<DSConnection> connectionsToRemove = new List<DSConnection> ();
-			for (int i = 0; i < _connections.Count; i++) {
-				if (_connections [i].inPoint == node.inPoint || _connections [i].outPoint == node.outPoint) {
-					connectionsToRemove.Add (_connections [i]);
+			if (node.isSelectionNode) {
+				DSSelectionNode selectionNode = (DSSelectionNode)node;
+				for (int i = 0; i < _connections.Count; i++) {
+					if (_connections [i].inPoint == selectionNode.inPoint || _connections [i].outPoint == selectionNode.trueOutPoint || _connections [i].outPoint == selectionNode.falseOutPoint) {
+						connectionsToRemove.Add (_connections [i]);
+					}
+				}
+			} else {
+				for (int i = 0; i < _connections.Count; i++) {
+					if (_connections [i].inPoint == node.inPoint || _connections [i].outPoint == node.outPoint) {
+						connectionsToRemove.Add (_connections [i]);
+					}
 				}
 			}
 			if (connectionsToRemove != null && connectionsToRemove.Count > 0) {
@@ -183,10 +201,22 @@ namespace UnityTools.Data {
 			DSNode currentNode = _nodes.Find (x => x.title.Equals ("Start"));
 			while (currentNode != null) {
 				currentNode.execute ();
-				if (currentNode.outPoint == null) {
-					break;
+				DSConnection next = null;
+				if (currentNode.isSelectionNode) {
+					DSSelectionNode currentSelectionNode = (DSSelectionNode)currentNode;
+					if (currentSelectionNode.result && currentSelectionNode.trueOutPoint != null) {
+						next = _connections.Find (x => x.outPoint == currentSelectionNode.trueOutPoint);
+					} else if (!currentSelectionNode.result && currentSelectionNode.falseOutPoint != null) {
+						next = _connections.Find (x => x.outPoint == currentSelectionNode.falseOutPoint);
+					} else {
+						break;
+					}
+				} else {
+					if (currentNode.outPoint == null) {
+						break;
+					}
+					next = _connections.Find (x => x.outPoint == currentNode.outPoint);
 				}
-				DSConnection next = _connections.Find (x => x.outPoint == currentNode.outPoint);
 				if (next == null) {
 					break;
 				}
@@ -197,13 +227,34 @@ namespace UnityTools.Data {
 
 		public void Save(string filepath, string filename) {
 
-//			if (!Directory.Exists (filepath)) {
-//				Directory.CreateDirectory (filepath);
-//			}
-//			string fullPath = filepath + "/" + filename;
-//			if (File.Exists (fullPath)) {
-//				File.Delete (fullPath);
-//			}
+			string fullPath = filepath + "/" + filename; 
+			if (File.Exists (fullPath)) {
+				File.Delete (fullPath);
+			}
+			StreamWriter writer = new StreamWriter (fullPath);
+			StringBuilder builder = new StringBuilder ();
+			builder.Append (DS_SAVELOAD_CHILD_START);
+			for (int i = 0; i < _datas.Count; i++) {
+				if (i > 0) {
+					builder.Append (DS_SAVELOAD_SEPERATOR);
+				}
+				builder.Append (DS_SAVELOAD_CHILD_START);
+				builder.Append (_datas [i].save ());
+				builder.Append (DS_SAVELOAD_CHILD_END);
+			}
+			builder.Append (DS_SAVELOAD_CHILD_END);
+			builder.Append (DS_SAVELOAD_PART_SEPERATOR);
+			builder.Append (DS_SAVELOAD_CHILD_START);
+			for (int i = 0; i < _nodes.Count; i++) {
+			}
+			builder.Append (DS_SAVELOAD_CHILD_END);
+			builder.Append (DS_SAVELOAD_PART_SEPERATOR);
+			builder.Append (DS_SAVELOAD_CHILD_START);
+			for (int i = 0; i < _connections.Count; i++) {
+			}
+			builder.Append (DS_SAVELOAD_CHILD_END);
+			writer.WriteLine (builder.ToString ());
+			writer.Close ();
 
 		}
 

@@ -349,6 +349,7 @@ namespace UnityTools.Data {
 			GenericMenu customMenu = new GenericMenu ();
 			customMenu.AddItem (new GUIContent ("Add node/Basic/Set Value"), false, () => ds.addNode (DSNodeType.SetValue, mousePosition));
 			customMenu.AddItem (new GUIContent ("Add node/Basic/Output"), false, () => ds.addNode (DSNodeType.Output, mousePosition));
+			customMenu.AddItem (new GUIContent ("Add node/Statement/If"), false, () => ds.addNode (DSNodeType.IfStatement, mousePosition));
 			customMenu.AddItem (new GUIContent ("Add node/Math/Int. Calculation"), false, () => ds.addNode (DSNodeType.IntCal, mousePosition));
 			customMenu.AddItem (new GUIContent ("Add node/Math/Int to Float"), false, () => ds.addNode (DSNodeType.IntToFloat, mousePosition));
 			customMenu.AddItem (new GUIContent ("Add node/Math/Float Calculation"), false, () => ds.addNode (DSNodeType.FloatCal, mousePosition));

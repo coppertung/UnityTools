@@ -58,18 +58,12 @@ namespace UnityTools.Data.Node {
 					GenericMenu dropDownMenu = new GenericMenu ();
 					for (int i = 0; i < ds.datas.Count; i++) {
 						for (int j = 0; j < ds.datas [i].fields.Count; j++) {
-							switch (ds.datas [i].fields [j].type) {
-							case DSDataType.Int:
-								string itemName = ds.datas [i].name + "/" + ds.datas [i].fields [j].name;
-								DSInt item = (DSInt)ds.datas [i].fields [j];
-								dropDownMenu.AddItem (new GUIContent (itemName), false, () => {
-									data.data = item;
-									data.name = itemName;
-								});
-								break;
-							default:
-								break;
-							}
+							string itemName = ds.datas [i].name + "/" + ds.datas [i].fields [j].name;
+							IDSData item = ds.datas [i].fields [j];
+							dropDownMenu.AddItem (new GUIContent (itemName), false, () => {
+								data.data = item;
+								data.name = itemName;
+							});
 						}
 					}
 					dropDownMenu.ShowAsContext ();

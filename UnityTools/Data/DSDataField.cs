@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityTools.Data.DataType;
 
@@ -71,6 +72,30 @@ namespace UnityTools.Data {
 				}
 			}
 
+		}
+
+		public string save() {
+
+			StringBuilder saveString = new StringBuilder ();
+			saveString.Append (name);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (_fields.Count);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_START);
+			for (int i = 0; i < _fields.Count; i++) {
+				if (i > 0) {
+					saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				}
+				saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_START);
+				saveString.Append (_fields [i].save ());
+				saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_END);
+			}
+			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_END);
+			return saveString.ToString ();
+
+		}
+
+		public void load(string saveString) {
 		}
 
 	}

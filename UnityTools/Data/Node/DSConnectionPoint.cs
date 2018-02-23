@@ -54,8 +54,12 @@ namespace UnityTools.Data.Node {
 					rect.y = node.rect.y + node.rect.height / 2 - rect.height / 2;
 					break;
 				case DSConnectionPointType.TrueOut:
+					rect.x = node.rect.x + node.rect.width - 1f;
+					rect.y = node.rect.y + node.rect.height / 4 - rect.height / 2;
 					break;
 				case DSConnectionPointType.FalseOut:
+					rect.x = node.rect.x + node.rect.width - 1f;
+					rect.y = node.rect.y + 3 * node.rect.height / 4 - rect.height / 2;
 					break;
 				}
 				if (GUI.Button (rect, letter, GUI.skin.box)) {
