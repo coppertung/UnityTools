@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityTools.Data.DataType;
@@ -28,6 +29,7 @@ namespace UnityTools.Data.Node {
 
 			rect = new Rect (position.x, position.y, 250, 100);
 			title = "Set Value";
+			nodeType = DSNodeType.SetValue;
 			inPoint = new DSConnectionPoint (id, DSConnectionPointType.In, ds);
 			outPoint = new DSConnectionPoint (id, DSConnectionPointType.Out, ds);
 
@@ -160,6 +162,61 @@ namespace UnityTools.Data.Node {
 				break;
 			}
 
+		}
+
+		public override string save () {
+
+			StringBuilder saveString = new StringBuilder ();
+			saveString.Append (base.save ());
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append ((int)actionType);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (targetString);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			switch (actionType) {
+			case DSDataType.Int:
+				saveString.Append (intInput);
+				break;
+			case DSDataType.Float:
+				saveString.Append (floatInput);
+				break;
+			case DSDataType.Bool:
+				saveString.Append (boolInput);
+				break;
+			case DSDataType.String:
+				saveString.Append (stringInput);
+				break;
+			}
+			return saveString.ToString ();
+
+		}
+
+		public override void load (string save) {
+
+			string[] saveStrings = save.Split (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			actionType = (DSDataType)int.Parse (saveStrings [4]);
+			targetString = saveStrings [5];
+			if (!string.IsNullOrEmpty (targetString)) {
+				string[] splitTargetStrings = targetString.Split ('/');
+				switch(actionType) {
+				case DSDataType.Int:
+					intTarget = (DSInt)ds.datas.Find (x => x.name.Equals (splitTargetStrings [0])).fields.Find (x => x.name.Equals (splitTargetStrings [1]));
+					intInput = int.Parse (saveStrings [6]);
+					break;
+				case DSDataType.Float:
+					floatTarget = (DSFloat)ds.datas.Find (x => x.name.Equals (splitTargetStrings [0])).fields.Find (x => x.name.Equals (splitTargetStrings [1]));
+					floatInput = float.Parse (saveStrings [6]);
+					break;
+				case DSDataType.Bool:
+					boolTarget = (DSBool)ds.datas.Find (x => x.name.Equals (splitTargetStrings [0])).fields.Find (x => x.name.Equals (splitTargetStrings [1]));
+					boolInput = bool.Parse (saveStrings [6]);
+					break;
+				case DSDataType.String:
+					stringTarget = (DSString)ds.datas.Find (x => x.name.Equals (splitTargetStrings [0])).fields.Find (x => x.name.Equals (splitTargetStrings [1]));
+					stringInput = saveStrings [6];
+					break;
+				}
+			}
 		}
 
 	}

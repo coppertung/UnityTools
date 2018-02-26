@@ -21,7 +21,7 @@ namespace UnityTools.Data {
 		// save and load
 		protected string dsFileSaveLocation;
 		protected string dsFileName;
-		protected string dsFileExtension = ".dsFile";
+		protected string dsFileExtension = "dsFile";
 
 		// data field area
 		protected Vector2 dataFieldScrollView;
@@ -73,12 +73,12 @@ namespace UnityTools.Data {
 			dsFileName = EditorGUILayout.TextField (dsFileName, GUILayout.Width (100f));
 			if (GUILayout.Button ("Save", GUILayout.Width(60f))) {
 				if (!string.IsNullOrEmpty (dsFileSaveLocation) && !string.IsNullOrEmpty (dsFileName)) {
-					ds.Save (dsFileSaveLocation, dsFileName + dsFileExtension);
+					ds.Save (dsFileSaveLocation, dsFileName + "." + dsFileExtension);
 				}
 			}
 			if (GUILayout.Button ("Load", GUILayout.Width(60f))) {
-				if (!string.IsNullOrEmpty (dsFileSaveLocation) && !string.IsNullOrEmpty (dsFileName)) {
-					ds.Load (dsFileSaveLocation + "/" + dsFileName + dsFileExtension);
+				if (!string.IsNullOrEmpty (dsFileSaveLocation)) {
+					dsFileName = ds.Load (dsFileSaveLocation, dsFileExtension);
 				}
 			}
 			GUILayout.EndHorizontal ();

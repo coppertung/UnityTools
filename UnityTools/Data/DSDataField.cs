@@ -79,8 +79,6 @@ namespace UnityTools.Data {
 			StringBuilder saveString = new StringBuilder ();
 			saveString.Append (name);
 			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
-			saveString.Append (_fields.Count);
-			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_START);
 			for (int i = 0; i < _fields.Count; i++) {
 				if (i > 0) {
@@ -95,7 +93,80 @@ namespace UnityTools.Data {
 
 		}
 
-		public void load(string saveString) {
+		public void load(string save) {
+
+			List<string> dataStrings = new List<string> ();
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (level > 0) {
+					buffer.Append (save [i]);
+				} else {
+					if (save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR && buffer.Length > 0) {
+						dataStrings.Add (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					} else {
+						buffer.Append (save [i]);
+					}
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 0) {
+						dataStrings.Add (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
+			name = dataStrings [0];
+			parseDataString (dataStrings [1]);
+
+		}
+
+		public void parseDataString(string save) {
+
+			if (_fields == null) {
+				_fields = new List<IDSData> ();
+			}
+			_fields.Clear ();
+
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 1) {
+						string bufferString = buffer.ToString ();
+						if (bufferString.Contains (DSDataType.Int.ToString())) {
+							_fields.Add (new DSInt ());
+						}
+						else if (bufferString.Contains (DSDataType.Float.ToString())) {
+							_fields.Add (new DSFloat ());
+						}
+						else if (bufferString.Contains (DSDataType.String.ToString())) {
+							_fields.Add (new DSString ());
+						}
+						else if (bufferString.Contains (DSDataType.Bool.ToString())) {
+							_fields.Add (new DSBool ());
+						}
+						_fields [_fields.Count - 1].load (bufferString);
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (level > 1) {
+					buffer.Append (save [i]);
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
 		}
 
 	}

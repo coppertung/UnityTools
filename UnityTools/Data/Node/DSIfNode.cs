@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityTools.Data.DataType;
@@ -48,6 +49,7 @@ namespace UnityTools.Data.Node {
 
 			rect = new Rect (position.x, position.y, 260, 110);
 			title = "If Statement";
+			nodeType = DSNodeType.IfStatement;
 			ifStatements = new List<DSIfStatement> ();
 			logicOperators = new List<DSLogicGateType> ();
 
@@ -352,6 +354,59 @@ namespace UnityTools.Data.Node {
 			} else {
 				result = true;
 			}
+
+		}
+
+		public override string save () {
+
+			StringBuilder saveString = new StringBuilder ();
+			saveString.Append (base.save ());
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_START);
+			for (int i = 0; i < ifStatements.Count; i++) {
+				if (i > 0) {
+					saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				}
+				saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_START);
+				saveString.Append (ifStatements[i].type);
+				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				saveString.Append (ifStatements[i].targetType);
+				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				saveString.Append (ifStatements[i].compareValue);
+				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				saveString.Append (ifStatements [i].targetAString);
+				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				if (ifStatements [i].compareValue) {
+					switch (ifStatements [i].targetType) {
+					case DSDataType.Int:
+						saveString.Append (ifStatements [i].intInput);
+						break;
+					case DSDataType.Float:
+						saveString.Append (ifStatements [i].floatInput);
+						break;
+					case DSDataType.Bool:
+						saveString.Append (ifStatements [i].boolInput);
+						break;
+					case DSDataType.String:
+						saveString.Append (ifStatements [i].stringInput);
+						break;
+					}
+				} else {
+					saveString.Append (ifStatements [i].targetBString);
+				}
+				saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_END);
+			}
+			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_END);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_START);
+			for (int i = 0; i < logicOperators.Count; i++) {
+				if (i > 0) {
+					saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				}
+				saveString.Append (logicOperators[i]);
+			}
+			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_END);
+			return saveString.ToString ();
 
 		}
 

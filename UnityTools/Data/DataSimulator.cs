@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 using UnityTools.Data.Node;
 
@@ -9,10 +10,10 @@ namespace UnityTools.Data {
 
 	public class DataSimulator {
 
-		public const string DS_SAVELOAD_PART_SEPERATOR = ";";
-		public const string DS_SAVELOAD_SEPERATOR = ",";
-		public const string DS_SAVELOAD_CHILD_START = "{";
-		public const string DS_SAVELOAD_CHILD_END = "}";
+		public const char DS_SAVELOAD_PART_SEPERATOR = ';';
+		public const char DS_SAVELOAD_SEPERATOR = ',';
+		public const char DS_SAVELOAD_CHILD_START = '{';
+		public const char DS_SAVELOAD_CHILD_END = '}';
 
 		protected List<DSDataField> _datas;
 		protected List<DSNode> _nodes;
@@ -227,38 +228,152 @@ namespace UnityTools.Data {
 
 		public void Save(string filepath, string filename) {
 
-			string fullPath = filepath + "/" + filename; 
-			if (File.Exists (fullPath)) {
-				File.Delete (fullPath);
-			}
-			StreamWriter writer = new StreamWriter (fullPath);
-			StringBuilder builder = new StringBuilder ();
-			builder.Append (DS_SAVELOAD_CHILD_START);
-			for (int i = 0; i < _datas.Count; i++) {
-				if (i > 0) {
-					builder.Append (DS_SAVELOAD_SEPERATOR);
+			if (!string.IsNullOrEmpty (filename)) {
+				string fullPath = filepath + "/" + filename; 
+				if (File.Exists (fullPath)) {
+					File.Delete (fullPath);
 				}
+				StreamWriter writer = new StreamWriter (fullPath);
+				StringBuilder builder = new StringBuilder ();
 				builder.Append (DS_SAVELOAD_CHILD_START);
-				builder.Append (_datas [i].save ());
+				for (int i = 0; i < _datas.Count; i++) {
+					if (i > 0) {
+						builder.Append (DS_SAVELOAD_SEPERATOR);
+					}
+					builder.Append (DS_SAVELOAD_CHILD_START);
+					builder.Append (_datas [i].save ());
+					builder.Append (DS_SAVELOAD_CHILD_END);
+				}
 				builder.Append (DS_SAVELOAD_CHILD_END);
+				builder.Append (DS_SAVELOAD_PART_SEPERATOR);
+				builder.Append (DS_SAVELOAD_CHILD_START);
+				builder.Append (idCount);
+				builder.Append (DS_SAVELOAD_SEPERATOR);
+				for (int i = 0; i < _nodes.Count; i++) {
+					if (i > 0) {
+						builder.Append (DS_SAVELOAD_SEPERATOR);
+					}
+					builder.Append (DS_SAVELOAD_CHILD_START);
+					builder.Append (_nodes [i].save ());
+					builder.Append (DS_SAVELOAD_CHILD_END);
+				}
+				builder.Append (DS_SAVELOAD_CHILD_END);
+				builder.Append (DS_SAVELOAD_PART_SEPERATOR);
+				builder.Append (DS_SAVELOAD_CHILD_START);
+				for (int i = 0; i < _connections.Count; i++) {
+				}
+				builder.Append (DS_SAVELOAD_CHILD_END);
+				writer.WriteLine (builder.ToString ());
+				writer.Close ();
 			}
-			builder.Append (DS_SAVELOAD_CHILD_END);
-			builder.Append (DS_SAVELOAD_PART_SEPERATOR);
-			builder.Append (DS_SAVELOAD_CHILD_START);
-			for (int i = 0; i < _nodes.Count; i++) {
-			}
-			builder.Append (DS_SAVELOAD_CHILD_END);
-			builder.Append (DS_SAVELOAD_PART_SEPERATOR);
-			builder.Append (DS_SAVELOAD_CHILD_START);
-			for (int i = 0; i < _connections.Count; i++) {
-			}
-			builder.Append (DS_SAVELOAD_CHILD_END);
-			writer.WriteLine (builder.ToString ());
-			writer.Close ();
 
 		}
 
-		public void Load(string filepath) {
+		public string Load(string filepath, string fileExtension) {
+
+			string fullPath = EditorUtility.OpenFilePanel ("Open Saved File...", filepath, fileExtension);
+			if (!string.IsNullOrEmpty (fullPath)) {
+				string fileName = fullPath.Substring (fullPath.LastIndexOf ("/") + 1);
+				fileName = fileName.Replace ("." + fileExtension, "");
+				StreamReader reader = new StreamReader (fullPath);
+				string saveString = reader.ReadLine ();
+				reader.Close ();
+				string[] partString = saveString.Split (DS_SAVELOAD_PART_SEPERATOR);
+				parseDataString (partString [0]);
+				parseNodeString (partString [1]);
+				Debug.Log (partString [2]);
+				return fileName;
+			} else {
+				return null;
+			}
+
+		}
+
+		public void parseDataString(string save) {
+
+			if (_datas == null) {
+				_datas = new List<DSDataField> ();
+			}
+			_datas.Clear ();
+
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (save [i] == DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 1) {
+						 _datas.Add (new DSDataField ());
+						 _datas [_datas.Count - 1].load (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (level > 1) {
+					buffer.Append (save [i]);
+				}
+				if (save [i] == DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
+		}
+
+		public void parseNodeString(string save) {
+
+			if (_nodes == null) {
+				_nodes = new List<DSNode> ();
+			}
+			_nodes.Clear ();
+
+			// get problem in this part
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for(int i =0 ; i < save.Length; i++) {
+				if (save [i] == DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 1) {
+						string[] temp = buffer.ToString ().Split(DS_SAVELOAD_SEPERATOR);
+						int nodeID = int.Parse (temp [1]);
+						Vector2 position = new Vector2 (float.Parse (temp [2]), float.Parse (temp [3]));
+						if (temp [0].Equals (DSNodeType.Start.ToString ())) {
+							_nodes.Add (new DSNode (nodeID, position, this));
+						} else if (temp [0].Equals (DSNodeType.IntCal.ToString ())) {
+							_nodes.Add (new DSIntCalNode (nodeID, position, this));
+						} else if (temp [0].Equals (DSNodeType.FloatCal.ToString ())) {
+							_nodes.Add (new DSFloatCalNode (nodeID, position, this));
+						} else if (temp [0].Equals (DSNodeType.FloatToInt.ToString ())) {
+							_nodes.Add (new DSFloatToIntNode (nodeID, position, this));
+						} else if (temp [0].Equals (DSNodeType.IntToFloat.ToString ())) {
+							_nodes.Add (new DSIntToFloatNode (nodeID, position, this));
+						} else if (temp [0].Equals (DSNodeType.Output.ToString ())) {
+							_nodes.Add (new DSOutputNode (nodeID, position, this));
+						} else if (temp [0].Equals (DSNodeType.SetValue.ToString ())) {
+							_nodes.Add (new DSSetValueNode (nodeID, position, this));
+						} else if (temp [0].Equals (DSNodeType.IfStatement.ToString ())) {
+							_nodes.Add (new DSIfNode (nodeID, position, this));
+						}
+						_nodes [_nodes.Count - 1].load (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (level > 1) {
+					buffer.Append (save [i]);
+				} else if (level == 1) {
+					if (save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR && buffer.Length > 0) {
+						Debug.Log (buffer.ToString ());
+						idCount = int.Parse (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					} else {
+						buffer.Append (save [i]);
+					}
+				}
+				if (save [i] == DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
 		}
 
 	}

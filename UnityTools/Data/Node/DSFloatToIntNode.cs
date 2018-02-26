@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityTools.Data.DataType;
@@ -26,6 +27,7 @@ namespace UnityTools.Data.Node {
 
 			rect = new Rect (position.x, position.y, 250, 100);
 			title = "Float To Int.";
+			nodeType = DSNodeType.FloatToInt;
 			inPoint = new DSConnectionPoint (id, DSConnectionPointType.In, ds);
 			outPoint = new DSConnectionPoint (id, DSConnectionPointType.Out, ds);
 
@@ -117,6 +119,36 @@ namespace UnityTools.Data.Node {
 				break;
 			}
 
+		}
+
+		public override string save () {
+
+			StringBuilder saveString = new StringBuilder ();
+			saveString.Append (base.save ());
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append ((int)actionType);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (targetString);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (resultString);
+			return saveString.ToString ();
+
+		}
+
+		public override void load (string save) {
+
+			string[] saveStrings = save.Split (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			actionType = (DSFloatToIntType)int.Parse (saveStrings [4]);
+			targetString = saveStrings [5];
+			if (!string.IsNullOrEmpty (targetString)) {
+				string[] splitTargetStrings = targetString.Split ('/');
+				target = (DSFloat)ds.datas.Find (x => x.name.Equals (splitTargetStrings [0])).fields.Find (x => x.name.Equals (splitTargetStrings [1]));
+			}
+			resultString = saveStrings [6];
+			if (!string.IsNullOrEmpty (resultString)) {
+				string[] splitResultStrings = resultString.Split ('/');
+				result = (DSInt)ds.datas.Find (x => x.name.Equals (splitResultStrings [0])).fields.Find (x => x.name.Equals (splitResultStrings [1]));
+			}
 		}
 
 	}

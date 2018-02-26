@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +14,8 @@ namespace UnityTools.Data.Node {
 	}
 
 	public class DSNode {
+
+		public DSNodeType nodeType;
 
 		public int id;
 
@@ -35,6 +38,7 @@ namespace UnityTools.Data.Node {
 			this.id = id;
 			rect = new Rect (position.x, position.y, 50, 25);
 			title = "Start";
+			nodeType = DSNodeType.Start;
 			outPoint = new DSConnectionPoint (id, DSConnectionPointType.Out, ds);
 				
 		}
@@ -103,6 +107,23 @@ namespace UnityTools.Data.Node {
 		}
 
 		public virtual void execute() {
+		}
+
+		public virtual string save() {
+
+			StringBuilder saveString = new StringBuilder ();
+			saveString.Append (nodeType);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (id);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (rect.position.x);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (rect.position.y);
+			return saveString.ToString ();
+
+		}
+
+		public virtual void load(string save) {
 		}
 
 	}

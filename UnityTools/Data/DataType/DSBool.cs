@@ -32,7 +32,13 @@ namespace UnityTools.Data.DataType {
 
 		}
 
-		public void load(string saveString) {
+		public void load(string save) {
+
+			string[] saveStrings = save.Split (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			name = saveStrings [0];
+			type = DSDataType.Bool;
+			value = bool.Parse (saveStrings [2]);
+
 		}
 		#endregion
 

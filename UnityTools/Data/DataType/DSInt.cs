@@ -42,7 +42,19 @@ namespace UnityTools.Data.DataType {
 
 		}
 
-		public void load(string saveString) {
+		public void load(string save) {
+
+			string[] saveStrings = save.Split (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			name = saveStrings [0];
+			type = DSDataType.Int;
+			isRandom = bool.Parse (saveStrings [2]);
+			if (isRandom) {
+				minValue = int.Parse (saveStrings [3]);
+				maxValue = int.Parse (saveStrings [4]);
+			} else {
+				value = int.Parse (saveStrings [3]);
+			}
+
 		}
 		#endregion
 

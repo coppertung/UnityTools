@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityTools.Data.DataType;
@@ -29,6 +31,7 @@ namespace UnityTools.Data.Node {
 
 			rect = new Rect (position.x, position.y, 250, 110);
 			title = "Int. Calculation";
+			nodeType = DSNodeType.IntCal;
 			inPoint = new DSConnectionPoint (id, DSConnectionPointType.In, ds);
 			outPoint = new DSConnectionPoint (id, DSConnectionPointType.Out, ds);
 
@@ -191,6 +194,43 @@ namespace UnityTools.Data.Node {
 				break;
 			}
 
+		}
+
+		public override string save () {
+
+			StringBuilder saveString = new StringBuilder ();
+			saveString.Append (base.save ());
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append ((int)actionType);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (targetAString);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (targetBString);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (resultString);
+			return saveString.ToString ();
+
+		}
+
+		public override void load (string save) {
+
+			string[] saveStrings = save.Split (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			actionType = (DSIntCalType)int.Parse (saveStrings [4]);
+			targetAString = saveStrings [5];
+			if (!string.IsNullOrEmpty (targetAString)) {
+				string[] splitTargetAStrings = targetAString.Split ('/');
+				targetA = (DSInt)ds.datas.Find (x => x.name.Equals (splitTargetAStrings [0])).fields.Find (x => x.name.Equals (splitTargetAStrings [1]));
+			}
+			targetBString = saveStrings [6];
+			if (!string.IsNullOrEmpty (targetBString)) {
+				string[] splitTargetBStrings = targetBString.Split ('/');
+				targetB = (DSInt)ds.datas.Find (x => x.name.Equals (splitTargetBStrings [0])).fields.Find (x => x.name.Equals (splitTargetBStrings [1]));
+			}
+			resultString = saveStrings [7];
+			if (!string.IsNullOrEmpty (resultString)) {
+				string[] splitResultStrings = resultString.Split ('/');
+				result = (DSInt)ds.datas.Find (x => x.name.Equals (splitResultStrings [0])).fields.Find (x => x.name.Equals (splitResultStrings [1]));
+			}
 		}
 
 	}

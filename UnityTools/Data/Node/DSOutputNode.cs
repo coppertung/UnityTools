@@ -29,6 +29,7 @@ namespace UnityTools.Data.Node {
 			dataList = new List<DSOutputData> ();
 			rect = new Rect (position.x, position.y, 200, 80f);
 			title = "Output";
+			nodeType = DSNodeType.Output;
 			inPoint = new DSConnectionPoint (id, DSConnectionPointType.In, ds);
 			outPoint = new DSConnectionPoint (id, DSConnectionPointType.Out, ds);
 
@@ -109,6 +110,75 @@ namespace UnityTools.Data.Node {
 				}
 				Debug.Log (builder.ToString ());
 				break;
+			}
+
+		}
+
+		public override string save () {
+
+			StringBuilder saveString = new StringBuilder ();
+			saveString.Append (base.save ());
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append ((int)actionType);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			saveString.Append (Data.DataSimulator.DS_SAVELOAD_CHILD_START);
+			for (int i = 0; i < dataList.Count; i++) {
+				if (i > 0) {
+					saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				}
+				saveString.Append (dataList[i].name);
+			}
+			saveString.Append (Data.DataSimulator.DS_SAVELOAD_CHILD_END);
+			return saveString.ToString ();
+
+		}
+
+		public override void load (string save) {
+
+			List<string> nodeStrings = new List<string> ();
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (level > 0) {
+					buffer.Append (save [i]);
+				} else {
+					if (save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR && buffer.Length > 0) {
+						nodeStrings.Add (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					} else {
+						buffer.Append (save [i]);
+					}
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 0) {
+						nodeStrings.Add (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
+			actionType = (DSOutputType)int.Parse (nodeStrings [4]);
+			parseNodeString (nodeStrings [5]);
+
+		}
+			
+		public void parseNodeString(string save) {
+
+			string[] saveStrings = save.Replace (DataSimulator.DS_SAVELOAD_CHILD_START.ToString (), "")
+				.Replace (DataSimulator.DS_SAVELOAD_CHILD_END.ToString (), "")
+				.Split (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			for (int i = 0; i < saveStrings.Length; i++) {
+				DSOutputData newData = new DSOutputData ();
+				newData.name = saveStrings [i];
+				string[] splitDataName = newData.name.Split ('/');
+				newData.data = ds.datas.Find (x => x.name.Equals (splitDataName [0])).fields.Find (x => x.name.Equals (splitDataName [1]));
+				dataList.Add (newData);
 			}
 
 		}
