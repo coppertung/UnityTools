@@ -203,8 +203,8 @@ namespace UnityTools.Data {
 		private void drawSimulationArea() {
 
 			GUILayout.BeginHorizontal();
-			GUILayout.Label ("Simulation", GUILayout.Width (80f));
-			GUILayout.Space (position.width - 215f);
+			GUILayout.Label ("Simulation (Nodes:" + ds.nodes.Count + ", Connections:" + ds.connections.Count + ")", GUILayout.Width (300f));
+			GUILayout.Space (position.width - 435f);
 			if(GUILayout.Button("Simulate", GUILayout.Width(60f))) {
 				ds.simulate ();
 			}
@@ -306,7 +306,13 @@ namespace UnityTools.Data {
 				switch (e.type) {
 				case EventType.MouseDown:
 					if (e.button == 1) {
-						showSimulationMenu (e.mousePosition - eventArea.position);
+						if (ds.selectedInPoint != null && ds.selectedOutPoint == null) {
+							ds.selectedInPoint = null;
+						} else if (ds.selectedOutPoint != null && ds.selectedInPoint == null) {
+							ds.selectedOutPoint = null;
+						} else {
+							showSimulationMenu (e.mousePosition - eventArea.position);
+						}
 					}
 					break;
 				case EventType.MouseDrag:

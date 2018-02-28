@@ -18,8 +18,11 @@ namespace UnityTools.Data.Node {
 		public Rect titleRect;
 		public Rect extendedRect;
 
+		public bool withValue;
+
 		public DSFloat targetA;
 		public DSFloat targetB;
+		public float input;
 		public DSFloat result;
 
 		protected string targetAString;
@@ -28,7 +31,7 @@ namespace UnityTools.Data.Node {
 
 		public DSFloatCalNode(int id, Vector2 position, DataSimulator ds) : base(id, position, ds) {
 
-			rect = new Rect (position.x, position.y, 250, 110);
+			rect = new Rect (position.x, position.y, 250, 140);
 			title = "Float Calculation";
 			nodeType = DSNodeType.FloatCal;
 			inPoint = new DSConnectionPoint (id, DSConnectionPointType.In, ds);
@@ -70,9 +73,18 @@ namespace UnityTools.Data.Node {
 			case DSFloatCalType.Min:
 			case DSFloatCalType.Log:
 				GUILayout.BeginHorizontal ();
-				GUILayout.Label ("Target B:", GUILayout.Width (60f));
-				if (GUILayout.Button (targetBString)) {
-					chooseTargetBWithDropDown ();
+				GUILayout.Label ("Cal. With Value", GUILayout.Width (120f));
+				withValue = EditorGUILayout.Toggle (withValue);
+				GUILayout.EndHorizontal ();
+				GUILayout.BeginHorizontal ();
+				if (withValue) {
+					GUILayout.Label ("Value:", GUILayout.Width (60f));
+					input = EditorGUILayout.FloatField (input);
+				} else {
+					GUILayout.Label ("Target B:", GUILayout.Width (60f));
+					if (GUILayout.Button (targetBString)) {
+						chooseTargetBWithDropDown ();
+					}
 				}
 				GUILayout.EndHorizontal ();
 				break;
@@ -165,28 +177,28 @@ namespace UnityTools.Data.Node {
 
 			switch (actionType) {
 			case DSFloatCalType.Add:
-				result.value = targetA.value + targetB.value;
+				result.value = targetA.value + (withValue ? input : targetB.value);
 				break;
 			case DSFloatCalType.Subtract:
-				result.value = targetA.value - targetB.value;
+				result.value = targetA.value - (withValue ? input : targetB.value);
 				break;
 			case DSFloatCalType.Multiply:
-				result.value = targetA.value * targetB.value;
+				result.value = targetA.value * (withValue ? input : targetB.value);
 				break;
 			case DSFloatCalType.Divide:
-				result.value = targetA.value / targetB.value;
+				result.value = targetA.value / (withValue ? input : targetB.value);
 				break;
 			case DSFloatCalType.Mod:
-				result.value = targetA.value % targetB.value;
+				result.value = targetA.value % (withValue ? input : targetB.value);
 				break;
 			case DSFloatCalType.Power:
-				result.value = (int)Mathf.Pow (targetA.value, targetB.value);
+				result.value = (int)Mathf.Pow (targetA.value, (withValue ? input : targetB.value));
 				break;
 			case DSFloatCalType.Max:
-				result.value = Mathf.Max (targetA.value, targetB.value);
+				result.value = Mathf.Max (targetA.value, (withValue ? input : targetB.value));
 				break;
 			case DSFloatCalType.Min:
-				result.value = Mathf.Min (targetA.value, targetB.value);
+				result.value = Mathf.Min (targetA.value, (withValue ? input : targetB.value));
 				break;
 			case DSFloatCalType.Absolute:
 				result.value = Mathf.Abs (targetA.value);
@@ -195,7 +207,7 @@ namespace UnityTools.Data.Node {
 				targetA.genRandomValue ();
 				break;
 			case DSFloatCalType.Log:
-				result.value = Mathf.Log (targetA.value, targetB.value);
+				result.value = Mathf.Log (targetA.value, (withValue ? input : targetB.value));
 				break;
 			case DSFloatCalType.SqaureRoot:
 				result.value = Mathf.Sqrt (targetA.value);
@@ -213,7 +225,13 @@ namespace UnityTools.Data.Node {
 			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 			saveString.Append (targetAString);
 			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
-			saveString.Append (targetBString);
+			saveString.Append (withValue);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			if (withValue) {
+				saveString.Append (input);
+			} else {
+				saveString.Append (targetBString);
+			}
 			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 			saveString.Append (resultString);
 			return saveString.ToString ();
@@ -229,12 +247,17 @@ namespace UnityTools.Data.Node {
 				string[] splitTargetAStrings = targetAString.Split ('/');
 				targetA = (DSFloat)ds.datas.Find (x => x.name.Equals (splitTargetAStrings [0])).fields.Find (x => x.name.Equals (splitTargetAStrings [1]));
 			}
-			targetBString = saveStrings [6];
-			if (!string.IsNullOrEmpty (targetBString)) {
-				string[] splitTargetBStrings = targetBString.Split ('/');
-				targetB = (DSFloat)ds.datas.Find (x => x.name.Equals (splitTargetBStrings [0])).fields.Find (x => x.name.Equals (splitTargetBStrings [1]));
+			withValue = bool.Parse (saveStrings [6]);
+			if (withValue) {
+				input = int.Parse (saveStrings [7]);
+			} else {
+				targetBString = saveStrings [7];
+				if (!string.IsNullOrEmpty (targetBString)) {
+					string[] splitTargetBStrings = targetBString.Split ('/');
+					targetB = (DSFloat)ds.datas.Find (x => x.name.Equals (splitTargetBStrings [0])).fields.Find (x => x.name.Equals (splitTargetBStrings [1]));
+				}
 			}
-			resultString = saveStrings [7];
+			resultString = saveStrings [8];
 			if (!string.IsNullOrEmpty (resultString)) {
 				string[] splitResultStrings = resultString.Split ('/');
 				result = (DSFloat)ds.datas.Find (x => x.name.Equals (splitResultStrings [0])).fields.Find (x => x.name.Equals (splitResultStrings [1]));

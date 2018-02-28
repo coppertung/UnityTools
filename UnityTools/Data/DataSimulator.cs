@@ -261,6 +261,12 @@ namespace UnityTools.Data {
 				builder.Append (DS_SAVELOAD_PART_SEPERATOR);
 				builder.Append (DS_SAVELOAD_CHILD_START);
 				for (int i = 0; i < _connections.Count; i++) {
+					if (i > 0) {
+						builder.Append (DS_SAVELOAD_SEPERATOR);
+					}
+					builder.Append (DS_SAVELOAD_CHILD_START);
+					builder.Append (_connections [i].save ());
+					builder.Append (DS_SAVELOAD_CHILD_END);
 				}
 				builder.Append (DS_SAVELOAD_CHILD_END);
 				writer.WriteLine (builder.ToString ());
@@ -281,7 +287,7 @@ namespace UnityTools.Data {
 				string[] partString = saveString.Split (DS_SAVELOAD_PART_SEPERATOR);
 				parseDataString (partString [0]);
 				parseNodeString (partString [1]);
-				Debug.Log (partString [2]);
+				parseConnectionString (partString [2]);
 				return fileName;
 			} else {
 				return null;
@@ -329,10 +335,21 @@ namespace UnityTools.Data {
 			StringBuilder buffer = new StringBuilder ();
 			int level = 0;
 			for(int i =0 ; i < save.Length; i++) {
+				if (level > 1) {
+					buffer.Append (save [i]);
+				} else if (level == 1) {
+					if (save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR && buffer.Length > 0) {
+						idCount = int.Parse (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					} else if (save [i] != DataSimulator.DS_SAVELOAD_SEPERATOR) {
+						buffer.Append (save [i]);
+					}
+				}
 				if (save [i] == DS_SAVELOAD_CHILD_END) {
 					level -= 1;
 					if (level == 1) {
-						string[] temp = buffer.ToString ().Split(DS_SAVELOAD_SEPERATOR);
+						string[] temp = buffer.ToString ().Substring (1, buffer.Length - 2).Split (DS_SAVELOAD_SEPERATOR);
 						int nodeID = int.Parse (temp [1]);
 						Vector2 position = new Vector2 (float.Parse (temp [2]), float.Parse (temp [3]));
 						if (temp [0].Equals (DSNodeType.Start.ToString ())) {
@@ -352,22 +369,39 @@ namespace UnityTools.Data {
 						} else if (temp [0].Equals (DSNodeType.IfStatement.ToString ())) {
 							_nodes.Add (new DSIfNode (nodeID, position, this));
 						}
-						_nodes [_nodes.Count - 1].load (buffer.ToString ());
+						_nodes [_nodes.Count - 1].load (buffer.ToString ().Substring (1, buffer.Length - 2));
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (save [i] == DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
+		}
+
+		public void parseConnectionString(string save) {
+
+			if (_connections == null) {
+				_connections = new List<DSConnection> ();
+			}
+			_connections.Clear ();
+
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (save [i] == DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 1) {
+						_connections.Add (new DSConnection (this));
+						_connections [_connections.Count - 1].load (buffer.ToString ());
 						buffer.Length = 0;
 						buffer.Capacity = 0;
 					}
 				}
 				if (level > 1) {
 					buffer.Append (save [i]);
-				} else if (level == 1) {
-					if (save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR && buffer.Length > 0) {
-						Debug.Log (buffer.ToString ());
-						idCount = int.Parse (buffer.ToString ());
-						buffer.Length = 0;
-						buffer.Capacity = 0;
-					} else {
-						buffer.Append (save [i]);
-					}
 				}
 				if (save [i] == DS_SAVELOAD_CHILD_START) {
 					level += 1;

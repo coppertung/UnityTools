@@ -19,8 +19,11 @@ namespace UnityTools.Data.Node {
 		public Rect titleRect;
 		public Rect extendedRect;
 
+		public bool withValue;
+
 		public DSInt targetA;
 		public DSInt targetB;
+		public int input;
 		public DSInt result;
 
 		protected string targetAString;
@@ -29,7 +32,7 @@ namespace UnityTools.Data.Node {
 
 		public DSIntCalNode(int id, Vector2 position, DataSimulator ds) : base(id, position, ds) {
 
-			rect = new Rect (position.x, position.y, 250, 110);
+			rect = new Rect (position.x, position.y, 250, 140);
 			title = "Int. Calculation";
 			nodeType = DSNodeType.IntCal;
 			inPoint = new DSConnectionPoint (id, DSConnectionPointType.In, ds);
@@ -70,9 +73,18 @@ namespace UnityTools.Data.Node {
 			case DSIntCalType.Max:
 			case DSIntCalType.Min:
 				GUILayout.BeginHorizontal ();
-				GUILayout.Label ("Target B:", GUILayout.Width (60f));
-				if (GUILayout.Button (targetBString)) {
-					chooseTargetBWithDropDown ();
+				GUILayout.Label ("Cal. With Value", GUILayout.Width (120f));
+				withValue = EditorGUILayout.Toggle (withValue);
+				GUILayout.EndHorizontal ();
+				GUILayout.BeginHorizontal ();
+				if (withValue) {
+					GUILayout.Label ("Value:", GUILayout.Width (60f));
+					input = EditorGUILayout.IntField (input);
+				} else {
+					GUILayout.Label ("Target B:", GUILayout.Width (60f));
+					if (GUILayout.Button (targetBString)) {
+						chooseTargetBWithDropDown ();
+					}
 				}
 				GUILayout.EndHorizontal ();
 				break;
@@ -163,28 +175,28 @@ namespace UnityTools.Data.Node {
 
 			switch (actionType) {
 			case DSIntCalType.Add:
-				result.value = targetA.value + targetB.value;
+				result.value = targetA.value + (withValue ? input : targetB.value);
 				break;
 			case DSIntCalType.Subtract:
-				result.value = targetA.value - targetB.value;
+				result.value = targetA.value - (withValue ? input : targetB.value);
 				break;
 			case DSIntCalType.Multiply:
-				result.value = targetA.value * targetB.value;
+				result.value = targetA.value * (withValue ? input : targetB.value);
 				break;
 			case DSIntCalType.Divide:
-				result.value = targetA.value / targetB.value;
+				result.value = targetA.value / (withValue ? input : targetB.value);
 				break;
 			case DSIntCalType.Mod:
-				result.value = targetA.value % targetB.value;
+				result.value = targetA.value % (withValue ? input : targetB.value);
 				break;
 			case DSIntCalType.Power:
-				result.value = (int)Mathf.Pow (targetA.value, targetB.value);
+				result.value = (int)Mathf.Pow (targetA.value, (withValue ? input : targetB.value));
 				break;
 			case DSIntCalType.Max:
-				result.value = Mathf.Max (targetA.value, targetB.value);
+				result.value = Mathf.Max (targetA.value, (withValue ? input : targetB.value));
 				break;
 			case DSIntCalType.Min:
-				result.value = Mathf.Min (targetA.value, targetB.value);
+				result.value = Mathf.Min (targetA.value, (withValue ? input : targetB.value));
 				break;
 			case DSIntCalType.Absolute:
 				result.value = Mathf.Abs (targetA.value);
@@ -205,7 +217,13 @@ namespace UnityTools.Data.Node {
 			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 			saveString.Append (targetAString);
 			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
-			saveString.Append (targetBString);
+			saveString.Append (withValue);
+			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+			if (withValue) {
+				saveString.Append (input);
+			} else {
+				saveString.Append (targetBString);
+			}
 			saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 			saveString.Append (resultString);
 			return saveString.ToString ();
@@ -221,12 +239,17 @@ namespace UnityTools.Data.Node {
 				string[] splitTargetAStrings = targetAString.Split ('/');
 				targetA = (DSInt)ds.datas.Find (x => x.name.Equals (splitTargetAStrings [0])).fields.Find (x => x.name.Equals (splitTargetAStrings [1]));
 			}
-			targetBString = saveStrings [6];
-			if (!string.IsNullOrEmpty (targetBString)) {
-				string[] splitTargetBStrings = targetBString.Split ('/');
-				targetB = (DSInt)ds.datas.Find (x => x.name.Equals (splitTargetBStrings [0])).fields.Find (x => x.name.Equals (splitTargetBStrings [1]));
+			withValue = bool.Parse (saveStrings [6]);
+			if (withValue) {
+				input = int.Parse (saveStrings [7]);
+			} else {
+				targetBString = saveStrings [7];
+				if (!string.IsNullOrEmpty (targetBString)) {
+					string[] splitTargetBStrings = targetBString.Split ('/');
+					targetB = (DSInt)ds.datas.Find (x => x.name.Equals (splitTargetBStrings [0])).fields.Find (x => x.name.Equals (splitTargetBStrings [1]));
+				}
 			}
-			resultString = saveStrings [7];
+			resultString = saveStrings [8];
 			if (!string.IsNullOrEmpty (resultString)) {
 				string[] splitResultStrings = resultString.Split ('/');
 				result = (DSInt)ds.datas.Find (x => x.name.Equals (splitResultStrings [0])).fields.Find (x => x.name.Equals (splitResultStrings [1]));

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -8,7 +9,11 @@ using UnityTools.Data.DataType;
 namespace UnityTools.Data.Node {
 
 	public enum DSOutputType {
-		print = 0
+		Print = 0, Export = 1
+	}
+
+	public enum DSExportType {
+		Overwrite = 0, Append = 1
 	}
 
 	public class DSOutputNode : DSNode {
@@ -22,12 +27,18 @@ namespace UnityTools.Data.Node {
 		public Rect titleRect;
 		public Rect extendedRect;
 
+		public float labelWidth = 65f;
+
 		public List<DSOutputData> dataList;
+		public string exportPath;
+		public string exportName;
+		public string exportExtension = "csv";
+		public DSExportType exportType;
 
 		public DSOutputNode(int id, Vector2 position, DataSimulator ds) : base(id, position, ds) {
 
 			dataList = new List<DSOutputData> ();
-			rect = new Rect (position.x, position.y, 200, 80f);
+			rect = new Rect (position.x, position.y, 250f, 80f);
 			title = "Output";
 			nodeType = DSNodeType.Output;
 			inPoint = new DSConnectionPoint (id, DSConnectionPointType.In, ds);
@@ -37,7 +48,7 @@ namespace UnityTools.Data.Node {
 
 		public override void draw () {
 
-			rect.height = 25f + dataList.Count * 20f + 55f;
+			rect.height = 25f + dataList.Count * 20f + (actionType == DSOutputType.Export ? 55f : 0) + 75f;
 			drawInOutPoint ();
 			titleRect = rect;
 			titleRect.height = 20f;
@@ -50,9 +61,27 @@ namespace UnityTools.Data.Node {
 			GUILayout.BeginVertical ();
 			GUILayout.Space (5f);
 			GUILayout.BeginHorizontal ();
-			GUILayout.Label ("Type:", GUILayout.Width (50f));
+			GUILayout.Label ("Type:", GUILayout.Width (labelWidth));
 			actionType = (DSOutputType)EditorGUILayout.EnumPopup (actionType);
 			GUILayout.EndHorizontal ();
+			if (actionType == DSOutputType.Export) {
+				GUILayout.BeginHorizontal ();
+				GUILayout.Label ("Save To:", GUILayout.Width (labelWidth));
+				GUILayout.Label (exportPath, GUILayout.Width (rect.width - labelWidth - 20f - 15f));
+				if (GUILayout.Button ("..", GUILayout.Width (20f))) {
+					exportPath = EditorUtility.OpenFolderPanel ("Save To", "", "");
+				}
+				GUILayout.EndHorizontal ();
+				GUILayout.BeginHorizontal ();
+				GUILayout.Label ("File Name:", GUILayout.Width (labelWidth));
+				exportName = EditorGUILayout.TextField (exportName);
+				GUILayout.EndHorizontal ();
+				GUILayout.BeginHorizontal ();
+				GUILayout.Label ("Action:", GUILayout.Width (labelWidth));
+				exportType = (DSExportType)EditorGUILayout.EnumPopup (exportType);
+				GUILayout.EndHorizontal ();
+			}
+			GUILayout.Label ("Output Data:");
 			for (int n = 0; n < dataList.Count; n++) {
 				if (GUILayout.Button (dataList[n].name)) {
 					DSOutputData data = dataList [n];
@@ -99,9 +128,9 @@ namespace UnityTools.Data.Node {
 
 		public override void execute () {
 
+			StringBuilder builder = new StringBuilder ();
 			switch (actionType) {
-			case DSOutputType.print:
-				StringBuilder builder = new StringBuilder ();
+			case DSOutputType.Print:
 				for (int i = 0; i < dataList.Count; i++) {
 					builder.Append (getValue (dataList [i].data));
 					if (i != dataList.Count - 1) {
@@ -109,6 +138,16 @@ namespace UnityTools.Data.Node {
 					}
 				}
 				Debug.Log (builder.ToString ());
+				break;
+			case DSOutputType.Export:
+				string fullPath = exportPath + "/" + exportName + "." + exportExtension;
+				StreamWriter writer = new StreamWriter (fullPath, exportType == DSExportType.Append);
+				foreach (DSOutputData data in dataList) {
+					builder.Append (data.data.ToString ());
+					builder.Append (",");
+				}
+				writer.WriteLine (builder.ToString ());
+				writer.Close ();
 				break;
 			}
 
@@ -129,6 +168,14 @@ namespace UnityTools.Data.Node {
 				saveString.Append (dataList[i].name);
 			}
 			saveString.Append (Data.DataSimulator.DS_SAVELOAD_CHILD_END);
+			if (actionType == DSOutputType.Export) {
+				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				saveString.Append (exportPath);
+				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				saveString.Append (exportName);
+				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				saveString.Append ((int)exportType);
+			}
 			return saveString.ToString ();
 
 		}
@@ -142,12 +189,13 @@ namespace UnityTools.Data.Node {
 				if (level > 0) {
 					buffer.Append (save [i]);
 				} else {
-					if (save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR && buffer.Length > 0) {
+					if (save [i] != DataSimulator.DS_SAVELOAD_SEPERATOR) {
+						buffer.Append (save [i]);
+					}
+					if ((i == save.Length - 1 || save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR) && buffer.Length > 0) {
 						nodeStrings.Add (buffer.ToString ());
 						buffer.Length = 0;
 						buffer.Capacity = 0;
-					} else {
-						buffer.Append (save [i]);
 					}
 				}
 				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_END) {
@@ -162,9 +210,13 @@ namespace UnityTools.Data.Node {
 					level += 1;
 				} 
 			}
-
 			actionType = (DSOutputType)int.Parse (nodeStrings [4]);
 			parseNodeString (nodeStrings [5]);
+			if (actionType == DSOutputType.Export) {
+				exportPath = nodeStrings [6];
+				exportName = nodeStrings [7];
+				exportType = (DSExportType)int.Parse (nodeStrings [8]);
+			}
 
 		}
 			

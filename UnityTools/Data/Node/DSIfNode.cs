@@ -368,9 +368,9 @@ namespace UnityTools.Data.Node {
 					saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 				}
 				saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_START);
-				saveString.Append (ifStatements[i].type);
+				saveString.Append ((int)ifStatements [i].type);
 				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
-				saveString.Append (ifStatements[i].targetType);
+				saveString.Append ((int)ifStatements [i].targetType);
 				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 				saveString.Append (ifStatements[i].compareValue);
 				saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
@@ -403,10 +403,146 @@ namespace UnityTools.Data.Node {
 				if (i > 0) {
 					saveString.Append (DataSimulator.DS_SAVELOAD_SEPERATOR);
 				}
-				saveString.Append (logicOperators[i]);
+				saveString.Append ((int)logicOperators [i]);
 			}
 			saveString.Append (DataSimulator.DS_SAVELOAD_CHILD_END);
 			return saveString.ToString ();
+
+		}
+
+		public override void load (string save) {
+
+			List<string> nodeStrings = new List<string> ();
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (level > 0) {
+					buffer.Append (save [i]);
+				} else {
+					if (save [i] == DataSimulator.DS_SAVELOAD_SEPERATOR && buffer.Length > 0) {
+						nodeStrings.Add (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					} else if (save [i] != DataSimulator.DS_SAVELOAD_SEPERATOR) {
+						buffer.Append (save [i]);
+					}
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 0) {
+						nodeStrings.Add (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
+			parseIfStatements (nodeStrings [4]);
+			parseLogicGates (nodeStrings [5]);
+
+		}
+
+		public void parseIfStatements(string save) {
+
+			List<string> nodeStrings = new List<string> ();
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 1) {
+						nodeStrings.Add (buffer.ToString ());
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (level > 1) {
+					buffer.Append (save [i]);
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
+
+			for (int i = 0; i < nodeStrings.Count; i++) {
+				string[] splited = nodeStrings [i].Split (DataSimulator.DS_SAVELOAD_SEPERATOR);
+				DSIfStatement newStatement = new DSIfStatement ();
+				newStatement.type = (DSCompareType)int.Parse (splited [0]);
+				newStatement.targetType = (DSDataType)int.Parse (splited [1]);
+				newStatement.compareValue = bool.Parse (splited [2]);
+				newStatement.targetAString = splited [3];
+				string[] splitedTargetAString = newStatement.targetAString.Split ('/');
+				switch (newStatement.targetType) {
+				case DSDataType.Int:
+					newStatement.intTargetA = (DSInt)ds.datas.Find (x => x.name.Equals (splitedTargetAString [0])).fields.Find (x => x.name.Equals (splitedTargetAString [1]));
+					if (newStatement.compareValue) {
+						newStatement.intInput = int.Parse (splited [4]);
+					} else {
+						newStatement.targetBString = splited [4];
+						string[] splitedTargetBString = newStatement.targetBString.Split ('/');
+						newStatement.intTargetB = (DSInt)ds.datas.Find (x => x.name.Equals (splitedTargetBString [0])).fields.Find (x => x.name.Equals (splitedTargetBString [1]));
+					}
+					break;
+				case DSDataType.Float:
+					newStatement.floatTargetA = (DSFloat)ds.datas.Find (x => x.name.Equals (splitedTargetAString [0])).fields.Find (x => x.name.Equals (splitedTargetAString [1]));
+					if (newStatement.compareValue) {
+						newStatement.floatInput = float.Parse (splited [4]);
+					} else {
+						newStatement.targetBString = splited [4];
+						string[] splitedTargetBString = newStatement.targetBString.Split ('/');
+						newStatement.floatTargetB = (DSFloat)ds.datas.Find (x => x.name.Equals (splitedTargetBString [0])).fields.Find (x => x.name.Equals (splitedTargetBString [1]));
+					}
+					break;
+				case DSDataType.Bool:
+					newStatement.boolTargetA = (DSBool)ds.datas.Find (x => x.name.Equals (splitedTargetAString [0])).fields.Find (x => x.name.Equals (splitedTargetAString [1]));
+					if (newStatement.compareValue) {
+						newStatement.boolInput = bool.Parse (splited [4]);
+					} else {
+						newStatement.targetBString = splited [4];
+						string[] splitedTargetBString = newStatement.targetBString.Split ('/');
+						newStatement.boolTargetB = (DSBool)ds.datas.Find (x => x.name.Equals (splitedTargetBString [0])).fields.Find (x => x.name.Equals (splitedTargetBString [1]));
+					}
+					break;
+				case DSDataType.String:
+					newStatement.stringTargetA = (DSString)ds.datas.Find (x => x.name.Equals (splitedTargetAString [0])).fields.Find (x => x.name.Equals (splitedTargetAString [1]));
+					if (newStatement.compareValue) {
+						newStatement.stringInput = splited [4];
+					} else {
+						newStatement.targetBString = splited [4];
+						string[] splitedTargetBString = newStatement.targetBString.Split ('/');
+						newStatement.stringTargetB = (DSString)ds.datas.Find (x => x.name.Equals (splitedTargetBString [0])).fields.Find (x => x.name.Equals (splitedTargetBString [1]));
+					}
+					break;
+				}
+				ifStatements.Add (newStatement);
+			}
+
+		}
+
+		public void parseLogicGates(string save) {
+
+			List<string> nodeStrings = new List<string> ();
+			StringBuilder buffer = new StringBuilder ();
+			int level = 0;
+			for (int i = 0; i < save.Length; i++) {
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_END) {
+					level -= 1;
+					if (level == 0 && !string.IsNullOrEmpty (buffer.ToString ())) {
+						logicOperators.Add ((DSLogicGateType)int.Parse (buffer.ToString ()));
+						buffer.Length = 0;
+						buffer.Capacity = 0;
+					}
+				}
+				if (level > 0) {
+					buffer.Append (save [i]);
+				}
+				if (save [i] == DataSimulator.DS_SAVELOAD_CHILD_START) {
+					level += 1;
+				} 
+			}
 
 		}
 

@@ -42,6 +42,12 @@ namespace UnityTools.Data.DataType {
 		}
 		#endregion
 
+		public override string ToString () {
+
+			return value.ToString ();
+
+		}
+
 	}
 
 }
