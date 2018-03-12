@@ -266,6 +266,129 @@ namespace UnityTools {
 		#endregion
 
 	}
+
+	/// <summary>
+	/// Camera shaking action.
+	/// Set up the intensity and decay, then call the execute function.
+	/// Reference from:
+	/// http://www.mikedoesweb.com/2012/camera-shake-in-unity/
+	/// </summary>	
+	[System.Serializable]
+	public class CameraShake : ICameraAction, IUpdateable {
+		
+		#region Fields_And_Properties
+		/// <summary>
+		/// Is the action be activated?
+		/// </summary>
+		public bool isActive;
+		/// <summary>
+		/// Intensity of the shaking force.
+		/// Suggested as 0.1.
+		/// </summary>
+		public float intensity {
+			get;
+			protected set;
+		}
+		/// <summary>
+		/// Decay of the shaking force.
+		/// Suggested as 0.02.
+		/// </summary>
+		public float decay {
+			get;
+			protected set;
+		}
+		/// <summary>
+		/// Original position of the target camera.
+		/// </summary>
+		public Vector3 originalPosition;
+		/// <summary>
+		/// Original rotation of the target camera.
+		/// </summary>
+		public Quaternion originalRotation;
+		protected bool isShaking;
+		protected float currentIntensity;
+		protected Camera targetCamera;
+		#endregion
+
+		#region Functions
+		/// <summary>
+		/// Set the intensity of the shaking force.
+		/// </summary>
+		public void setIntensity(float _intensity) {
+
+			intensity = _intensity;
+
+		}
+
+		/// <summary>
+		/// Set the decay of the shaking force.
+		/// </summary>
+		public void setDecay(float _decay) {
+
+			decay = _decay;
+
+		}
+
+		/// <summary>
+		/// Function to apply shaking action on the specified camera.
+		/// If this function being call before the end of last shaking action,
+		/// it may stop the last shaking action immediately or adding intensity to the last shaking action depends on the target of new shaking action.
+		/// </summary>
+		public void execute(Camera cam) {
+
+			if (isActive) {
+				if (targetCamera != null && targetCamera != cam) {
+					targetCamera.transform.localPosition = originalPosition;
+					targetCamera.transform.localRotation = originalRotation;
+					isShaking = false;
+				}
+				if (!isShaking) {
+					targetCamera = cam;
+					originalPosition = cam.transform.localPosition;
+					originalRotation = cam.transform.localRotation;
+				}
+				isShaking = true;
+				currentIntensity += intensity;
+				UpdateManager.RegisterUpdate (this);
+			}
+
+		}
+		#endregion
+
+		#region IUpdateable
+		// The update call will be called in prior if the priority is larger.
+		public int priority {
+			get;
+			set;
+		}
+
+		public void updateEvent() {
+			// Used to replace the Update().
+			// Noted that it will be automatically called by the Update Manager once it registered with UpdateManager.Register.
+			if (!isShaking) {
+				UpdateManager.UnregisterUpdate (this);
+			} else {
+				if (currentIntensity > 0) {
+					targetCamera.transform.localPosition = originalPosition + UnityEngine.Random.insideUnitSphere * currentIntensity;
+					targetCamera.transform.localRotation = new Quaternion (
+						originalRotation.x + UnityEngine.Random.Range (-currentIntensity, currentIntensity) * 0.1f,
+						originalRotation.y + UnityEngine.Random.Range (-currentIntensity, currentIntensity) * 0.1f,
+						originalRotation.z + UnityEngine.Random.Range (-currentIntensity, currentIntensity) * 0.1f,
+						originalRotation.w + UnityEngine.Random.Range (-currentIntensity, currentIntensity) * 0.1f
+					);
+					currentIntensity -= decay;
+				} else {
+					currentIntensity = 0;
+					isShaking = false;
+					targetCamera.transform.localPosition = originalPosition;
+					targetCamera.transform.localRotation = originalRotation;
+				}
+			}
+
+		}
+		#endregion
+
+	}
 	#endregion
 
 }

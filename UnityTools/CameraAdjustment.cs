@@ -24,6 +24,10 @@ namespace UnityTools {
 		/// </summary>
 		public CameraTransition transition;
 		/// <summary>
+		/// Camera shake action. Need to assign its intensity and decay before be executed.
+		/// </summary>
+		public CameraShake shake;
+		/// <summary>
 		/// The camera.
 		/// </summary>
 		public Camera cam {
