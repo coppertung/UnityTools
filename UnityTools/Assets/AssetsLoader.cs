@@ -90,7 +90,11 @@ namespace UnityTools.Assets {
 		public static IEnumerator DownloadAssetsAsync(string url, string filepath, string filename, Action<float> progressFunction, Action completeFunction, Action<Exception> errorHandler) {
 				
 			UnityWebRequest download = UnityWebRequest.Get (url);
+			#if UNITY_2017_3_OR_NEWER
+			download.SendWebRequest ();
+			#else
 			download.Send ();
+			#endif
 			while (!download.isDone) {
 				progressFunction (download.downloadProgress);
 				yield return null;

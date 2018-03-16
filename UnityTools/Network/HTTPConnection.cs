@@ -16,7 +16,11 @@ namespace UnityTools.Network {
 		public static IEnumerator GET<T>(string url, Action<T> responseCallback, Action<Exception> errorHandler) {
 
 			UnityWebRequest request = UnityWebRequest.Get (url);
+			#if UNITY_2017_3_OR_NEWER
+			yield return request.SendWebRequest ();
+			#else
 			yield return request.Send ();
+			#endif
 
 			try {
 				#if UNITY_2017_1_OR_NEWER
@@ -50,7 +54,11 @@ namespace UnityTools.Network {
 			foreach (DictionaryEntry headerValue in header) {
 				request.SetRequestHeader ((string)headerValue.Key, (string)headerValue.Value);
 			}
+			#if UNITY_2017_3_OR_NEWER
+			yield return request.SendWebRequest ();
+			#else
 			yield return request.Send ();
+			#endif
 
 			try {
 				#if UNITY_2017_1_OR_NEWER
@@ -84,7 +92,11 @@ namespace UnityTools.Network {
 			request.uploadHandler = new UploadHandlerRaw(postData);
 			request.downloadHandler = new DownloadHandlerBuffer();
 			request.SetRequestHeader ("Content-Type", "application/json");
+			#if UNITY_2017_3_OR_NEWER
+			yield return request.SendWebRequest ();
+			#else
 			yield return request.Send ();
+			#endif
 
 			try {
 				#if UNITY_2017_1_OR_NEWER
@@ -118,7 +130,11 @@ namespace UnityTools.Network {
 			request.uploadHandler = new UploadHandlerRaw(postData);
 			request.downloadHandler = new DownloadHandlerBuffer();
 			request.SetRequestHeader ("Content-Type", "application/json");
+			#if UNITY_2017_3_OR_NEWER
+			yield return request.SendWebRequest ();
+			#else
 			yield return request.Send ();
+			#endif
 
 			try {
 				#if UNITY_2017_1_OR_NEWER

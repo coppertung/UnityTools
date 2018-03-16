@@ -22,9 +22,11 @@ namespace UnityTools {
 					return "Android";
 				case BuildTarget.iOS:
 					return "iOS";
+				#if !UNITY_2017_3_OR_NEWER
 				case BuildTarget.StandaloneOSXIntel:
 				case BuildTarget.StandaloneOSXIntel64:
-				case BuildTarget.StandaloneOSXUniversal:
+				#endif
+				case BuildTarget.StandaloneOSX:
 					return "OSX";
 				case BuildTarget.StandaloneWindows:
 				case BuildTarget.StandaloneWindows64:

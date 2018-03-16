@@ -111,7 +111,11 @@ namespace UnityTools.Languages {
 		private IEnumerator loadFromWeb(string url, Action<Exception> errorHandler) {
 
 			UnityWebRequest download = UnityWebRequest.Get (url);
+			#if UNITY_2017_3_OR_NEWER
+			download.SendWebRequest ();
+			#else
 			download.Send ();
+			#endif
 
 			while (!download.isDone) {
 				// wait for the download complete

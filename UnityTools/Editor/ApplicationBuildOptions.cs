@@ -99,15 +99,24 @@ namespace UnityTools.Build {
 			GUILayout.Label ("Windows");
 			if (GUILayout.Button ("32-bit", GUILayout.MaxWidth (100f), GUILayout.MinWidth (60f))) {
 				Debug.Log ("Build Windows 32-bit Application.");
+				#if UNITY_2017_3_OR_NEWER
+				buildApplication (BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows);
+				#else
 				buildApplication (BuildTarget.StandaloneWindows);
+				#endif
 			}
 			if (GUILayout.Button ("64-bit", GUILayout.MaxWidth (100f), GUILayout.MinWidth (60f))) {
 				Debug.Log ("Build Windows 64-bit Application.");
+				#if UNITY_2017_3_OR_NEWER
+				buildApplication (BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64);
+				#else
 				buildApplication (BuildTarget.StandaloneWindows64);
+				#endif
 			}
 			EditorGUILayout.EndHorizontal ();
 			EditorGUILayout.BeginHorizontal ();
 			GUILayout.Label ("Mac");
+			#if !UNITY_2017_3_OR_NEWER
 			if (GUILayout.Button ("Intel 32-bit", GUILayout.MaxWidth (100f), GUILayout.MinWidth (60f))) {
 				Debug.Log ("Build MacOS Intel 32-bit Application.");
 				buildApplication (BuildTarget.StandaloneOSXIntel);
@@ -116,20 +125,33 @@ namespace UnityTools.Build {
 				Debug.Log ("Build MacOS Intel 64-bit Application.");
 				buildApplication (BuildTarget.StandaloneOSXIntel64);
 			}
+			#endif
 			if (GUILayout.Button ("Universal", GUILayout.MaxWidth (100f), GUILayout.MinWidth (60f))) {
 				Debug.Log ("Build MacOS Universal Application.");
-				buildApplication (BuildTarget.StandaloneOSXUniversal);
+				#if UNITY_2017_3_OR_NEWER
+				buildApplication (BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX);
+				#else
+				buildApplication (BuildTarget.StandaloneOSX);
+				#endif
 			}
 			EditorGUILayout.EndHorizontal ();
 			EditorGUILayout.BeginHorizontal ();
 			GUILayout.Label ("Mobile");
 			if (GUILayout.Button ("Android", GUILayout.MaxWidth (100f), GUILayout.MinWidth (60f))) {
 				Debug.Log ("Build Android Application.");
+				#if UNITY_2017_3_OR_NEWER
+				buildApplication (BuildTargetGroup.Android, BuildTarget.Android);
+				#else
 				buildApplication (BuildTarget.Android);
+				#endif
 			}
 			if (GUILayout.Button ("iOS", GUILayout.MaxWidth (100f), GUILayout.MinWidth (60f))) {
 				Debug.Log ("Build iOS Application.");
+				#if UNITY_2017_3_OR_NEWER
+				buildApplication (BuildTargetGroup.iOS, BuildTarget.iOS);
+				#else
 				buildApplication (BuildTarget.iOS);
+				#endif
 			}
 			EditorGUILayout.EndHorizontal ();
 
@@ -203,15 +225,18 @@ namespace UnityTools.Build {
 				}
 				currentEvent.Use ();
 				break;
-			case EventType.mouseUp:
+			case EventType.MouseUp:
 				DragAndDrop.PrepareStartDrag ();
 				break;
 			}
 
 		}
 
+		#if UNITY_2017_3_OR_NEWER
+		public void buildApplication(BuildTargetGroup targetPlatformGroup, BuildTarget targetPlatform) {
+		#else
 		public void buildApplication(BuildTarget targetPlatform) {
-
+		#endif
 
 			BuildOptions options = BuildOptions.ShowBuiltPlayer;
 			if (isDevelopmentBuild) {
@@ -235,16 +260,23 @@ namespace UnityTools.Build {
 			case BuildTarget.StandaloneWindows64:
 				outputname += ".exe";
 				break;
+			#if !UNITY_2017_3_OR_NEWER
 			case BuildTarget.StandaloneOSXIntel:
 			case BuildTarget.StandaloneOSXIntel64:
-			case BuildTarget.StandaloneOSXUniversal:
+			#endif
+			case BuildTarget.StandaloneOSX:
 				outputname += ".app";
 				break;
 			}
 
 			BuildTarget currentPlatform = EditorUserBuildSettings.activeBuildTarget;
+			BuildTargetGroup currentPlatformGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
 			if (currentPlatform != targetPlatform) {
+				#if UNITY_2017_3_OR_NEWER
+				EditorUserBuildSettings.SwitchActiveBuildTarget (targetPlatformGroup, targetPlatform);
+				#else
 				EditorUserBuildSettings.SwitchActiveBuildTarget (targetPlatform);
+				#endif
 			}
 
 			BuildPipeline.BuildPlayer (
@@ -255,7 +287,11 @@ namespace UnityTools.Build {
 			);
 
 			if (EditorUserBuildSettings.activeBuildTarget != currentPlatform) {
+				#if UNITY_2017_3_OR_NEWER
+				EditorUserBuildSettings.SwitchActiveBuildTarget (currentPlatformGroup, currentPlatform);
+				#else
 				EditorUserBuildSettings.SwitchActiveBuildTarget (currentPlatform);
+				#endif
 			}
 
 		}
