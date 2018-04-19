@@ -133,6 +133,22 @@ namespace UnityTools {
 		}
 
 		/// <summary>
+		/// Sets the month component.
+		/// </summary>
+		public void setMonth(int month, int year) {
+
+			if (_date.Year == year) {
+				_date = calendar.AddMonths (_date, month - _date.Month);
+			} else if (_date.Year < year) {
+				_date = calendar.AddMonths (_date, month - _date.Month + 12 * (year - _date.Year));
+			} else {
+				_date = calendar.AddMonths (_date, month - _date.Month - 12 * (year - _date.Year));
+			}
+			loadMonth ();
+
+		}
+
+		/// <summary>
 		/// Get the month component.
 		/// </summary>
 		public int getMonth() {

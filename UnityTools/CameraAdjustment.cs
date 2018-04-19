@@ -27,6 +27,16 @@ namespace UnityTools {
 		/// Camera shake action. Need to assign its intensity and decay before be executed.
 		/// </summary>
 		public CameraShake shake;
+
+		/// <summary>
+		/// Camera screen effect action. Need to assign its intensity before be activated.
+		/// </summary>
+		public CameraGreyScale greyScale;
+		/// <summary>
+		/// Camera screen effect action. Need to assign its intensity before be activated.
+		/// </summary>
+		public CameraInverseColor inverseColor;
+
 		/// <summary>
 		/// The camera.
 		/// </summary>
@@ -45,6 +55,13 @@ namespace UnityTools {
 			fixAspectRatio.execute (cam);
 			// initialize zoom action class
 			zoom.execute (cam);
+
+		}
+
+		void OnRenderImage(RenderTexture source, RenderTexture destination) {
+
+			greyScale.render (source, destination);
+			inverseColor.render (source, destination);
 
 		}
 		#endregion
