@@ -23,6 +23,10 @@ namespace UnityTools {
 	[System.Serializable]
 	public class CameraFixAspectRatio : ICameraAction {
 
+		public enum AspectRatioMatch {
+			Width, Height, None
+		}
+
 		#region Fields_And_Properties
 		/// <summary>
 		/// Take action or not?
@@ -36,6 +40,10 @@ namespace UnityTools {
 		/// The height of the target aspect ratio.
 		/// </summary>
 		public int targetAspectRatioHeight;
+		/// <summary>
+		/// What did the aspect ratio match?
+		/// </summary>
+		public AspectRatioMatch match = AspectRatioMatch.None;
 		#endregion
 
 		#region Functions
@@ -56,6 +64,7 @@ namespace UnityTools {
 					rect.x = 0;
 					rect.y = (1f - scaleHeight) / 2f;
 					cam.rect = rect;
+					match = AspectRatioMatch.Width;
 				} else {
 					float scaleWidth = 1f / scaleHeight;
 					Rect rect = cam.rect;
@@ -64,6 +73,7 @@ namespace UnityTools {
 					rect.x = (1f - scaleWidth) / 2f;
 					rect.y = 0;
 					cam.rect = rect;
+					match = AspectRatioMatch.Height;
 				}
 			}
 
