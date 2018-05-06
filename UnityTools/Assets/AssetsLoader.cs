@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -15,15 +16,15 @@ namespace UnityTools.Assets {
 	public class AssetsLoader {
 
 		#region Fields_And_Properties
-		private static AssetBundle _assetBundle;
+		private static List<AssetBundle> _assetBundles;
 		private static bool _loadingAssetBundle = false;
 
 		/// <summary>
-		/// The assetbundle that is currently loaded.
+		/// The assetbundle(s) that are currently loaded.
 		/// </summary>
-		public static AssetBundle assetBundle {
+		public static List<AssetBundle> assetBundles {
 			get {
-				return _assetBundle;
+				return _assetBundles;
 			}
 		}
 		/// <summary>
@@ -77,7 +78,8 @@ namespace UnityTools.Assets {
 				return (AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName (assetBundleName, assetName).Length > 0);
 			else {
 			#endif
-				return (_assetBundle.name.Equals (assetBundleName) && _assetBundle.Contains (assetName));
+				AssetBundle assetBundle = assetBundles.Find (x => x.name.Equals (assetBundleName));
+				return (assetBundle != null && assetBundle.Contains (assetName));
 			#if UNITY_EDITOR
 			}
 			#endif
@@ -96,7 +98,9 @@ namespace UnityTools.Assets {
 			download.Send ();
 			#endif
 			while (!download.isDone) {
-				progressFunction (download.downloadProgress);
+				if (progressFunction != null) {
+					progressFunction (download.downloadProgress);
+				}
 				yield return null;
 			}
 			#if UNITY_2017_1_OR_NEWER
@@ -138,20 +142,23 @@ namespace UnityTools.Assets {
 		///	</summary>
 		public static IEnumerator LoadAssetsFromFolderAsync(string file, Action<float> progressFunction, Action<Exception> errorHandler) {
 
-			if (_assetBundle != null) {
-				ClearAssetBundle (true);
-			}
 			_loadingAssetBundle = true;
 			AssetBundleCreateRequest request = AssetBundle.LoadFromFileAsync (file);
 			if (!File.Exists (file)) {
 				errorHandler (new Exception ("File Not Found"));
 			} else {
 				while (!request.isDone) {
-					progressFunction (request.progress);
+					if (progressFunction != null) {
+						progressFunction (request.progress);
+					}
 					yield return null;
 				}
 				if (request.isDone) {
-					_assetBundle = request.assetBundle;
+					// remove older bundle if repeated loaded
+					if (_assetBundles.Contains (request.assetBundle)) {
+						_assetBundles.Remove (request.assetBundle);
+					}
+					_assetBundles.Add (request.assetBundle);
 				}
 			}
 			_loadingAssetBundle = false;
@@ -181,7 +188,8 @@ namespace UnityTools.Assets {
 					// wait until asset bundle is being loaded
 					yield return new WaitForSecondsRealtime (0.1f);
 				}
-				if (_assetBundle == null || !_assetBundle.name.Equals(assetBundleName)) {
+				AssetBundle assetBundle = assetBundles.Find (x => x.name.Equals (assetBundleName));
+				if (assetBundle == null) {
 					yield return LoadAssetsFromFolderAsync (filePath + assetBundleName, progressFunction, errorHandler);
 					while (loadingAssetBundle) {
 						// wait until asset bundle is being loaded
@@ -189,7 +197,7 @@ namespace UnityTools.Assets {
 					}
 				}
 				AssetBundleRequest request;
-				request = _assetBundle.LoadAssetAsync (assetName, typeof(T));
+				request = assetBundle.LoadAssetAsync (assetName, typeof(T));
 				while (!request.isDone) {
 					yield return null;
 				}
@@ -208,8 +216,10 @@ namespace UnityTools.Assets {
         /// </summary>
 		public static void ClearAssetBundle(bool unloadAllLoadedObjects) {
 
-			_assetBundle.Unload (unloadAllLoadedObjects);
-			_assetBundle = null;
+			for (int i = assetBundles.Count - 1; i >= 0; i++) {
+				_assetBundles [i].Unload (unloadAllLoadedObjects);
+				_assetBundles.RemoveAt (i);
+			}
 
 		}
 		#endregion
