@@ -119,7 +119,7 @@ namespace UnityTools.Assets {
 		private void loadSprite(Sprite _sprite) {
 
 			try {
-				GetComponent<Sprite> () = _sprite;
+				GetComponent<SpriteRenderer> ().sprite = _sprite;
 			}
 			catch (Exception ex) {
 				exceptionHandler (ex);
