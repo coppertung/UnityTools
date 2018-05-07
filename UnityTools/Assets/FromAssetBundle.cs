@@ -31,7 +31,7 @@ namespace UnityTools.Assets {
 		/// The file path of the asset bundle.
 		/// </summary>
 		[ReadOnly]
-		public string filepath = Application.persistentDataPath;
+		public string filepath;
 		/// <summary>
 		/// The type of the asset.
 		/// </summary>
@@ -48,12 +48,14 @@ namespace UnityTools.Assets {
 		/// [Prefab type only]
 		/// Instantiate the prefab object after the asset is loaded?
 		/// </summary>
+		[ShowIfEqual("type", (int)AssetType.Prefab, true)]
 		public bool instantiatePrefabAfterLoaded;
 		#endregion
 
 		#region MonoBehaviour
 		void Awake() {
-
+			
+			filepath = Application.persistentDataPath;
 			loadAsset ();
 
 		}
