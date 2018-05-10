@@ -23,7 +23,10 @@ namespace UnityTools.Attribute {
 			String,
 			Long,
 			Double,
-			EnumIndex
+			EnumIndex,
+			Vector2,
+			Vector3,
+			Vector4
 		}
 
 		/// <summary>
@@ -43,6 +46,9 @@ namespace UnityTools.Attribute {
 		protected long longValue;
 		protected double doubleValue;
 		protected int enumValue;
+		protected Vector2 vector2Value;
+		protected Vector3 vector3Value;
+		protected Vector4 vector4Value;
 
 		public ShowIfEqualAttribute(string _name, bool _value) {
 
@@ -96,6 +102,30 @@ namespace UnityTools.Attribute {
 
 		}
 
+		public ShowIfEqualAttribute(string _name, Vector2 _value) {
+
+			type = PropertyType.Vector2;
+			variableName = _name;
+			vector2Value = _value;
+
+		}
+
+		public ShowIfEqualAttribute(string _name, Vector3 _value) {
+
+			type = PropertyType.Vector3;
+			variableName = _name;
+			vector3Value = _value;
+
+		}
+
+		public ShowIfEqualAttribute(string _name, Vector4 _value) {
+
+			type = PropertyType.Vector4;
+			variableName = _name;
+			vector4Value = _value;
+
+		}
+
 		/// <summary>
 		/// Check whether the variable should be hide or show.
 		/// </summary>
@@ -117,6 +147,12 @@ namespace UnityTools.Attribute {
 					return (obj.FindProperty (variableName).doubleValue == doubleValue);
 				case PropertyType.EnumIndex:
 					return (obj.FindProperty (variableName).enumValueIndex == enumValue);
+				case PropertyType.Vector2:
+					return (obj.FindProperty (variableName).vector2Value == vector2Value);
+				case PropertyType.Vector3:
+					return (obj.FindProperty (variableName).vector3Value == vector3Value);
+				case PropertyType.Vector4:
+					return (obj.FindProperty (variableName).vector4Value == vector4Value);
 				default:
 					return true;
 				}
