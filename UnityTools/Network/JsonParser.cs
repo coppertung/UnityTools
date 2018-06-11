@@ -47,7 +47,7 @@ namespace UnityTools.Network {
 					Debug.Log ("Object Found " + objFields [i].Name);
 					newString = replaceVariableName (objFields [i].FieldType, newString);
 				} else {
-					OtherNameInJson attribute = Attribute.GetCustomAttribute (objFields [i], typeof(OtherNameInJson)) as OtherNameInJson;
+					OtherNameInJson attribute = System.Attribute.GetCustomAttribute (objFields [i], typeof(OtherNameInJson)) as OtherNameInJson;
 					Debug.Log ("Attribute Try To Found From " + objFields [i].Name);
 					if (attribute != null) {
 						Debug.Log ("Attribute Found From " + objFields [i].Name);
@@ -70,7 +70,7 @@ namespace UnityTools.Network {
 					Debug.Log ("Object Found " + objFields [i].Name);
 					newString = replaceVariableName (objFields [i].FieldType, newString);
 				} else {
-					OtherNameInJson attribute = Attribute.GetCustomAttribute (objFields [i], typeof(OtherNameInJson)) as OtherNameInJson;
+					OtherNameInJson attribute = System.Attribute.GetCustomAttribute (objFields [i], typeof(OtherNameInJson)) as OtherNameInJson;
 					Debug.Log ("Attribute Try To Found From " + objFields [i].Name);
 					if (attribute != null) {
 						Debug.Log ("Attribute Found From " + objFields [i].Name);

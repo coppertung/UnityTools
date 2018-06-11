@@ -48,7 +48,9 @@ namespace UnityTools.Assets {
 		/// [Prefab type only]
 		/// Instantiate the prefab object after the asset is loaded?
 		/// </summary>
+		#if UNITY_EDITOR
 		[ShowIfEqual("type", (int)AssetType.Prefab, true)]
+		#endif
 		public bool instantiatePrefabAfterLoaded;
 		#endregion
 
